@@ -20,3 +20,6 @@
 .xc-sbe-icon svg { fill: currentColor; }
 .xc-sbe-switch { display: inline-flex; align-items: center; gap: 6px; color: var(--xc-fg-2); font-size: 12.5px; }
 [data-xc-menu-hidden] { display: none !important; }
+/* X highlights its own sidebar links from script; pins copy its hover colours per theme. */
+[data-xc-pin]:hover > div, [data-xc-pin]:focus-visible > div { background-color: rgba(231, 233, 234, .1); }
+body[style*="255, 255, 255"] [data-xc-pin]:hover > div, body[style*="255, 255, 255"] [data-xc-pin]:focus-visible > div { background-color: rgba(15, 20, 25, .1); }
