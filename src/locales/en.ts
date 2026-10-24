@@ -598,6 +598,12 @@ const en: Record<string, string> = {
     "服务条款、隐私政策、Cookie、© X Corp. 那一排链接。": "The row of Terms of Service, Privacy Policy, Cookie and © X Corp. links.",
     "隐藏右侧栏三大件：「有什么新鲜事」趋势、「推荐关注」和底部页脚链接，可分别开关。": "Hides the three right-sidebar cards, each on its own switch: “What's happening” trends, “Who to follow” and the footer links.",
 
+    "首页发帖框": "Home post box",
+    "主页时间线顶部的「有什么新鲜事？」发帖框。帖子页的回复框不受影响。": "The “What's happening?” box on top of the Home timeline. The reply box on post pages stays.",
+    "侧栏发帖按钮": "Sidebar Post button",
+    "左侧栏的「发帖」按钮，侧栏收起时的图标按钮也算。": "The Post button in the left sidebar, including its icon form when the sidebar is collapsed.",
+    "隐藏发帖入口：主页时间线顶部的发帖框和左侧栏的「发帖」按钮，可分别开关。回复、引用和快捷键 N 不受影响。": "Hides the ways to start a post, each on its own switch: the post box on top of the Home timeline and the Post button in the left sidebar. Replies, quotes and the N shortcut still work.",
+
     "账号菜单头像": "Account menu avatar",
     "左下角账号菜单里的头像。": "The avatar in the account menu at the bottom left.",
     "账号菜单名字": "Account menu name",

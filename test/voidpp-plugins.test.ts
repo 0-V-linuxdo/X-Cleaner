@@ -8,6 +8,7 @@ import { closeMenu, contextForCaret, fillMenu, ITEM_ATTR } from "@plugins/_api/p
 import { formatTime } from "@plugins/absoluteTimestamps";
 import { buildCss as linkCss, expandedUrl } from "@plugins/betterLinks";
 import { AD_ATTR, buildCss as declutterCss, isAdTweet, stripTitleCount } from "@plugins/declutter";
+import { buildCss as postEntriesCss, RULES as POST_ENTRY_RULES } from "@plugins/hidePostEntries";
 import { buildCss as rightSidebarCss, DIVIDER as SIDEBAR_DIVIDER, RULES as SIDEBAR_RULES } from "@plugins/rightSidebarCleaner";
 import { ENTRY_ATTR, fillMoreMenu } from "@plugins/moreMenuEntry";
 import { resetHealth, runChecks } from "@plugins/selectorHealth";
@@ -122,6 +123,33 @@ describe("RightSidebarCleaner", () => {
         expect(styleText("rightSidebarCleaner:rules")).not.toContain("UserCell");
         setPluginEnabled("RightSidebarCleaner", false);
         expect(styleText("rightSidebarCleaner:rules")).toBe("");
+    });
+});
+
+describe("HidePostEntries", () => {
+    test("hides the Home post box and the sidebar Post button, but not a post page's reply box", () => {
+        document.body.innerHTML = `
+            <header><nav></nav><div id="post"><a data-testid="SideNav_NewTweet_Button" href="/compose/post"></a></div></header>
+            <main><div data-testid="primaryColumn"><div>
+                <div id="tabs"></div>
+                <div id="composer"><div><div data-testid="tweetTextarea_0"></div></div></div>
+                <div id="list"><div data-testid="cellInnerDiv"><div><div data-testid="tweetTextarea_0"></div></div></div></div>
+            </div></div></main>`;
+        const ids = (sel: string) => [...document.querySelectorAll(sel)].map(e => e.id).filter(Boolean);
+        expect(ids(POST_ENTRY_RULES.hideHomeComposer)).toEqual(["composer"]);
+        expect(ids(POST_ENTRY_RULES.hideSideNavButton)).toEqual(["post"]);
+    });
+
+    test("follows its switches and cleans up on stop", () => {
+        expect(postEntriesCss({})).toBe("");
+        expect(postEntriesCss({ hideSideNavButton: true })).not.toContain("tweetTextarea_0");
+        expect(plugins.HidePostEntries.enabledByDefault).toBe(true);
+        setPluginEnabled("HidePostEntries", true);
+        expect(styleText("hidePostEntries:rules")).toContain("SideNav_NewTweet_Button");
+        Settings.plugins.HidePostEntries.hideHomeComposer = false;
+        expect(styleText("hidePostEntries:rules")).not.toContain("tweetTextarea_0");
+        setPluginEnabled("HidePostEntries", false);
+        expect(styleText("hidePostEntries:rules")).toBe("");
     });
 });
 

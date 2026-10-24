@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         X Cleaner
 // @namespace    https://github.com/0-V-linuxdo/x-cleaner
-// @version      0.1.0.202610241145
+// @version      0.1.0.202610241151
 // @description  A plugin-based cleaner for x.com: hide adult promotion, crypto funnels and promotional reply accounts. Includes review, lists, safe regex rules and optional AI-assisted rule drafts.
 // @author       X Cleaner Contributors
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z'/%3E%3Cpath d='m4.5 4.5 15 15'/%3E%3C/svg%3E
@@ -1090,6 +1090,11 @@ Continue?`,
     "页脚链接": "Footer links",
     "服务条款、隐私政策、Cookie、© X Corp. 那一排链接。": "The row of Terms of Service, Privacy Policy, Cookie and © X Corp. links.",
     "隐藏右侧栏三大件：「有什么新鲜事」趋势、「推荐关注」和底部页脚链接，可分别开关。": "Hides the three right-sidebar cards, each on its own switch: “What's happening” trends, “Who to follow” and the footer links.",
+    "首页发帖框": "Home post box",
+    "主页时间线顶部的「有什么新鲜事？」发帖框。帖子页的回复框不受影响。": "The “What's happening?” box on top of the Home timeline. The reply box on post pages stays.",
+    "侧栏发帖按钮": "Sidebar Post button",
+    "左侧栏的「发帖」按钮，侧栏收起时的图标按钮也算。": "The Post button in the left sidebar, including its icon form when the sidebar is collapsed.",
+    "隐藏发帖入口：主页时间线顶部的发帖框和左侧栏的「发帖」按钮，可分别开关。回复、引用和快捷键 N 不受影响。": "Hides the ways to start a post, each on its own switch: the post box on top of the Home timeline and the Post button in the left sidebar. Replies, quotes and the N shortcut still work.",
     "账号菜单头像": "Account menu avatar",
     "左下角账号菜单里的头像。": "The avatar in the account menu at the bottom left.",
     "账号菜单名字": "Account menu name",
@@ -3034,7 +3039,7 @@ ${TOOLTIP_CSS}`,
     const hint = h("span", { class: "xc-pm-hint", tabindex: "0" }, svgIcon(Icons.info, 14));
     const hintTip = attachTooltip(hint, () => t(TABS.find((tab) => tab.id === activeId)?.description ?? ""), "bottom");
     const body = h("div", { class: "xc-pm-body" });
-    const version = h("div", { class: "xc-pm-version" }, h("div", null, "X Cleaner · ", "0.1.0.202610241145"), h("div", null, t("正式版"), " · ", t("用户脚本")), h("div", null, h("a", { href: "https://raw.githubusercontent.com/0-V-linuxdo/X-Cleaner/main/dist/X%20Cleaner.user.js", target: "_blank", rel: "noopener" }, t("检查更新")), " · ", h("a", { href: `${"https://github.com/0-V-linuxdo/X-Cleaner"}/commits/main`, target: "_blank", rel: "noopener" }, t("更新记录"))));
+    const version = h("div", { class: "xc-pm-version" }, h("div", null, "X Cleaner · ", "0.1.0.202610241151"), h("div", null, t("正式版"), " · ", t("用户脚本")), h("div", null, h("a", { href: "https://raw.githubusercontent.com/0-V-linuxdo/X-Cleaner/main/dist/X%20Cleaner.user.js", target: "_blank", rel: "noopener" }, t("检查更新")), " · ", h("a", { href: `${"https://github.com/0-V-linuxdo/X-Cleaner"}/commits/main`, target: "_blank", rel: "noopener" }, t("更新记录"))));
     const content = h("div", { class: "xc-pm-shell" }, h("aside", { class: "xc-pm-sidebar" }, nav, version), h("section", { class: "xc-pm-main" }, h("header", { class: "xc-pm-header" }, heading, hint, closeButton(() => close())), body));
     const show = (id, plugin) => {
       activeId = id;
@@ -7047,11 +7052,47 @@ Write reason in ${aiLanguageName()}.` },
     postMenuItems: exportMenuItems
   });
 
+  // src/plugins/hidePostEntries/index.ts
+  var STYLE3 = "hidePostEntries:rules";
+  var opt2 = (label, description) => ({ type: "boolean" /* BOOLEAN */, label, description, default: true });
+  var settings4 = definePluginSettings({
+    hideHomeComposer: opt2(N_("首页发帖框"), N_("主页时间线顶部的「有什么新鲜事？」发帖框。帖子页的回复框不受影响。")),
+    hideSideNavButton: opt2(N_("侧栏发帖按钮"), N_("左侧栏的「发帖」按钮，侧栏收起时的图标按钮也算。"))
+  });
+  var RULES2 = {
+    hideHomeComposer: '[data-testid="primaryColumn"] > div > div:has([data-testid="tweetTextarea_0"]):not(:has([data-testid="cellInnerDiv"]))',
+    hideSideNavButton: 'header div:has(> [data-testid="SideNav_NewTweet_Button"])'
+  };
+  function buildCss3(values) {
+    return Object.keys(RULES2).filter((k) => values[k]).map((k) => `${RULES2[k]} { display: none !important; }`).join(`
+`);
+  }
+  function apply3() {
+    const css = buildCss3(settings4.store);
+    if (css)
+      registerStyle(STYLE3, css);
+    else
+      unregisterStyle(STYLE3);
+  }
+  var hidePostEntries_default = definePlugin({
+    name: "HidePostEntries",
+    description: N_("隐藏发帖入口：主页时间线顶部的发帖框和左侧栏的「发帖」按钮，可分别开关。回复、引用和快捷键 N 不受影响。"),
+    icon: Icons.eyeOff,
+    tags: ["appearance", "declutter"],
+    enabledByDefault: true,
+    settings: settings4,
+    start: apply3,
+    stop() {
+      unregisterStyle(STYLE3);
+    },
+    onSettingsChange: apply3
+  });
+
   // src/plugins/moreMenuEntry/index.ts
   var MORE_BUTTON = '[data-testid="AppTabBar_More_Menu"]';
   var ENTRY_ATTR = "data-xc-more-entry";
   var WAIT_MS2 = 1500;
-  var settings4 = definePluginSettings({
+  var settings5 = definePluginSettings({
     showStarred: { type: "boolean" /* BOOLEAN */, label: N_("显示收藏的插件"), description: N_("在入口下面列出你收藏的插件，点一下就能开关。"), default: true }
   });
   function templateRow(menu) {
@@ -7092,7 +7133,7 @@ Write reason in ${aiLanguageName()}.` },
       rows.push(row);
     };
     add("manager", t("X Cleaner 插件管理"), Icons.broom, openPanel);
-    if (settings4.store.showStarred) {
+    if (settings5.store.showStarred) {
       for (const name of starredPlugins()) {
         const on = isPluginEnabled(name);
         add(`plugin:${name}`, on ? t("停用 {name}", { name }) : t("启用 {name}", { name }), on ? Icons.check : Icons.plug, () => {
@@ -7132,7 +7173,7 @@ Write reason in ${aiLanguageName()}.` },
     icon: Icons.menu,
     tags: ["core", "appearance"],
     enabledByDefault: true,
-    settings: settings4,
+    settings: settings5,
     healthChecks: [CHECKS.moreMenuButton],
     start() {
       document.addEventListener("click", onClick2, true);
@@ -9762,33 +9803,33 @@ Write rule.name and reason in ${aiLanguageName()}.` }
   });
 
   // src/plugins/rightSidebarCleaner/index.ts
-  var STYLE3 = "rightSidebarCleaner:rules";
+  var STYLE4 = "rightSidebarCleaner:rules";
   var SIDE2 = '[data-testid="sidebarColumn"]';
-  var opt2 = (label, description) => ({ type: "boolean" /* BOOLEAN */, label, description, default: true });
-  var settings5 = definePluginSettings({
-    hideTrends: opt2(N_("有什么新鲜事"), N_("「What's happening」趋势卡片。")),
-    hideWhoToFollow: opt2(N_("推荐关注"), N_("「Who to follow」卡片，帖子页的「相关用户」也算。")),
-    hideFooter: opt2(N_("页脚链接"), N_("服务条款、隐私政策、Cookie、© X Corp. 那一排链接。"))
+  var opt3 = (label, description) => ({ type: "boolean" /* BOOLEAN */, label, description, default: true });
+  var settings6 = definePluginSettings({
+    hideTrends: opt3(N_("有什么新鲜事"), N_("「What's happening」趋势卡片。")),
+    hideWhoToFollow: opt3(N_("推荐关注"), N_("「Who to follow」卡片，帖子页的「相关用户」也算。")),
+    hideFooter: opt3(N_("页脚链接"), N_("服务条款、隐私政策、Cookie、© X Corp. 那一排链接。"))
   });
-  var RULES2 = {
+  var RULES3 = {
     hideTrends: `${SIDE2} div:has(> section [data-testid="trend"])`,
     hideWhoToFollow: `${SIDE2} div:has(> div > aside [data-testid="UserCell"])`,
     hideFooter: `${SIDE2} div:has(> nav[role="navigation"])`
   };
   var DIVIDER = `${SIDE2} div:has(> div > nav[role="navigation"]) > div:empty:not(div:has(form[role="search"]) + div)`;
-  function buildCss3(values) {
-    const hidden = Object.keys(RULES2).filter((k) => values[k]).map((k) => RULES2[k]);
+  function buildCss4(values) {
+    const hidden = Object.keys(RULES3).filter((k) => values[k]).map((k) => RULES3[k]);
     if (!hidden.length)
       return "";
     return [...hidden, DIVIDER].map((sel) => `${sel} { display: none !important; }`).join(`
 `);
   }
-  function apply3() {
-    const css = buildCss3(settings5.store);
+  function apply4() {
+    const css = buildCss4(settings6.store);
     if (css)
-      registerStyle(STYLE3, css);
+      registerStyle(STYLE4, css);
     else
-      unregisterStyle(STYLE3);
+      unregisterStyle(STYLE4);
   }
   var rightSidebarCleaner_default = definePlugin({
     name: "RightSidebarCleaner",
@@ -9797,12 +9838,12 @@ Write rule.name and reason in ${aiLanguageName()}.` }
     icon: Icons.eyeOff,
     tags: ["appearance", "declutter"],
     enabledByDefault: true,
-    settings: settings5,
-    start: apply3,
+    settings: settings6,
+    start: apply4,
     stop() {
-      unregisterStyle(STYLE3);
+      unregisterStyle(STYLE4);
     },
-    onSettingsChange: apply3
+    onSettingsChange: apply4
   });
 
   // src/ui/notice.ts
@@ -10038,7 +10079,7 @@ Write rule.name and reason in ${aiLanguageName()}.` }
     }
     return out;
   }
-  function buildCss4(entries, layout) {
+  function buildCss5(entries, layout) {
     const natural = entries.map((e) => e.key);
     const bySelector = new Map(entries.map((e) => [e.key, e.selector]));
     const rules = [];
@@ -10459,8 +10500,8 @@ body[style*="255, 255, 255"] [data-xc-pin]:hover > div, body[style*="255, 255, 2
 `;
 
   // src/plugins/sidebarEntries/index.ts
-  var STYLE4 = "sidebarEntries:layout";
-  var settings6 = definePluginSettings({
+  var STYLE5 = "sidebarEntries:layout";
+  var settings7 = definePluginSettings({
     layout: {
       type: "custom" /* CUSTOM */,
       label: N_("侧栏入口"),
@@ -10469,14 +10510,14 @@ body[style*="255, 255, 255"] [data-xc-pin]:hover > div, body[style*="255, 255, 2
       render: (ctx) => {
         const editor = renderEditor(ctx, entriesForEditor);
         const pins = renderPinEditor({
-          items: () => settings6.plain.moreItems ?? [],
+          items: () => settings7.plain.moreItems ?? [],
           pinned: pinnedKeys,
           hidden: menuHiddenKeys,
           setHidden(keys) {
-            settings6.store.menuHidden = keys;
+            settings7.store.menuHidden = keys;
           },
           setPinned(keys) {
-            settings6.store.pinned = keys;
+            settings7.store.pinned = keys;
             const nav = document.querySelector(NAV2);
             if (nav)
               record(nav);
@@ -10488,15 +10529,15 @@ body[style*="255, 255, 255"] [data-xc-pin]:hover > div, body[style*="255, 255, 2
       }
     }
   }).withPrivateSettings();
-  var known = () => settings6.plain.known ?? [];
-  var pinnedKeys = () => Array.isArray(settings6.plain.pinned) ? settings6.plain.pinned : [];
-  var menuHiddenKeys = () => Array.isArray(settings6.plain?.menuHidden) ? settings6.plain.menuHidden : [];
+  var known = () => settings7.plain.known ?? [];
+  var pinnedKeys = () => Array.isArray(settings7.plain.pinned) ? settings7.plain.pinned : [];
+  var menuHiddenKeys = () => Array.isArray(settings7.plain?.menuHidden) ? settings7.plain.menuHidden : [];
   function pinnedItems() {
-    const byKey = new Map((settings6.plain.moreItems ?? []).map((i) => [i.key, i]));
+    const byKey = new Map((settings7.plain.moreItems ?? []).map((i) => [i.key, i]));
     return pinnedKeys().map((k) => byKey.get(k)).filter((i) => !!i);
   }
   function recordMoreItems(live) {
-    const plain = settings6.plain;
+    const plain = settings7.plain;
     if (!live.length || !plain)
       return;
     const prev = plain.moreItems ?? [];
@@ -10506,7 +10547,7 @@ body[style*="255, 255, 255"] [data-xc-pin]:hover > div, body[style*="255, 255, 2
     const next = mergeOrder(live.map((i) => i.key), prev.map((i) => i.key)).map((k) => byKey.get(k));
     if (JSON.stringify(next) === JSON.stringify(prev))
       return;
-    settings6.store.moreItems = next;
+    settings7.store.moreItems = next;
   }
   async function scanMoreMenu() {
     return withHiddenMoreMenu((menu) => {
@@ -10521,16 +10562,16 @@ body[style*="255, 255, 255"] [data-xc-pin]:hover > div, body[style*="255, 255, 2
       syncPins(nav, pinnedItems(), onPinActivate);
   }
   function layout() {
-    const l = settings6.plain.layout;
+    const l = settings7.plain.layout;
     return { order: Array.isArray(l?.order) ? l.order : [], hidden: Array.isArray(l?.hidden) ? l.hidden : [] };
   }
-  function apply4() {
+  function apply5() {
     syncNav();
-    const text = buildCss4(known(), layout());
+    const text = buildCss5(known(), layout());
     if (text)
-      registerStyle(STYLE4, text);
+      registerStyle(STYLE5, text);
     else
-      unregisterStyle(STYLE4);
+      unregisterStyle(STYLE5);
   }
   function record(nav) {
     const live = readEntries(nav);
@@ -10544,7 +10585,7 @@ body[style*="255, 255, 255"] [data-xc-pin]:hover > div, body[style*="255, 255, 2
     const same = next.length === prev.length && next.every((e, i) => e.key === prev[i].key && e.label === prev[i].label && e.selector === prev[i].selector);
     if (same)
       return;
-    settings6.store.known = next;
+    settings7.store.known = next;
   }
   function entriesForEditor() {
     const nav = document.querySelector(NAV2);
@@ -10559,7 +10600,7 @@ body[style*="255, 255, 255"] [data-xc-pin]:hover > div, body[style*="255, 255, 2
     icon: Icons.list,
     tags: ["appearance", "declutter"],
     enabledByDefault: true,
-    settings: settings6,
+    settings: settings7,
     managedStyle: styles_default4,
     healthChecks: [CHECKS.sideNav],
     elements: {
@@ -10586,21 +10627,21 @@ body[style*="255, 255, 255"] [data-xc-pin]:hover > div, body[style*="255, 255, 2
         return () => observer.disconnect();
       }
     },
-    start: apply4,
+    start: apply5,
     stop() {
-      unregisterStyle(STYLE4);
+      unregisterStyle(STYLE5);
       const nav = document.querySelector(NAV2);
       if (nav)
         syncPins(nav, [], onPinActivate);
       for (const row of document.querySelectorAll(`[${MENU_HIDDEN_ATTR}]`))
         row.removeAttribute(MENU_HIDDEN_ATTR);
     },
-    onSettingsChange: apply4
+    onSettingsChange: apply5
   });
 
   // src/plugins/streamerMode/index.ts
-  var STYLE5 = "streamerMode:rules";
-  var settings7 = definePluginSettings({
+  var STYLE6 = "streamerMode:rules";
+  var settings8 = definePluginSettings({
     accountAvatar: { type: "boolean" /* BOOLEAN */, label: N_("账号菜单头像"), description: N_("左下角账号菜单里的头像。"), default: true },
     accountName: { type: "boolean" /* BOOLEAN */, label: N_("账号菜单名字"), description: N_("左下角账号菜单里的昵称和 @handle。"), default: true },
     ownAvatars: { type: "boolean" /* BOOLEAN */, label: N_("自己的头像"), description: N_("页面其他位置（发帖框、自己的帖子）出现的你的头像。"), default: true },
@@ -10612,7 +10653,7 @@ body[style*="255, 255, 255"] [data-xc-pin]:hover > div, body[style*="255, 255, 2
   var ALIAS_ATTR = "data-xc-alias";
   var ALIAS_HIDE_ATTR = "data-xc-alias-hide";
   var escapeAttr = (v) => v.replace(/["\\]/g, "\\$&");
-  function buildCss5(opts, self) {
+  function buildCss6(opts, self) {
     const targets = [];
     const alias = opts.alias?.trim();
     if (opts.accountAvatar)
@@ -10657,7 +10698,7 @@ body[style*="255, 255, 255"] [data-xc-pin]:hover > div, body[style*="255, 255, 2
   function watchAlias(switcher) {
     const sync = () => {
       observer.disconnect();
-      markAlias(switcher, settings7.store.alias.trim());
+      markAlias(switcher, settings8.store.alias.trim());
       observer.observe(switcher, { childList: true, subtree: true, characterData: true });
     };
     const observer = new MutationObserver(sync);
@@ -10671,28 +10712,28 @@ body[style*="255, 255, 255"] [data-xc-pin]:hover > div, body[style*="255, 255, 2
   }
   var self = "";
   var retry;
-  function apply5() {
+  function apply6() {
     self = self || detectSelfHandle();
-    const css = buildCss5(settings7.store, self);
+    const css = buildCss6(settings8.store, self);
     if (css)
-      registerStyle(STYLE5, css);
+      registerStyle(STYLE6, css);
     else
-      unregisterStyle(STYLE5);
+      unregisterStyle(STYLE6);
     for (const sw of aliasObservers.keys())
-      markAlias(sw, settings7.store.alias.trim());
+      markAlias(sw, settings8.store.alias.trim());
   }
   var streamerMode_default = definePlugin({
     name: "StreamerMode",
     description: N_("主播模式：模糊你自己的头像、昵称和 @handle，可选模糊私信列表，也可以把账号菜单里的名字换成别名，截图和录屏时不暴露账号。"),
     icon: Icons.eyeOff,
     tags: ["privacy"],
-    settings: settings7,
+    settings: settings8,
     healthChecks: [CHECKS.accountSwitcher],
     elements: {
       [SEL.accountSwitcher]: watchAlias
     },
     start() {
-      apply5();
+      apply6();
       let tries = 0;
       retry = setInterval(() => {
         if (self || ++tries > 30) {
@@ -10700,14 +10741,14 @@ body[style*="255, 255, 255"] [data-xc-pin]:hover > div, body[style*="255, 255, 2
           return;
         }
         if (detectSelfHandle())
-          apply5();
+          apply6();
       }, 1000);
     },
     stop() {
       clearInterval(retry);
-      unregisterStyle(STYLE5);
+      unregisterStyle(STYLE6);
     },
-    onSettingsChange: apply5
+    onSettingsChange: apply6
   });
 
   // src/plugins/tombstoneFilter/index.ts
@@ -10754,13 +10795,13 @@ body[style*="255, 255, 255"] [data-xc-pin]:hover > div, body[style*="255, 255, 2
   });
 
   // src/plugins/widerTimeline/index.ts
-  var STYLE6 = "widerTimeline:rules";
+  var STYLE7 = "widerTimeline:rules";
   var SIDEBAR_SPACE = 390;
-  var settings8 = definePluginSettings({
+  var settings9 = definePluginSettings({
     width: { type: "slider" /* SLIDER */, label: N_("主栏宽度"), description: N_("X 默认是 600px。屏幕不够宽时会自动收窄。"), min: 600, max: 1200, step: 20, default: 800, unit: "px" },
     hideSidebar: { type: "boolean" /* BOOLEAN */, label: N_("隐藏右侧栏"), description: N_("去掉搜索、趋势所在的右侧栏，把空间都给主栏。"), default: false }
   });
-  function buildCss6(width, hideSidebar) {
+  function buildCss7(width, hideSidebar) {
     const row = hideSidebar ? width : width + SIDEBAR_SPACE;
     return [
       `main[role="main"] { min-width: 0 !important; }`,
@@ -10771,24 +10812,24 @@ body[style*="255, 255, 255"] [data-xc-pin]:hover > div, body[style*="255, 255, 2
     ].filter(Boolean).join(`
 `);
   }
-  function apply6() {
-    registerStyle(STYLE6, buildCss6(settings8.store.width, settings8.store.hideSidebar));
+  function apply7() {
+    registerStyle(STYLE7, buildCss7(settings9.store.width, settings9.store.hideSidebar));
   }
   var widerTimeline_default = definePlugin({
     name: "WiderTimeline",
     description: N_("加宽主栏：大屏幕上把 600px 的时间线和帖子页加宽，宽度可调，可选隐藏右侧栏。"),
     icon: Icons.widen,
     tags: ["appearance"],
-    settings: settings8,
-    start: apply6,
+    settings: settings9,
+    start: apply7,
     stop() {
-      unregisterStyle(STYLE6);
+      unregisterStyle(STYLE7);
     },
-    onSettingsChange: apply6
+    onSettingsChange: apply7
   });
 
   // src/generated/plugins.ts
-  var plugins_default = { [coreUI_default.name]: coreUI_default, [settings_default.name]: settings_default, [themes_default.name]: themes_default, [aiClient_default.name]: aiClient_default, [blockerConfig_default.name]: blockerConfig_default, [domObserver_default.name]: domObserver_default, [navigation_default.name]: navigation_default, [postMenu_default.name]: postMenu_default, [replyFilter_default.name]: replyFilter_default, [absoluteTimestamps_default.name]: absoluteTimestamps_default, [accountBlacklist_default.name]: accountBlacklist_default, [aiReview_default.name]: aiReview_default, [allowList_default.name]: allowList_default, [autoBlacklist_default.name]: autoBlacklist_default, [betterLinks_default.name]: betterLinks_default, [builtinClassifier_default.name]: builtinClassifier_default, [declutter_default.name]: declutter_default, [domainBlacklist_default.name]: domainBlacklist_default, [exportThread_default.name]: exportThread_default, [moreMenuEntry_default.name]: moreMenuEntry_default, [nativeBlock_default.name]: nativeBlock_default, [panel_default.name]: panel_default, [phraseBlacklist_default.name]: phraseBlacklist_default, [regexBlacklist_default.name]: regexBlacklist_default, [replyShield_default.name]: replyShield_default, [rightSidebarCleaner_default.name]: rightSidebarCleaner_default, [ruleDraft_default.name]: ruleDraft_default, [ruleStats_default.name]: ruleStats_default, [selectorHealth_default.name]: selectorHealth_default, [sidebarEntries_default.name]: sidebarEntries_default, [streamerMode_default.name]: streamerMode_default, [tombstoneFilter_default.name]: tombstoneFilter_default, [widerTimeline_default.name]: widerTimeline_default };
+  var plugins_default = { [coreUI_default.name]: coreUI_default, [settings_default.name]: settings_default, [themes_default.name]: themes_default, [aiClient_default.name]: aiClient_default, [blockerConfig_default.name]: blockerConfig_default, [domObserver_default.name]: domObserver_default, [navigation_default.name]: navigation_default, [postMenu_default.name]: postMenu_default, [replyFilter_default.name]: replyFilter_default, [absoluteTimestamps_default.name]: absoluteTimestamps_default, [accountBlacklist_default.name]: accountBlacklist_default, [aiReview_default.name]: aiReview_default, [allowList_default.name]: allowList_default, [autoBlacklist_default.name]: autoBlacklist_default, [betterLinks_default.name]: betterLinks_default, [builtinClassifier_default.name]: builtinClassifier_default, [declutter_default.name]: declutter_default, [domainBlacklist_default.name]: domainBlacklist_default, [exportThread_default.name]: exportThread_default, [hidePostEntries_default.name]: hidePostEntries_default, [moreMenuEntry_default.name]: moreMenuEntry_default, [nativeBlock_default.name]: nativeBlock_default, [panel_default.name]: panel_default, [phraseBlacklist_default.name]: phraseBlacklist_default, [regexBlacklist_default.name]: regexBlacklist_default, [replyShield_default.name]: replyShield_default, [rightSidebarCleaner_default.name]: rightSidebarCleaner_default, [ruleDraft_default.name]: ruleDraft_default, [ruleStats_default.name]: ruleStats_default, [selectorHealth_default.name]: selectorHealth_default, [sidebarEntries_default.name]: sidebarEntries_default, [streamerMode_default.name]: streamerMode_default, [tombstoneFilter_default.name]: tombstoneFilter_default, [widerTimeline_default.name]: widerTimeline_default };
 
   // src/XCleaner.ts
   var logger17 = new Logger("Core", "#1d9bf0");
@@ -10809,7 +10850,7 @@ body[style*="255, 255, 255"] [data-xc-pin]:hover > div, body[style*="255, 255, 2
     else
       onReady();
     addEventListener("pagehide", () => settingsStore.flush());
-    logger17.info(`${"0.1.0.202610241145"} started with ${Object.keys(plugins_default).length} plugins`);
+    logger17.info(`${"0.1.0.202610241151"} started with ${Object.keys(plugins_default).length} plugins`);
   }
 
   // src/index.ts
