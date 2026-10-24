@@ -9,6 +9,8 @@
   change installs a second copy instead of updating.
 - After the push, purge jsDelivr so the install link serves the new build:
   `curl -s "https://purge.jsdelivr.net/gh/0-V-linuxdo/X-Cleaner@heads/main/dist/X%20Cleaner.user.js"`.
+  The cloud sandbox blocks that host; run the same `fetch` from an `about:blank` tab in Helium instead
+  (x.com's CSP blocks it there), then fetch the jsDelivr file and check its `@version`.
 - Links people click to install use jsDelivr (`INSTALL_URL` in `build.ts`), never GitHub raw: raw sends
   `Content-Security-Policy: sandbox`, so Tampermonkey on Chrome only shows the source. `@updateURL` /
   `@downloadURL` stay on raw so a CDN cache never hides a new `@version`.
