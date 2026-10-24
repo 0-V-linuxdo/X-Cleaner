@@ -83,7 +83,7 @@ describe("Declutter", () => {
 
 describe("RightSidebarCleaner", () => {
     const sidebar = `<div data-testid="sidebarColumn"><div>
-        <div id="spacer"></div><div id="divider"></div>
+        <div id="search"><form role="search"><input></form></div><div id="spacer"></div><div id="divider"></div>
         <div id="trends"><section><div data-testid="trend">t</div></section></div>
         <div id="follow"><div><aside><div data-testid="UserCell">u</div></aside></div></div>
         <div id="footer"><nav role="navigation"><a href="/tos">Terms</a></nav></div>
@@ -106,7 +106,9 @@ describe("RightSidebarCleaner", () => {
         expect(ids(SIDEBAR_RULES.hideTrends)).toEqual(["trends"]);
         expect(ids(SIDEBAR_RULES.hideWhoToFollow)).toEqual(["follow"]);
         expect(ids(SIDEBAR_RULES.hideFooter)).toEqual(["footer"]);
-        expect(ids(SIDEBAR_DIVIDER)).toEqual(["divider"]);
+        // happy-dom also ignores the complex :not() that spares the search spacer; Chrome honours it.
+        expect(ids(SIDEBAR_DIVIDER)).toContain("divider");
+        expect(SIDEBAR_DIVIDER).toContain(':not(div:has(form[role="search"]) + div)');
     });
 
     test("is on by default with all three cards hidden, and cleans up on stop", () => {
