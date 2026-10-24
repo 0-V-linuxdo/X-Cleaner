@@ -5,6 +5,7 @@
  */
 
 // X's counterpart of Void++'s Cleaner / NoGrokBot / NoShareLink: one switch per distraction.
+// The right sidebar's trends, who-to-follow and footer cards live in SidebarWidgets.
 // Everything is CSS except two things X gives no stable selector for: promoted posts are marked
 // on their cell first, and the unread count is stripped from the tab title.
 
@@ -24,9 +25,6 @@ const opt = (label: string, description: string, def: boolean) => ({ type: Optio
 export const settings = definePluginSettings({
     hidePremiumUpsell: opt("Premium 推销", "侧栏的「订阅 Premium」卡片和各处的升级提示。", true),
     hidePromoted: opt("推广帖", "时间线和回复里标着「广告 / Promoted」的帖子。", true),
-    hideWhoToFollow: opt("推荐关注", "侧栏的「推荐关注」卡片。", true),
-    hideTrends: opt("趋势", "侧栏的「有什么新鲜事」趋势卡片。", false),
-    hideSidebarFooter: opt("侧栏页脚", "侧栏底部的服务条款、隐私政策等链接。", true),
     hideGrokButtons: opt("帖子上的 Grok 按钮", "每条帖子右上角的 Grok 按钮。回复盾牌仍会正常显示。", false),
     hideGrokDrawer: opt("Grok 浮窗", "右下角的 Grok 对话浮窗。", false),
     hideMessagesDrawer: opt("私信浮窗", "右下角的私信浮窗。", false),
@@ -44,9 +42,6 @@ export const RULES: Record<Exclude<Key, "hideTitleCount">, string> = {
         '[data-testid="verified_profile_upsell"]',
     ].join(",\n"),
     hidePromoted: `${SEL.cell}[${AD_ATTR}]`,
-    hideWhoToFollow: `${SIDE} div:has(> div > aside [data-testid="UserCell"])`,
-    hideTrends: `${SIDE} div:has(> section [data-testid="trend"])`,
-    hideSidebarFooter: `${SIDE} div:has(> nav[role="navigation"])`,
     hideGrokButtons: `${SEL.tweet} button[aria-label*="Grok"]:not([data-xrb-inline-rule])`,
     hideGrokDrawer: '[data-testid="GrokDrawer"]',
     hideMessagesDrawer: '[data-testid="chat-drawer-root"]',
@@ -103,7 +98,7 @@ function apply() {
 
 export default definePlugin({
     name: "Declutter",
-    description: "精简 X 的页面：分别隐藏 Premium 推销、推广帖、推荐关注、趋势、Grok 按钮和浮窗、浏览量等干扰元素。",
+    description: "精简 X 的页面：分别隐藏 Premium 推销、推广帖、Grok 按钮和浮窗、浏览量等干扰元素。右侧栏的趋势、推荐关注和页脚见 SidebarWidgets。",
     icon: Icons.broom,
     tags: ["declutter", "timeline"],
     settings,

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         X Cleaner
 // @namespace    https://github.com/0-V-linuxdo/x-cleaner
-// @version      0.1.0.202610240426
+// @version      0.1.0.202610240432
 // @description  A plugin-based cleaner for x.com: hide adult promotion, crypto funnels and promotional reply accounts. Includes review, lists, safe regex rules and optional AI-assisted rule drafts.
 // @author       X Cleaner Contributors
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z'/%3E%3Cpath d='m4.5 4.5 15 15'/%3E%3C/svg%3E
@@ -2338,7 +2338,7 @@ ${TOOLTIP_CSS}`,
     const hint = h("span", { class: "xc-pm-hint", tabindex: "0" }, svgIcon(Icons.info, 14));
     const hintTip = attachTooltip(hint, () => TABS.find((t) => t.id === activeId)?.description ?? "", "bottom");
     const body = h("div", { class: "xc-pm-body" });
-    const version = h("div", { class: "xc-pm-version" }, h("div", null, "X Cleaner · ", "0.1.0.202610240426"), h("div", null, "正式版", " · 用户脚本"), h("div", null, h("a", { href: "https://raw.githubusercontent.com/0-V-linuxdo/X-Cleaner/main/dist/X%20Cleaner.user.js", target: "_blank", rel: "noopener" }, "检查更新"), " · ", h("a", { href: `${"https://github.com/0-V-linuxdo/X-Cleaner"}/commits/main`, target: "_blank", rel: "noopener" }, "更新记录")));
+    const version = h("div", { class: "xc-pm-version" }, h("div", null, "X Cleaner · ", "0.1.0.202610240432"), h("div", null, "正式版", " · 用户脚本"), h("div", null, h("a", { href: "https://raw.githubusercontent.com/0-V-linuxdo/X-Cleaner/main/dist/X%20Cleaner.user.js", target: "_blank", rel: "noopener" }, "检查更新"), " · ", h("a", { href: `${"https://github.com/0-V-linuxdo/X-Cleaner"}/commits/main`, target: "_blank", rel: "noopener" }, "更新记录")));
     const content = h("div", { class: "xc-pm-shell" }, h("aside", { class: "xc-pm-sidebar" }, nav, version), h("section", { class: "xc-pm-main" }, h("header", { class: "xc-pm-header" }, heading, hint, closeButton(() => close())), body));
     const show = (id, plugin) => {
       activeId = id;
@@ -6007,9 +6007,6 @@ ${target}
   var settings3 = definePluginSettings({
     hidePremiumUpsell: opt("Premium 推销", "侧栏的「订阅 Premium」卡片和各处的升级提示。", true),
     hidePromoted: opt("推广帖", "时间线和回复里标着「广告 / Promoted」的帖子。", true),
-    hideWhoToFollow: opt("推荐关注", "侧栏的「推荐关注」卡片。", true),
-    hideTrends: opt("趋势", "侧栏的「有什么新鲜事」趋势卡片。", false),
-    hideSidebarFooter: opt("侧栏页脚", "侧栏底部的服务条款、隐私政策等链接。", true),
     hideGrokButtons: opt("帖子上的 Grok 按钮", "每条帖子右上角的 Grok 按钮。回复盾牌仍会正常显示。", false),
     hideGrokDrawer: opt("Grok 浮窗", "右下角的 Grok 对话浮窗。", false),
     hideMessagesDrawer: opt("私信浮窗", "右下角的私信浮窗。", false),
@@ -6025,9 +6022,6 @@ ${target}
     ].join(`,
 `),
     hidePromoted: `${SEL.cell}[${AD_ATTR}]`,
-    hideWhoToFollow: `${SIDE} div:has(> div > aside [data-testid="UserCell"])`,
-    hideTrends: `${SIDE} div:has(> section [data-testid="trend"])`,
-    hideSidebarFooter: `${SIDE} div:has(> nav[role="navigation"])`,
     hideGrokButtons: `${SEL.tweet} button[aria-label*="Grok"]:not([data-xrb-inline-rule])`,
     hideGrokDrawer: '[data-testid="GrokDrawer"]',
     hideMessagesDrawer: '[data-testid="chat-drawer-root"]',
@@ -6081,7 +6075,7 @@ ${target}
   }
   var declutter_default = definePlugin({
     name: "Declutter",
-    description: "精简 X 的页面：分别隐藏 Premium 推销、推广帖、推荐关注、趋势、Grok 按钮和浮窗、浏览量等干扰元素。",
+    description: "精简 X 的页面：分别隐藏 Premium 推销、推广帖、Grok 按钮和浮窗、浏览量等干扰元素。右侧栏的趋势、推荐关注和页脚见 SidebarWidgets。",
     icon: Icons.broom,
     tags: ["declutter", "timeline"],
     settings: settings3,
@@ -9455,9 +9449,48 @@ ${RESPONSE_FORMAT}` }
     onSettingsChange: apply3
   });
 
-  // src/plugins/streamerMode/index.ts
-  var STYLE4 = "streamerMode:rules";
+  // src/plugins/sidebarWidgets/index.ts
+  var STYLE4 = "sidebarWidgets:rules";
+  var SIDE2 = '[data-testid="sidebarColumn"]';
+  var opt2 = (label, description) => ({ type: "boolean" /* BOOLEAN */, label, description, default: true });
   var settings6 = definePluginSettings({
+    hideTrends: opt2("有什么新鲜事", "「What's happening」趋势卡片。"),
+    hideWhoToFollow: opt2("推荐关注", "「Who to follow」卡片，帖子页的「相关用户」也算。"),
+    hideFooter: opt2("页脚链接", "服务条款、隐私政策、Cookie、© X Corp. 那一排链接。")
+  });
+  var RULES2 = {
+    hideTrends: `${SIDE2} div:has(> section [data-testid="trend"])`,
+    hideWhoToFollow: `${SIDE2} div:has(> div > aside [data-testid="UserCell"])`,
+    hideFooter: `${SIDE2} div:has(> nav[role="navigation"])`
+  };
+  function buildCss4(values) {
+    return Object.keys(RULES2).filter((k) => values[k]).map((k) => `${RULES2[k]} { display: none !important; }`).join(`
+`);
+  }
+  function apply4() {
+    const css = buildCss4(settings6.store);
+    if (css)
+      registerStyle(STYLE4, css);
+    else
+      unregisterStyle(STYLE4);
+  }
+  var sidebarWidgets_default = definePlugin({
+    name: "SidebarWidgets",
+    description: "隐藏右侧栏三大件：「有什么新鲜事」趋势、「推荐关注」和底部页脚链接，可分别开关。",
+    icon: Icons.eyeOff,
+    tags: ["appearance", "declutter"],
+    enabledByDefault: true,
+    settings: settings6,
+    start: apply4,
+    stop() {
+      unregisterStyle(STYLE4);
+    },
+    onSettingsChange: apply4
+  });
+
+  // src/plugins/streamerMode/index.ts
+  var STYLE5 = "streamerMode:rules";
+  var settings7 = definePluginSettings({
     accountAvatar: { type: "boolean" /* BOOLEAN */, label: "账号菜单头像", description: "左下角账号菜单里的头像。", default: true },
     accountName: { type: "boolean" /* BOOLEAN */, label: "账号菜单名字", description: "左下角账号菜单里的昵称和 @handle。", default: true },
     ownAvatars: { type: "boolean" /* BOOLEAN */, label: "自己的头像", description: "页面其他位置（发帖框、自己的帖子）出现的你的头像。", default: true },
@@ -9469,7 +9502,7 @@ ${RESPONSE_FORMAT}` }
   var ALIAS_ATTR = "data-xc-alias";
   var ALIAS_HIDE_ATTR = "data-xc-alias-hide";
   var escapeAttr = (v) => v.replace(/["\\]/g, "\\$&");
-  function buildCss4(opts, self) {
+  function buildCss5(opts, self) {
     const targets = [];
     const alias = opts.alias?.trim();
     if (opts.accountAvatar)
@@ -9514,7 +9547,7 @@ ${RESPONSE_FORMAT}` }
   function watchAlias(switcher) {
     const sync = () => {
       observer.disconnect();
-      markAlias(switcher, settings6.store.alias.trim());
+      markAlias(switcher, settings7.store.alias.trim());
       observer.observe(switcher, { childList: true, subtree: true, characterData: true });
     };
     const observer = new MutationObserver(sync);
@@ -9528,28 +9561,28 @@ ${RESPONSE_FORMAT}` }
   }
   var self = "";
   var retry;
-  function apply4() {
+  function apply5() {
     self = self || detectSelfHandle();
-    const css = buildCss4(settings6.store, self);
+    const css = buildCss5(settings7.store, self);
     if (css)
-      registerStyle(STYLE4, css);
+      registerStyle(STYLE5, css);
     else
-      unregisterStyle(STYLE4);
+      unregisterStyle(STYLE5);
     for (const sw of aliasObservers.keys())
-      markAlias(sw, settings6.store.alias.trim());
+      markAlias(sw, settings7.store.alias.trim());
   }
   var streamerMode_default = definePlugin({
     name: "StreamerMode",
     description: "主播模式：模糊你自己的头像、昵称和 @handle，可选模糊私信列表，也可以把账号菜单里的名字换成别名，截图和录屏时不暴露账号。",
     icon: Icons.eyeOff,
     tags: ["privacy"],
-    settings: settings6,
+    settings: settings7,
     healthChecks: [CHECKS.accountSwitcher],
     elements: {
       [SEL.accountSwitcher]: watchAlias
     },
     start() {
-      apply4();
+      apply5();
       let tries = 0;
       retry = setInterval(() => {
         if (self || ++tries > 30) {
@@ -9557,14 +9590,14 @@ ${RESPONSE_FORMAT}` }
           return;
         }
         if (detectSelfHandle())
-          apply4();
+          apply5();
       }, 1000);
     },
     stop() {
       clearInterval(retry);
-      unregisterStyle(STYLE4);
+      unregisterStyle(STYLE5);
     },
-    onSettingsChange: apply4
+    onSettingsChange: apply5
   });
 
   // src/plugins/tombstoneFilter/index.ts
@@ -9611,13 +9644,13 @@ ${RESPONSE_FORMAT}` }
   });
 
   // src/plugins/widerTimeline/index.ts
-  var STYLE5 = "widerTimeline:rules";
+  var STYLE6 = "widerTimeline:rules";
   var SIDEBAR_SPACE = 390;
-  var settings7 = definePluginSettings({
+  var settings8 = definePluginSettings({
     width: { type: "slider" /* SLIDER */, label: "主栏宽度", description: "X 默认是 600px。屏幕不够宽时会自动收窄。", min: 600, max: 1200, step: 20, default: 800, unit: "px" },
     hideSidebar: { type: "boolean" /* BOOLEAN */, label: "隐藏右侧栏", description: "去掉搜索、趋势所在的右侧栏，把空间都给主栏。", default: false }
   });
-  function buildCss5(width, hideSidebar) {
+  function buildCss6(width, hideSidebar) {
     const row = hideSidebar ? width : width + SIDEBAR_SPACE;
     return [
       `main[role="main"] { min-width: 0 !important; }`,
@@ -9628,24 +9661,24 @@ ${RESPONSE_FORMAT}` }
     ].filter(Boolean).join(`
 `);
   }
-  function apply5() {
-    registerStyle(STYLE5, buildCss5(settings7.store.width, settings7.store.hideSidebar));
+  function apply6() {
+    registerStyle(STYLE6, buildCss6(settings8.store.width, settings8.store.hideSidebar));
   }
   var widerTimeline_default = definePlugin({
     name: "WiderTimeline",
     description: "加宽主栏：大屏幕上把 600px 的时间线和帖子页加宽，宽度可调，可选隐藏右侧栏。",
     icon: Icons.widen,
     tags: ["appearance"],
-    settings: settings7,
-    start: apply5,
+    settings: settings8,
+    start: apply6,
     stop() {
-      unregisterStyle(STYLE5);
+      unregisterStyle(STYLE6);
     },
-    onSettingsChange: apply5
+    onSettingsChange: apply6
   });
 
   // src/generated/plugins.ts
-  var plugins_default = { [coreUI_default.name]: coreUI_default, [settings_default.name]: settings_default, [themes_default.name]: themes_default, [aiClient_default.name]: aiClient_default, [blockerConfig_default.name]: blockerConfig_default, [domObserver_default.name]: domObserver_default, [navigation_default.name]: navigation_default, [postMenu_default.name]: postMenu_default, [replyFilter_default.name]: replyFilter_default, [absoluteTimestamps_default.name]: absoluteTimestamps_default, [accountBlacklist_default.name]: accountBlacklist_default, [aiReview_default.name]: aiReview_default, [allowList_default.name]: allowList_default, [autoBlacklist_default.name]: autoBlacklist_default, [betterLinks_default.name]: betterLinks_default, [builtinClassifier_default.name]: builtinClassifier_default, [declutter_default.name]: declutter_default, [domainBlacklist_default.name]: domainBlacklist_default, [exportThread_default.name]: exportThread_default, [moreMenuEntry_default.name]: moreMenuEntry_default, [nativeBlock_default.name]: nativeBlock_default, [panel_default.name]: panel_default, [phraseBlacklist_default.name]: phraseBlacklist_default, [regexBlacklist_default.name]: regexBlacklist_default, [replyShield_default.name]: replyShield_default, [ruleDraft_default.name]: ruleDraft_default, [ruleStats_default.name]: ruleStats_default, [selectorHealth_default.name]: selectorHealth_default, [sidebarEntries_default.name]: sidebarEntries_default, [streamerMode_default.name]: streamerMode_default, [tombstoneFilter_default.name]: tombstoneFilter_default, [widerTimeline_default.name]: widerTimeline_default };
+  var plugins_default = { [coreUI_default.name]: coreUI_default, [settings_default.name]: settings_default, [themes_default.name]: themes_default, [aiClient_default.name]: aiClient_default, [blockerConfig_default.name]: blockerConfig_default, [domObserver_default.name]: domObserver_default, [navigation_default.name]: navigation_default, [postMenu_default.name]: postMenu_default, [replyFilter_default.name]: replyFilter_default, [absoluteTimestamps_default.name]: absoluteTimestamps_default, [accountBlacklist_default.name]: accountBlacklist_default, [aiReview_default.name]: aiReview_default, [allowList_default.name]: allowList_default, [autoBlacklist_default.name]: autoBlacklist_default, [betterLinks_default.name]: betterLinks_default, [builtinClassifier_default.name]: builtinClassifier_default, [declutter_default.name]: declutter_default, [domainBlacklist_default.name]: domainBlacklist_default, [exportThread_default.name]: exportThread_default, [moreMenuEntry_default.name]: moreMenuEntry_default, [nativeBlock_default.name]: nativeBlock_default, [panel_default.name]: panel_default, [phraseBlacklist_default.name]: phraseBlacklist_default, [regexBlacklist_default.name]: regexBlacklist_default, [replyShield_default.name]: replyShield_default, [ruleDraft_default.name]: ruleDraft_default, [ruleStats_default.name]: ruleStats_default, [selectorHealth_default.name]: selectorHealth_default, [sidebarEntries_default.name]: sidebarEntries_default, [sidebarWidgets_default.name]: sidebarWidgets_default, [streamerMode_default.name]: streamerMode_default, [tombstoneFilter_default.name]: tombstoneFilter_default, [widerTimeline_default.name]: widerTimeline_default };
 
   // src/XCleaner.ts
   var logger17 = new Logger("Core", "#1d9bf0");
@@ -9666,7 +9699,7 @@ ${RESPONSE_FORMAT}` }
     else
       onReady();
     addEventListener("pagehide", () => settingsStore.flush());
-    logger17.info(`${"0.1.0.202610240426"} started with ${Object.keys(plugins_default).length} plugins`);
+    logger17.info(`${"0.1.0.202610240432"} started with ${Object.keys(plugins_default).length} plugins`);
   }
 
   // src/index.ts

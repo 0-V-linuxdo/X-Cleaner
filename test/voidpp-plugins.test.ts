@@ -8,6 +8,7 @@ import { closeMenu, contextForCaret, fillMenu, ITEM_ATTR } from "@plugins/_api/p
 import { formatTime } from "@plugins/absoluteTimestamps";
 import { buildCss as linkCss, expandedUrl } from "@plugins/betterLinks";
 import { AD_ATTR, buildCss as declutterCss, isAdTweet, stripTitleCount } from "@plugins/declutter";
+import { buildCss as sidebarWidgetsCss, RULES as SIDEBAR_RULES } from "@plugins/sidebarWidgets";
 import { ENTRY_ATTR, fillMoreMenu } from "@plugins/moreMenuEntry";
 import { resetHealth, runChecks } from "@plugins/selectorHealth";
 import { buildCss as streamerCss } from "@plugins/streamerMode";
@@ -39,10 +40,10 @@ afterEach(() => {
 describe("Declutter", () => {
     test("builds one hiding rule per enabled switch", () => {
         expect(declutterCss({})).toBe("");
-        const css = declutterCss({ hideTrends: true, hideViewCounts: true });
-        expect(css).toContain('[data-testid="trend"]');
+        const css = declutterCss({ hidePromoted: true, hideViewCounts: true });
+        expect(css).toContain(AD_ATTR);
         expect(css).toContain('a[href$="/analytics"]');
-        expect(css).not.toContain("UserCell");
+        expect(css).not.toContain("premium");
     });
 
     test("the Grok-button rule never hides the reply shield", () => {
@@ -77,6 +78,45 @@ describe("Declutter", () => {
         setPluginEnabled("Declutter", false);
         expect(styleText("declutter:rules")).toBe("");
         expect(document.querySelector(`[${AD_ATTR}]`)).toBeNull();
+    });
+});
+
+describe("SidebarWidgets", () => {
+    const sidebar = `<div data-testid="sidebarColumn"><div>
+        <div id="trends"><section><div data-testid="trend">t</div></section></div>
+        <div id="follow"><div><aside><div data-testid="UserCell">u</div></aside></div></div>
+        <div id="footer"><nav role="navigation"><a href="/tos">Terms</a></nav></div>
+    </div></div>`;
+
+    test("builds one rule per switch", () => {
+        expect(sidebarWidgetsCss({})).toBe("");
+        const css = sidebarWidgetsCss({ hideTrends: true, hideFooter: true });
+        expect(css).toContain('[data-testid="trend"]');
+        expect(css).toContain('nav[role="navigation"]');
+        expect(css).not.toContain("UserCell");
+    });
+
+    test("each rule matches only its own card", () => {
+        document.body.innerHTML = sidebar;
+        // happy-dom reads `:has(> …)` loosely and also matches the unnamed column wrapper, so only
+        // the named cards are compared; on x.com each rule matches exactly one wrapper.
+        const ids = (sel: string) => [...document.querySelectorAll(sel)].map(e => e.id).filter(Boolean);
+        expect(ids(SIDEBAR_RULES.hideTrends)).toEqual(["trends"]);
+        expect(ids(SIDEBAR_RULES.hideWhoToFollow)).toEqual(["follow"]);
+        expect(ids(SIDEBAR_RULES.hideFooter)).toEqual(["footer"]);
+    });
+
+    test("is on by default with all three cards hidden, and cleans up on stop", () => {
+        expect(plugins.SidebarWidgets.enabledByDefault).toBe(true);
+        setPluginEnabled("SidebarWidgets", true);
+        const css = styleText("sidebarWidgets:rules");
+        expect(css).toContain("trend");
+        expect(css).toContain("UserCell");
+        expect(css).toContain("navigation");
+        Settings.plugins.SidebarWidgets.hideWhoToFollow = false;
+        expect(styleText("sidebarWidgets:rules")).not.toContain("UserCell");
+        setPluginEnabled("SidebarWidgets", false);
+        expect(styleText("sidebarWidgets:rules")).toBe("");
     });
 });
 
