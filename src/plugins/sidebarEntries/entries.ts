@@ -4,6 +4,8 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { N_, t } from "@utils/i18n";
+
 /** X's left sidebar; its entries are the direct children of this flex column. */
 export const NAV = 'header[role="banner"] nav[role="navigation"]';
 
@@ -22,26 +24,26 @@ export interface Layout {
 }
 
 const LABELS: Record<string, string> = {
-    "tid:AppTabBar_Home_Link": "主页",
-    "tid:AppTabBar_Explore_Link": "探索",
-    "tid:AppTabBar_Notifications_Link": "通知",
-    "tid:AppTabBar_Follow_Link": "关注",
-    "tid:AppTabBar_DirectMessage_Link": "私信",
-    "tid:AppTabBar_Calls_Link": "通话",
+    "tid:AppTabBar_Home_Link": N_("主页"),
+    "tid:AppTabBar_Explore_Link": N_("探索"),
+    "tid:AppTabBar_Notifications_Link": N_("通知"),
+    "tid:AppTabBar_Follow_Link": N_("关注"),
+    "tid:AppTabBar_DirectMessage_Link": N_("私信"),
+    "tid:AppTabBar_Calls_Link": N_("通话"),
     "href:/i/grok": "Grok",
-    "href:/i/bookmarks": "书签",
-    "href:/~/lists": "列表",
-    "href:/~/communities": "社群",
-    "href:/i/history": "历史记录",
-    "href:/jobs": "工作",
-    "tid:premium-hub-tab": "订阅",
-    "tid:AppTabBar_Profile_Link": "个人资料",
-    "tid:AppTabBar_More_Menu": "更多",
+    "href:/i/bookmarks": N_("书签"),
+    "href:/~/lists": N_("列表"),
+    "href:/~/communities": N_("社群"),
+    "href:/i/history": N_("历史记录"),
+    "href:/jobs": N_("工作"),
+    "tid:premium-hub-tab": N_("订阅"),
+    "tid:AppTabBar_Profile_Link": N_("个人资料"),
+    "tid:AppTabBar_More_Menu": N_("更多"),
 };
 
 /** Entries whose hiding removes access to something X has no other sidebar route to. */
 export const HIDE_HINTS: Record<string, string> = {
-    "tid:AppTabBar_More_Menu": "隐藏后侧栏里就没有 X 的「设置和隐私」入口了。",
+    "tid:AppTabBar_More_Menu": N_("隐藏后侧栏里就没有 X 的「设置和隐私」入口了。"),
 };
 
 const quote = (v: string) => JSON.stringify(v);
@@ -72,8 +74,8 @@ export function describeEntry(el: Element): SidebarEntry | null {
         }
     }
     const text = (el.getAttribute("aria-label") || (el as HTMLElement).innerText || el.textContent || "").trim().split("\n")[0];
-    const label = LABELS[key] ?? (text || key.replace(/^\w+:/, ""));
-    return { key, selector, label: pin ? `${label}（来自「更多」）` : label };
+    const label = LABELS[key] ? t(LABELS[key]) : text || key.replace(/^\w+:/, "");
+    return { key, selector, label: pin ? t("{label}（来自「更多」）", { label }) : label };
 }
 
 export function readEntries(nav: Element): SidebarEntry[] {

@@ -9,6 +9,7 @@ import { CATEGORY_LABELS, type CategoryId } from "@rules/classifier";
 import { FIELD_LABELS } from "@rules/regex";
 import { h } from "@ui/h";
 import { showToast } from "@ui/toast";
+import { N_, t } from "@utils/i18n";
 import { parseRoute } from "@x/route";
 import { truncate } from "@x/text";
 
@@ -18,27 +19,27 @@ import type { PageInstance, PanelContext, ReviewAction } from "./types";
 
 export const reviewActions = new Map<string, ReviewAction>();
 
-const SOURCE_LABELS: Record<string, string> = { ai: "AI", regex: "正则", phrase: "词语", domain: "域名", account: "账号", "auto-account": "自动账号" };
+const SOURCE_LABELS: Record<string, string> = { ai: "AI", regex: N_("正则"), phrase: N_("词语"), domain: N_("域名"), account: N_("账号"), "auto-account": N_("自动账号") };
 
 export function sourceLabel(rec: HiddenRecord): string {
-    if (rec.source === "classifier") return CATEGORY_LABELS[rec.category as CategoryId] ?? "本地识别";
-    return SOURCE_LABELS[rec.source] ?? "本地识别";
+    if (rec.source === "classifier") return CATEGORY_LABELS[rec.category as CategoryId] ?? t("本地识别");
+    return t(SOURCE_LABELS[rec.source] ?? "本地识别");
 }
 
 export function recordName(rec: HiddenRecord): string {
-    return rec.context.displayName || (rec.context.authorHandle ? `@${rec.context.authorHandle}` : "") || "未知账号";
+    return rec.context.displayName || (rec.context.authorHandle ? `@${rec.context.authorHandle}` : "") || t("未知账号");
 }
 
 function details(rec: HiddenRecord): HTMLElement | null {
     const lines: string[] = [];
-    if (rec.score != null && rec.threshold != null) lines.push(`得分 ${rec.score} / 阈值 ${rec.threshold}`);
-    if (rec.confidence != null) lines.push(`AI 置信度 ${Math.round(rec.confidence * 100)}%`);
+    if (rec.score != null && rec.threshold != null) lines.push(t("得分 {score} / 阈值 {threshold}", { score: rec.score, threshold: rec.threshold }));
+    if (rec.confidence != null) lines.push(t("AI 置信度 {pct}%", { pct: Math.round(rec.confidence * 100) }));
     for (const s of rec.signals) lines.push(`${s.label} (${s.weight >= 0 ? "+" : ""}${s.weight})`);
-    if (rec.regexMatch) lines.push(`规则 ${rec.regexMatch.ruleName || rec.regexMatch.ruleId} · ${FIELD_LABELS[rec.regexMatch.field]}`);
-    else if (rec.match?.kind === "phrase") lines.push(`词语 ${rec.match.value}`);
-    else if (rec.match?.kind === "domain") lines.push(`域名 ${rec.match.value}`);
+    if (rec.regexMatch) lines.push(t("规则 {rule} · {field}", { rule: rec.regexMatch.ruleName || rec.regexMatch.ruleId, field: FIELD_LABELS[rec.regexMatch.field] }));
+    else if (rec.match?.kind === "phrase") lines.push(t("词语 {value}", { value: rec.match.value }));
+    else if (rec.match?.kind === "domain") lines.push(t("域名 {value}", { value: rec.match.value }));
     if (!lines.length) return null;
-    const d = h("details", { class: "xc-rec-details" }, h("summary", null, "查看命中规则"), h("ul", null, lines.map(l => h("li", null, l))));
+    const d = h("details", { class: "xc-rec-details" }, h("summary", null, t("查看命中规则")), h("ul", null, lines.map(l => h("li", null, l))));
     d.addEventListener("click", e => e.stopPropagation());
     return d;
 }
@@ -68,9 +69,9 @@ export function createReviewPage(_ctx: PanelContext): PageInstance {
     const render = () => {
         records = isFilterActive() ? getController().visibleRecords() : [];
         if (!records.some(r => r.tweetId === selected)) selected = records[0]?.tweetId ?? null;
-        const empty = parseRoute().isStatusRoute ? "当前对话暂无已隐藏回复。" : "打开一条 X 帖子的对话页后开始工作。";
+        const empty = parseRoute().isStatusRoute ? t("当前对话暂无已隐藏回复。") : t("打开一条 X 帖子的对话页后开始工作。");
         el.replaceChildren(listbox({
-            label: "已隐藏回复",
+            label: t("已隐藏回复"),
             items: records,
             key: r => r.tweetId,
             render: row,
@@ -86,7 +87,7 @@ export function createReviewPage(_ctx: PanelContext): PageInstance {
         const rec = records.find(r => r.tweetId === selected);
         footer.hidden = !rec;
         if (!rec) return;
-        label.textContent = `已选 ${recordName(rec)}${rec.context.authorHandle ? ` · @${rec.context.authorHandle}` : ""}`;
+        label.textContent = t("已选 {name}", { name: `${recordName(rec)}${rec.context.authorHandle ? ` · @${rec.context.authorHandle}` : ""}` });
         buttons.replaceChildren(...[...reviewActions.values()].sort((a, b) => a.order - b.order).map(action => {
             const btn = h("button", {
                 type: "button",

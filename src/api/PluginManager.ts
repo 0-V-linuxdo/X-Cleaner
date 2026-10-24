@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 import { registerStyle, unregisterStyle } from "@utils/css";
+import { t } from "@utils/i18n";
 import { Logger } from "@utils/Logger";
 import { errorMessage } from "@utils/misc";
 import { type Plugin, type PluginHooks, StartAt, type XCleanerEventMap } from "@utils/types";
@@ -100,13 +101,13 @@ export function startPlugin(plugin: Plugin, chain: string[] = []): boolean {
         const dep = plugins[depName];
         if (!dep) {
             logger.error(`${plugin.name} is missing dependency ${depName}`);
-            plugin.startError = `缺少依赖插件 ${depName}`;
+            plugin.startError = t("缺少依赖插件 {depName}", { depName });
             return false;
         }
         if (!dep.started) {
             dep.isDependency = true;
             if (!startPlugin(dep, [...chain, plugin.name])) {
-                plugin.startError = `依赖插件 ${depName} 启动失败`;
+                plugin.startError = t("依赖插件 {depName} 启动失败", { depName });
                 return false;
             }
         }

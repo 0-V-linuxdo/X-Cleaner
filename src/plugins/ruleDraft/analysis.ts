@@ -7,10 +7,12 @@
 import type { ParsedRuleResponse, RuleGenerationInput } from "@ai/rule-generator";
 import { checkCandidate, exactFallback, phraseRule, type SafetyInput, type SafetyResult, type SelectedPhrase } from "@rules/safety";
 import { type Draft, type DraftRule, type FieldValues, synthesizeLocalRule } from "@rules/synthesizer";
+import { t } from "@utils/i18n";
 import { normalizePhrase } from "@x/text";
 
 export type Checker = (input: SafetyInput) => Promise<SafetyResult>;
 
+// The selection is encoded into the AI follow-up in Chinese on purpose: it is a prompt protocol parsed back below, not UI text.
 const SELECT_FIELD_LABELS: Record<SelectedPhrase["field"], string> = { body: "回复正文", displayName: "显示名", handle: "@handle" };
 const LABEL_TO_FIELD: Record<string, SelectedPhrase["field"]> = { 回复正文: "body", 显示名: "displayName", "@handle": "handle" };
 
@@ -95,7 +97,7 @@ export async function analyze(feedback: string, env: AnalysisEnv): Promise<Analy
         if (template) return template;
         const exact = await validatedExactFallback(env, check);
         if (exact) return exact;
-        throw new Error("当前回复没有可用于生成规则的稳定字段。");
+        throw new Error(t("当前回复没有可用于生成规则的稳定字段。"));
     };
 
     if (env.aiUnavailable) return { draft: await local(), aiNegatives: [] };
@@ -116,9 +118,9 @@ export async function analyze(feedback: string, env: AnalysisEnv): Promise<Analy
         if (e instanceof AnalysisAbort) throw e;
         const msg = e instanceof Error ? e.message : String(e);
         const draft = await local();
-        return { draft: { ...draft, reason: `AI 分析暂未完成（${msg}）；已生成本地可复用规则，仍需你确认保存。` }, aiNegatives: [] };
+        return { draft: { ...draft, reason: t("AI 分析暂未完成（{error}）；已生成本地可复用规则，仍需你确认保存。", { error: msg }) }, aiNegatives: [] };
     }
-    if (!env.targetIntact()) throw new AnalysisAbort("AI 返回前回复内容或页面已变化，结果已丢弃。");
+    if (!env.targetIntact()) throw new AnalysisAbort(t("AI 返回前回复内容或页面已变化，结果已丢弃。"));
 
     if (response.decision !== "rule" || !response.rule) return { draft: await local(), aiNegatives: response.negatives };
     const rule = response.rule;

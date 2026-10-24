@@ -10,6 +10,7 @@
 import { definePluginSettings } from "@api/Settings";
 import { Icons } from "@ui/icons";
 import { registerStyle, unregisterStyle } from "@utils/css";
+import { N_, t } from "@utils/i18n";
 import definePlugin, { OptionType } from "@utils/types";
 import { SEL } from "@x/dom";
 
@@ -18,13 +19,13 @@ export const ORIGINAL_ATTR = "data-xc-tco";
 const TCO_SEL = `${SEL.tweet} a[href^="https://t.co/"]`;
 const COLOR_RE = /^(?:#[0-9a-f]{3,8}|(?:rgb|hsl)a?\([^)]*\)|[a-z]+)$/i;
 
-const isValidColor = (v: string) => (!v.trim() || COLOR_RE.test(v.trim()) ? true : "请填颜色值，例如 #1d9bf0 或 orange。");
+const isValidColor = (v: string) => (!v.trim() || COLOR_RE.test(v.trim()) ? true : t("请填颜色值，例如 #1d9bf0 或 orange。"));
 
 export const settings = definePluginSettings({
-    bypassTco: { type: OptionType.BOOLEAN, label: "直接打开真实地址", description: "点击帖子里的链接时直接打开原网址，不经过 t.co 跳转。", default: true },
-    showFullUrl: { type: OptionType.BOOLEAN, label: "悬停显示完整地址", description: "鼠标停在链接上时，用提示显示被截断的完整网址。", default: true },
-    linkColor: { type: OptionType.STRING, label: "链接颜色", description: "留空则用 X 的默认蓝色。", placeholder: "#1d9bf0", default: "", isValid: isValidColor },
-    visitedColor: { type: OptionType.STRING, label: "已访问链接颜色", description: "打开过的链接换成这个颜色；留空则不区分。", placeholder: "#a371f7", default: "", isValid: isValidColor },
+    bypassTco: { type: OptionType.BOOLEAN, label: N_("直接打开真实地址"), description: N_("点击帖子里的链接时直接打开原网址，不经过 t.co 跳转。"), default: true },
+    showFullUrl: { type: OptionType.BOOLEAN, label: N_("悬停显示完整地址"), description: N_("鼠标停在链接上时，用提示显示被截断的完整网址。"), default: true },
+    linkColor: { type: OptionType.STRING, label: N_("链接颜色"), description: N_("留空则用 X 的默认蓝色。"), placeholder: "#1d9bf0", default: "", isValid: isValidColor },
+    visitedColor: { type: OptionType.STRING, label: N_("已访问链接颜色"), description: N_("打开过的链接换成这个颜色；留空则不区分。"), placeholder: "#a371f7", default: "", isValid: isValidColor },
 });
 
 /** The address X prints in a t.co link: all text including hidden spans, minus the trailing ellipsis. */
@@ -85,7 +86,7 @@ function apply() {
 
 export default definePlugin({
     name: "BetterLinks",
-    description: "链接增强：帖子里的链接直接打开真实网址、不经 t.co 跳转，悬停显示完整地址，可自定义链接和已访问链接的颜色。",
+    description: N_("链接增强：帖子里的链接直接打开真实网址、不经 t.co 跳转，悬停显示完整地址，可自定义链接和已访问链接的颜色。"),
     icon: Icons.link,
     tags: ["timeline", "privacy"],
     settings,

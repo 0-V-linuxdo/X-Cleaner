@@ -6,6 +6,7 @@
 
 import { findAccount } from "@rules/lists";
 import { Icons } from "@ui/icons";
+import { N_, t } from "@utils/i18n";
 import definePlugin from "@utils/types";
 
 import { blacklistMenuItem, blacklistProfileItem } from "./menu";
@@ -13,13 +14,13 @@ import { createAccountsPage } from "./page";
 
 export default definePlugin({
     name: "AccountBlacklist",
-    description: "账号黑名单：手动条目优先于根帖作者保护；本地自动和 AI 自动条目在保护之后生效。",
+    description: N_("账号黑名单：手动条目优先于根帖作者保护；本地自动和 AI 自动条目在保护之后生效。"),
     icon: Icons.ban,
     tags: ["filters", "moderation"],
     enabledByDefault: true,
     postMenuItems: [blacklistMenuItem],
     profileMenuItems: [blacklistProfileItem],
-    panelPages: [{ tab: "blacklist", id: "accounts", label: "账号", order: 40, isDefault: true, create: createAccountsPage }],
+    panelPages: [{ tab: "blacklist", id: "accounts", label: N_("账号"), order: 40, isDefault: true, create: createAccountsPage }],
     replyJudges: [
         {
             id: "manual-account",
@@ -27,7 +28,7 @@ export default definePlugin({
             judge(ctx, env) {
                 const entry = findAccount(env.config, ctx.authorHandle);
                 if (entry?.source !== "manual") return null;
-                return { action: "hide", source: "account", category: "手动账号黑名单", reason: `账号黑名单：${entry.handle}`, match: { kind: "account", value: entry.handle }, statsKey: `account:${entry.handle}` };
+                return { action: "hide", source: "account", category: N_("手动账号黑名单"), reason: t("账号黑名单：{handle}", { handle: entry.handle }), match: { kind: "account", value: entry.handle }, statsKey: `account:${entry.handle}` };
             },
             quick(input, env) {
                 const entry = input.authorHandle ? findAccount(env.config, input.authorHandle) : undefined;
@@ -40,7 +41,7 @@ export default definePlugin({
             judge(ctx, env) {
                 const entry = findAccount(env.config, ctx.authorHandle);
                 if (!entry || entry.source === "manual") return null;
-                return { action: "hide", source: "auto-account", category: entry.category || "自动账号黑名单", reason: entry.reason || "自动账号黑名单", score: entry.score, confidence: entry.confidence, match: { kind: "account", value: entry.handle }, statsKey: `account:${entry.handle}` };
+                return { action: "hide", source: "auto-account", category: entry.category || N_("自动账号黑名单"), reason: entry.reason || t("自动账号黑名单"), score: entry.score, confidence: entry.confidence, match: { kind: "account", value: entry.handle }, statsKey: `account:${entry.handle}` };
             },
             quick(input, env) {
                 const entry = input.authorHandle ? findAccount(env.config, input.authorHandle) : undefined;

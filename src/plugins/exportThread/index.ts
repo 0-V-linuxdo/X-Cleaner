@@ -10,6 +10,7 @@
 import type { PostMenuContext, PostMenuItem } from "@plugins/_api/postMenu";
 import { Icons } from "@ui/icons";
 import { showToast } from "@ui/toast";
+import { N_, t } from "@utils/i18n";
 import definePlugin from "@utils/types";
 import { extractReplyContext, findPrimaryColumn, listTopLevelTweets, type SerializableContext, serializeContext } from "@x/dom";
 import { parseRoute } from "@x/route";
@@ -55,14 +56,14 @@ export function collectThread(doc: Document = document): ThreadExport {
 const quote = (text: string) => text.split("\n").map(l => `> ${l}`).join("\n");
 
 export function toMarkdown(data: ThreadExport): string {
-    const out = [`# ${data.url}`, "", `导出时间：${data.exportedAt}，共 ${data.posts.length} 条（只含页面上已加载的内容）。`, ""];
+    const out = [`# ${data.url}`, "", t("导出时间：{exportedAt}，共 {n} 条（只含页面上已加载的内容）。", { exportedAt: data.exportedAt, n: data.posts.length }), ""];
     for (const p of data.posts) {
         const who = p.displayName ? `${p.displayName} (@${p.authorHandle})` : `@${p.authorHandle}`;
-        const tags = [p.isRoot ? "主帖" : "", p.isOp && !p.isRoot ? "楼主" : "", p.hidden ? `已隐藏：${p.hiddenReason ?? ""}` : ""].filter(Boolean);
+        const tags = [p.isRoot ? t("主帖") : "", p.isOp && !p.isRoot ? t("楼主") : "", p.hidden ? t("已隐藏：{reason}", { reason: p.hiddenReason ?? "" }) : ""].filter(Boolean);
         out.push(`## ${who}${tags.length ? ` · ${tags.join(" · ")}` : ""}`, "", `${p.time ?? ""} · ${p.statusUrl}`.replace(/^ · /, ""), "");
         if (p.bodyText) out.push(quote(p.bodyText), "");
-        for (const u of p.visibleUrls) out.push(`- 链接：${u}`);
-        for (const m of p.mediaUrls) out.push(`- 图片：${m}`);
+        for (const u of p.visibleUrls) out.push(t("- 链接：{url}", { url: u }));
+        for (const m of p.mediaUrls) out.push(t("- 图片：{url}", { url: m }));
         if (p.visibleUrls.length || p.mediaUrls.length) out.push("");
     }
     return out.join("\n");
@@ -80,25 +81,25 @@ function download(name: string, content: string, type: string) {
 function exportAs(format: "md" | "json", ctx: PostMenuContext) {
     const data = collectThread();
     if (!data.posts.length) {
-        showToast("页面上没有可导出的帖子。", { type: "error" });
+        showToast(t("页面上没有可导出的帖子。"), { type: "error" });
         return;
     }
     const name = `x-${ctx.handle}-${ctx.tweetId}-${data.exportedAt.slice(0, 10)}.${format}`;
     if (format === "md") download(name, toMarkdown(data), "text/markdown;charset=utf-8");
     else download(name, JSON.stringify(data, null, 2), "application/json");
-    showToast(`已导出 ${data.posts.length} 条帖子。`, { type: "success" });
+    showToast(t("已导出 {n} 条帖子。", { n: data.posts.length }), { type: "success" });
 }
 
 const onStatusPage = () => parseRoute().isStatusRoute;
 
 export const exportMenuItems: PostMenuItem[] = [
-    { id: "export-md", order: 60, icon: Icons.download, label: () => "导出本页帖子和回复（Markdown）", visible: onStatusPage, run: ctx => exportAs("md", ctx) },
-    { id: "export-json", order: 61, icon: Icons.download, label: () => "导出本页帖子和回复（JSON）", visible: onStatusPage, run: ctx => exportAs("json", ctx) },
+    { id: "export-md", order: 60, icon: Icons.download, label: () => t("导出本页帖子和回复（Markdown）"), visible: onStatusPage, run: ctx => exportAs("md", ctx) },
+    { id: "export-json", order: 61, icon: Icons.download, label: () => t("导出本页帖子和回复（JSON）"), visible: onStatusPage, run: ctx => exportAs("json", ctx) },
 ];
 
 export default definePlugin({
     name: "ExportThread",
-    description: "导出帖子：在帖子页的「…」菜单里，把主帖和已加载的回复导出为 Markdown 或 JSON，并标出 X Cleaner 隐藏了哪些回复、原因是什么。只导出页面上已有的内容。",
+    description: N_("导出帖子：在帖子页的「…」菜单里，把主帖和已加载的回复导出为 Markdown 或 JSON，并标出 X Cleaner 隐藏了哪些回复、原因是什么。只导出页面上已有的内容。"),
     icon: Icons.download,
     tags: ["replies", "moderation"],
     enabledByDefault: true,

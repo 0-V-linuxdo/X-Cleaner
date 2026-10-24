@@ -10,6 +10,7 @@
 
 import { defineHook } from "@api/PluginManager";
 import { svgIcon } from "@ui/h";
+import { N_ } from "@utils/i18n";
 import { Logger } from "@utils/Logger";
 import definePlugin from "@utils/types";
 import { findIdentityLink, isInNestedStatusCard, OWNED_ATTR, profilePathHandle, SEL } from "@x/dom";
@@ -203,7 +204,7 @@ function onClick(e: MouseEvent) {
 
 export default definePlugin({
     name: "PostMenuAPI",
-    description: "Lets plugins add items to the 「…」 menu of a post or a profile.",
+    description: N_("让插件在帖子或个人主页的「…」菜单里添加菜单项。"),
     tags: ["core"],
     hidden: true,
 

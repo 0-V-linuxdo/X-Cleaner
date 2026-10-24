@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         X Cleaner
 // @namespace    https://github.com/0-V-linuxdo/x-cleaner
-// @version      0.1.0.202610240655
+// @version      0.1.0.202610240710
 // @description  A plugin-based cleaner for x.com: hide adult promotion, crypto funnels and promotional reply accounts. Includes review, lists, safe regex rules and optional AI-assisted rule drafts.
 // @author       X Cleaner Contributors
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z'/%3E%3Cpath d='m4.5 4.5 15 15'/%3E%3C/svg%3E
@@ -354,7 +354,7 @@
   var STORAGE_KEY = "XCleanerSettings";
   var defaults = () => ({
     plugins: {},
-    core: { pinnedPlugins: [], starredPlugins: [], knownPlugins: {}, themes: [], themesEnabled: true, quickCss: "", quickCssEnabled: true }
+    core: { pinnedPlugins: [], starredPlugins: [], knownPlugins: {}, themes: [], themesEnabled: true, quickCss: "", quickCssEnabled: true, language: "auto" }
   });
   var backend = gmStorage;
   var plain = defaults();
@@ -532,6 +532,667 @@
   var classNameFactory = (prefix) => (...names) => names.filter(Boolean).map((n) => prefix + n).join(" ");
   var cl = classNameFactory("xc-");
 
+  // src/locales/en.ts
+  var en = {
+    "关闭": "Close",
+    "确认": "Confirm",
+    "取消": "Cancel",
+    "添加": "Add",
+    "保存": "Save",
+    "编辑": "Edit",
+    "移除": "Remove",
+    "删除": "Delete",
+    "清除": "Clear",
+    "启用": "Enable",
+    "停用": "Disable",
+    "已启用": "Enabled",
+    "已停用": "Disabled",
+    "刷新": "Reload",
+    "导入": "Import",
+    "导出": "Export",
+    "设置": "Settings",
+    "插件": "Plugins",
+    "全部": "All",
+    "取消编辑": "Cancel edit",
+    "移除所选": "Remove selected",
+    "全选": "Select all",
+    "取消选择": "Clear selection",
+    "保存设置失败。": "Couldn't save settings.",
+    "输入后按回车添加": "Type and press Enter to add",
+    "移除 {value}": "Remove {value}",
+    "数字无效": "Invalid number",
+    "需刷新": "Reload needed",
+    "网络错误": "Network error",
+    "请求超时": "Request timed out",
+    "保存中...": "Saving…",
+    "保存中…": "Saving…",
+    "生成中...": "Generating…",
+    "分析中...": "Analyzing…",
+    "正在验证...": "Validating…",
+    "正在检查...": "Checking…",
+    "回复正文": "Reply text",
+    "显示名": "Display name",
+    "链接": "Links",
+    "正文": "Text",
+    "账号": "Accounts",
+    "词语": "Phrases",
+    "域名": "Domains",
+    "正则": "Regex",
+    "条目": "items",
+    "主栏": "Main column",
+    "帖子页上的帖子": "Posts on a post page",
+    "帖子的「更多」按钮": "A post's “More” button",
+    "帖子上的 Grok 按钮": "Grok button on posts",
+    "帖子的发布时间": "A post's timestamp",
+    "左侧栏": "Left sidebar",
+    "左下角账号菜单": "Account menu (bottom left)",
+    "左侧栏的「更多」": "“More” in the left sidebar",
+    "X 的页面结构可能更新了：{plugin} 找不到「{label}」，相关功能可能暂时失灵。": "X may have changed its page: {plugin} can't find “{label}”, so related features may not work for now.",
+    "查看插件": "View plugins",
+    "X 页面上找不到：{items}": "Not found on X: {items}",
+    "缺少依赖插件 {depName}": "Missing required plugin {depName}",
+    "依赖插件 {depName} 启动失败": "Required plugin {depName} failed to start",
+    "X Cleaner 设置": "X Cleaner settings",
+    "X Cleaner 插件管理": "X Cleaner plugins",
+    "插件管理": "Plugin manager",
+    "收藏": "Favorites",
+    "最近": "Recent",
+    "回复": "Replies",
+    "过滤": "Filters",
+    "拉黑": "Blocking",
+    "时间线": "Timeline",
+    "私信": "Messages",
+    "外观": "Appearance",
+    "精简": "Declutter",
+    "隐私": "Privacy",
+    "开发者": "Developer",
+    "核心": "Core",
+    "还没有收藏。给插件点星后会出现在这里。": "No favorites yet. Star a plugin and it shows up here.",
+    "最近 7 天没有新增的插件。": "No plugins were added in the last 7 days.",
+    "没有可用的插件。": "No plugins available.",
+    "没有匹配搜索的插件。": "No plugins match your search.",
+    "搜索 {n} 个插件...": "Search {n} plugins…",
+    "搜索插件": "Search plugins",
+    "按状态筛选": "Filter by status",
+    "插件分类": "Plugin categories",
+    "该插件启动失败：{startError}": "This plugin failed to start: {startError}",
+    "该插件启动失败": "This plugin failed to start",
+    "启动失败：{startError}": "Failed to start: {startError}",
+    "X Cleaner 运行必需的插件": "Required for X Cleaner to run",
+    "新": "New",
+    "取消收藏": "Unfavorite",
+    "取消置顶": "Unpin",
+    "置顶": "Pin",
+    "配置": "Configure",
+    "启用 {name}": "Enable {name}",
+    "停用 {name}": "Disable {name}",
+    "{name} 启动失败，详见控制台。": "{name} failed to start. See the console for details.",
+    "{name} 停止失败，详见控制台。": "{name} failed to stop. See the console for details.",
+    "{name} 已启用。": "{name} enabled.",
+    "{name} 已停用。": "{name} disabled.",
+    "{name} 启用失败，详见控制台。": "Couldn't enable {name}. See the console for details.",
+    "{name} 停用失败，详见控制台。": "Couldn't disable {name}. See the console for details.",
+    "部分改动需要刷新页面后才会生效。": "Some changes take effect after you reload the page.",
+    "作者": "Authors",
+    "没有可配置的设置。": "Nothing to configure.",
+    "将该插件的设置恢复为默认值？此操作无法撤销。": "Reset this plugin's settings to their defaults? This can't be undone.",
+    "重置": "Reset",
+    "开关功能。点击滑杆图标进入配置。": "Turn features on or off. Click the sliders icon to configure one.",
+    "主题": "Themes",
+    "快速 CSS": "Quick CSS",
+    "备份": "Backup",
+    "从网址或本地 .css 文件添加主题，每个主题单独开关。": "Add themes from a URL or a local .css file and switch each one on or off.",
+    "直接写 CSS 改 X 的样式，输入后立即生效，不需要刷新。": "Write CSS to restyle X. It applies as you type, no reload needed.",
+    "插件设置": "Plugin settings",
+    "导出或导入各插件的开关、收藏、置顶、插件设置、主题和快速 CSS。回复屏蔽的名单与规则在面板「设置 → 导入」里单独导入导出。": "Export or import plugin toggles, favorites, pins, plugin settings, themes and Quick CSS. Reply-filter lists and rules have their own import and export under Settings → Import in the panel.",
+    "插件设置已导入，刷新页面后全部生效。": "Plugin settings imported. Reload the page for all of them to apply.",
+    "该文件不是 X Cleaner 插件设置备份。": "This file isn't an X Cleaner plugin settings backup.",
+    "主题地址": "Theme URL",
+    "启用主题": "Enable themes",
+    "已添加主题「{name}」。": "Added theme “{name}”.",
+    "还没有主题。粘贴一个 CSS 主题地址，或导入本地 .css 文件。": "No themes yet. Paste a CSS theme URL, or import a local .css file.",
+    "重新下载": "Download again",
+    "主题「{name}」已更新。": "Theme “{name}” updated.",
+    "删除主题「{name}」？": "Delete theme “{name}”?",
+    "本地文件": "Local file",
+    "更新于 {date}": "Updated {date}",
+    "关闭后所有主题暂停生效，列表和开关会保留。": "When off, all themes are paused; the list and each toggle are kept.",
+    "导入文件": "Import file",
+    "主题就是 CSS 文件，文件开头的 @name、@author、@description 注释会显示在卡片上。远程主题只在添加或点「重新下载」时联网。": "A theme is a CSS file; the @name, @author and @description comments at its top show on its card. Remote themes are only fetched when you add them or click “Download again”.",
+    '/* 在这里写 CSS，输入后立即生效 */\n[data-testid="sidebarColumn"] { display: none; }': `/* Write CSS here; it applies as you type */
+[data-testid="sidebarColumn"] { display: none; }`,
+    "启用快速 CSS": "Enable Quick CSS",
+    "在所有主题之后加载，所以同名规则以这里为准。": "Loaded after all themes, so its rules win over theirs.",
+    "跟随 X（{name}）": "Follow X ({name})",
+    "界面语言": "Language",
+    "开发版": "Dev build",
+    "正式版": "Release",
+    "用户脚本": "Userscript",
+    "检查更新": "Check for updates",
+    "更新记录": "Changelog",
+    "请输入完整的网址，例如 https://example.com/theme.css。": "Enter a full URL, e.g. https://example.com/theme.css.",
+    "只支持 https:// 开头的主题地址。": "Only https:// theme URLs are supported.",
+    "这个主题已经添加过了。": "This theme has already been added.",
+    "下载主题失败：{error}": "Couldn't download the theme: {error}",
+    "更新主题失败：{error}": "Couldn't update the theme: {error}",
+    "复查": "Review",
+    "黑名单": "Blacklist",
+    "白名单": "Allowlist",
+    "主标签": "Main tabs",
+    "黑名单类型": "Blacklist types",
+    "设置类型": "Settings sections",
+    "子标签": "Subtabs",
+    "没有可用的页面。": "No pages available.",
+    "X Cleaner · {count} 条待复查": "X Cleaner · {count} to review",
+    "X Cleaner，{count} 条待复查": "X Cleaner, {count} to review",
+    "打开 X Cleaner": "Open X Cleaner",
+    "打开黑名单与正则": "Open blacklists and regex",
+    "恢复": "Restore",
+    "该回复已恢复显示。": "The reply is visible again.",
+    "加入白名单": "Add to allowlist",
+    "移出黑名单": "Remove from blacklist",
+    "加入黑名单": "Add to blacklist",
+    "{handle} 已加入白名单。": "{handle} added to the allowlist.",
+    "{handle} 已加入账号黑名单。": "{handle} added to the account blacklist.",
+    "{handle} 已移出账号黑名单。": "{handle} removed from the account blacklist.",
+    "自动账号": "Auto account",
+    "本地识别": "Local detection",
+    "未知账号": "Unknown account",
+    "得分 {score} / 阈值 {threshold}": "Score {score} / threshold {threshold}",
+    "AI 置信度 {pct}%": "AI confidence {pct}%",
+    "规则 {rule} · {field}": "Rule {rule} · {field}",
+    "词语 {value}": "Phrase {value}",
+    "域名 {value}": "Domain {value}",
+    "查看命中规则": "Show matched rules",
+    "当前对话暂无已隐藏回复。": "No hidden replies in this conversation.",
+    "打开一条 X 帖子的对话页后开始工作。": "Open a post's conversation on X to get started.",
+    "已隐藏回复": "Hidden replies",
+    "已选 {name}": "Selected: {name}",
+    "已选 {n}": "{n} selected",
+    "已选 {n} 个{noun}": "{n} selected",
+    "批量操作{noun}": "Bulk actions",
+    "选择 {label}": "Select {label}",
+    "{n} 次": "{n}×",
+    "累计隐藏 {n} 条不重复回复": "Hid {n} distinct replies in total",
+    "搜索{label}": "Search {label}",
+    "清除统计": "Clear stats",
+    "清除全部规则命中统计？隐藏记录不会被删除。": "Clear all rule hit stats? Hidden-reply records are kept.",
+    "规则命中统计已清除。": "Rule hit stats cleared.",
+    "本页规则累计隐藏 {total} 条不重复回复。": "Rules on this page hid {total} distinct replies in total.",
+    "从{label}中移除 {n} 个条目？": "Remove {n} items from {label}?",
+    "{message}\n\n仍要保存吗？": `{message}
+
+Save anyway?`,
+    "没有匹配的条目。": "No matching items.",
+    "暂无{label}。": "No {label} yet.",
+    "配置 JSON 无法解析。": "The config JSON couldn't be parsed.",
+    "配置必须是 JSON 对象。": "The config must be a JSON object.",
+    "正则规则无效：{rules}": "Invalid regex rules: {rules}",
+    "配置 JSON（不包含 API key）": "Config JSON (without the API key)",
+    "配置 JSON": "Config JSON",
+    "导出不包含 API key。导入会强制关闭 AI，且不会读取、覆盖或清除当前已保存的 API key。": "Exports never include the API key. Importing always turns AI off and never reads, overwrites or clears the saved API key.",
+    "生成导出内容": "Generate export",
+    "导出内容已生成，不包含 API key。": "Export generated, without the API key.",
+    "导入配置": "Import config",
+    "配置已导入；AI 已关闭，API key 未导出或更改。": "Config imported. AI is off; the API key was not exported or changed.",
+    "保守": "Conservative",
+    "均衡": "Balanced",
+    "激进": "Aggressive",
+    "启用屏蔽": "Enable filtering",
+    "自动将垃圾回复作者加入账号黑名单": "Automatically add spam reply authors to the account blacklist",
+    "识别强度": "Sensitivity",
+    "运行": "General",
+    "类别": "Categories",
+    "保护根帖作者回复": "Protect replies from the original poster",
+    "成人引流": "Adult promotion",
+    "加密货币引流": "Crypto promotion",
+    "推广用户名": "Promotional name",
+    "高置信黄推引流模板": "High-confidence adult spam template",
+    "成人服务复合语义": "Adult service phrasing",
+    "露骨成人语义": "Explicit adult language",
+    "成人或私密内容": "Adult or private content",
+    "站外联系方式": "Off-platform contact",
+    "引流行动号召": "Call to action",
+    "交易或同城语境": "Transaction or local-meetup context",
+    "成人内容域名": "Adult content domain",
+    "成人导向表情组合": "Adult emoji cluster",
+    "新闻、研究或反诈语境": "News, research or anti-scam context",
+    "币圈推广复合语义": "Crypto promotion phrasing",
+    "空投、预售或发币语义": "Airdrop, presale or token-launch language",
+    "买入、领取或进群号召": "Buy, claim or join-group call to action",
+    "带推广语境的合约地址": "Contract address in a promotional context",
+    "加密资产推广域名": "Crypto promotion domain",
+    "币圈群组或联系渠道": "Crypto group or contact channel",
+    "夸张收益或保证性话术": "Exaggerated or guaranteed returns",
+    "Cashtag 弱信号": "Cashtag (weak signal)",
+    "币圈推广表情组合": "Crypto emoji cluster",
+    "新闻、技术或反诈语境": "News, technical or anti-scam context",
+    "推广用户名复合语义": "Promotional name phrasing",
+    "成人或币圈推广语义": "Adult or crypto promotion wording",
+    "弱推广角色词": "Weak promotional role word",
+    "用户名含站外联系方式": "Name contains off-platform contact",
+    "用户名含推广导向表情": "Name contains promotional emoji",
+    "英文数字混合 handle 弱信号": "Letters-and-digits handle (weak signal)",
+    "职业或研究语境": "Professional or research context",
+    "所有内置识别类别均已关闭": "All built-in detection categories are off",
+    "{category}：{signals}": "{category}: {signals}",
+    "未发现可疑的内置规则信号": "No suspicious built-in signals found",
+    "建议 AI 复核：{signals}": "Suggest AI review: {signals}",
+    "低于屏蔽阈值：{signals}": "Below the hiding threshold: {signals}",
+    "正则执行超过 30ms，已自动禁用。": "The regex ran longer than 30 ms and was disabled.",
+    "有正则执行超过 30ms，已自动禁用。": "A regex ran longer than 30 ms and was disabled.",
+    "正则表达式不能为空。": "The regex can't be empty.",
+    "正则表达式不能超过 200 个字符。": "The regex can't be longer than 200 characters.",
+    "不支持有状态的 g 或 y flags。": "The stateful g and y flags aren't supported.",
+    "不支持的 flags：{badFlags}": "Unsupported flags: {badFlags}",
+    "请至少选择一个匹配字段。": "Pick at least one field to match.",
+    "不支持的字段：{badField}": "Unsupported field: {badField}",
+    "正则规则 {n}": "Regex rule {n}",
+    "规则无效。": "Invalid rule.",
+    "正则“{rule}”命中 {field}": "Regex “{rule}” matched {field}",
+    "正则黑名单": "Regex blacklist",
+    "正则黑名单：安全模式在主线程同步执行，其余规则放进可终止的 Worker，超过 30ms 自动停用。": "Regex blacklist: safe-mode rules run on the main thread; the rest run in a Worker that can be stopped, and a rule is disabled once it runs past 30 ms.",
+    "规则名称": "Rule name",
+    "正则表达式": "Regex",
+    "正则表达式（最多 {max} 字符）": "Regex (up to {max} characters)",
+    "样本文本": "Sample text",
+    "匹配字段": "Fields to match",
+    "添加规则": "Add rule",
+    "保存规则": "Save rule",
+    "启用规则": "Enable rule",
+    "测试样本": "Test sample",
+    "正则规则": "Regex rules",
+    "Worker 测试中...": "Testing in the Worker…",
+    "执行超过 30ms；样本按未命中处理，规则已在表单中停用。": "Ran longer than 30 ms; the sample counts as not matched and the rule is disabled in the form.",
+    "正则 Worker 不可用；为避免阻塞页面，样本未执行。": "The regex Worker isn't available; the sample wasn't run to avoid blocking the page.",
+    "正则 Worker 执行失败；样本按未命中处理。": "The regex Worker failed; the sample counts as not matched.",
+    "命中：{fields}": "Matched: {fields}",
+    "未命中样本文本。": "The sample text didn't match.",
+    "规则名称不能为空。": "The rule name can't be empty.",
+    "正则规则已达到 {max} 条上限。": "You've reached the limit of {max} regex rules.",
+    "正则规则已保存。": "Regex rule saved.",
+    "没有匹配的规则。": "No matching rules.",
+    "暂无正则规则。": "No regex rules yet.",
+    "请输入有效域名。": "Enter a valid domain.",
+    "t.co 隐藏了最终目标；脚本不会访问短链，因此仅有 t.co 时会保持可见。": "t.co hides the real destination. The script never opens short links, so replies with only a t.co link stay visible.",
+    "该规则范围过宽，可能匹配大量无关链接。": "This rule is very broad and may match many unrelated links.",
+    "屏蔽 {domain} 会命中该平台上的所有相关链接。": "Blocking {domain} matches every link to that platform.",
+    "屏蔽 {domain} 会命中使用该短链服务的所有链接。": "Blocking {domain} matches every link made with that link shortener.",
+    "域名黑名单：匹配回复中可见链接的域名及其子域。不访问链接，也不解析 t.co 短链。": "Domain blacklist: matches the domains of visible links in replies, including subdomains. Links are never opened and t.co short links are not resolved.",
+    "域名黑名单已满（{max}）。": "The domain blacklist is full ({max}).",
+    "域名黑名单已保存。": "Domain blacklist saved.",
+    "域名黑名单：{domain}": "Domain blacklist: {domain}",
+    "域名黑名单": "Domain blacklist",
+    "词语黑名单：依次检查回复正文、显示名和 handle，忽略全角和零宽字符混淆。": "Phrase blacklist: checks the reply text, display name and handle in turn, seeing through full-width and zero-width character tricks.",
+    "要屏蔽的词语": "Phrase to block",
+    "点击回复旁的盾牌，在弹窗正文、显示名或账号中划词并勾选后加入，或据此分析规则。": "Click the shield next to a reply, then select and tick words in its text, display name or handle to add them here or analyze a rule from them.",
+    "词语黑名单已满（{max}）。": "The phrase blacklist is full ({max}).",
+    "词语黑名单已保存。": "Phrase blacklist saved.",
+    "词语不能为空。": "The phrase can't be empty.",
+    "词语黑名单：“{phrase}”": "Phrase blacklist: “{phrase}”",
+    "词语黑名单": "Phrase blacklist",
+    "账号黑名单：手动条目优先于根帖作者保护；本地自动和 AI 自动条目在保护之后生效。": "Account blacklist: manual entries win over the original-poster protection; local-auto and AI-auto entries apply after it.",
+    "手动账号黑名单": "Manual account blacklist",
+    "自动账号黑名单": "Auto account blacklist",
+    "账号黑名单：{handle}": "Account blacklist: {handle}",
+    "手动": "Manual",
+    "本地自动": "Local auto",
+    "AI 自动": "AI auto",
+    "分数 {score}": "Score {score}",
+    "置信度 {pct}%": "Confidence {pct}%",
+    "清除自动条目 ({n})": "Clear auto entries ({n})",
+    "清除所有本地自动和 AI 自动账号条目？": "Clear all local-auto and AI-auto account entries?",
+    "移到白名单": "Move to allowlist",
+    "把 {n} 个账号从黑名单移到白名单？TA 们的回复不会再被隐藏。": "Move {n} accounts from the blacklist to the allowlist? Their replies won't be hidden anymore.",
+    "白名单最多 {max} 个账号。": "The allowlist holds at most {max} accounts.",
+    "从账号黑名单移除 {n} 个账号？": "Remove {n} accounts from the account blacklist?",
+    "请输入有效的完整 @handle。": "Enter a valid, complete @handle.",
+    "该账号已在白名单中。": "This account is already on the allowlist.",
+    "账号黑名单已满（{max}）。": "The account blacklist is full ({max}).",
+    "账号黑名单已保存。": "Account blacklist saved.",
+    "账号黑名单": "Account blacklist",
+    "没有匹配的账号。": "No matching accounts.",
+    "暂无账号黑名单。": "The account blacklist is empty.",
+    "从 X Cleaner 黑名单移出 {handle}": "Remove {handle} from the X Cleaner blacklist",
+    "加入 X Cleaner 黑名单：{handle}": "Add {handle} to the X Cleaner blacklist",
+    "从 X Cleaner 白名单移出 {handle}": "Remove {handle} from the X Cleaner allowlist",
+    "加入 X Cleaner 白名单：{handle}": "Add {handle} to the X Cleaner allowlist",
+    "{handle} 在白名单中，先移出白名单才能加入黑名单。": "{handle} is on the allowlist. Remove it from the allowlist before blacklisting it.",
+    "{handle} 已加入账号黑名单，TA 的回复会被隐藏。": "{handle} added to the account blacklist; their replies will be hidden.",
+    "{handle} 已移出白名单。": "{handle} removed from the allowlist.",
+    "{handle} 已加入白名单，TA 的回复不会再被隐藏。": "{handle} added to the allowlist; their replies won't be hidden anymore.",
+    "自动账号黑名单：词语、域名、正则命中或分类器高分时，把作者加入账号黑名单（本地自动）；AI 高置信恶意时加入（AI 自动）。": "Auto account blacklist: adds the author to the account blacklist when a phrase, domain or regex matches or the classifier scores high (local auto), or when AI is confident the reply is malicious (AI auto).",
+    "精确账号白名单：名单内账号的回复永远不会被隐藏，也不会被自动加入黑名单。": "Exact account allowlist: replies from these accounts are never hidden and never auto-blacklisted.",
+    "精确账号白名单": "Exact account allowlist",
+    "移出白名单": "Remove from allowlist",
+    "把 {n} 个账号移出白名单？": "Remove {n} accounts from the allowlist?",
+    "白名单已满（{max}）。": "The allowlist is full ({max}).",
+    "已加入白名单。": "Added to the allowlist.",
+    "暂无白名单账号。": "No allowlisted accounts yet.",
+    "最高优先级": "Highest priority",
+    "普通中文回复": "Ordinary Chinese reply",
+    "正常联络语境": "Normal contact context",
+    "正常福利语境": "Normal benefits context",
+    "诈骗曝光语境": "Scam exposure context",
+    "技术与客服讨论": "Tech and customer-support discussion",
+    "英文诈骗警示": "English scam warning",
+    "普通显示名": "Ordinary display name",
+    "正常客服显示名": "Normal support display name",
+    "安全研究显示名": "Security research display name",
+    "普通账号": "Ordinary account",
+    "安全研究账号": "Security research account",
+    "正常支持账号": "Normal support account",
+    "普通 X 链接": "Ordinary X link",
+    "普通项目链接": "Ordinary project link",
+    "普通 Telegram 链接": "Ordinary Telegram link",
+    "规则结构无效。": "The rule is malformed.",
+    "规则范围过宽。": "The rule is too broad.",
+    "规则只是整条回复的精确拷贝，无法复用。": "The rule only copies the whole reply and can't be reused.",
+    "规则没有命中当前回复。": "The rule doesn't match this reply.",
+    "规则会命中空内容。": "The rule matches empty text.",
+    "规则命中了内置安全样本。": "The rule matches a built-in safe sample.",
+    "规则命中了负例。": "The rule matches a negative example.",
+    "规则命中了当前对话中受保护的内容。": "The rule matches protected content in this conversation.",
+    "正则 Worker 返回了无效结果。": "The regex Worker returned an invalid result.",
+    "规则执行超时，已按不安全处理。": "The rule timed out and is treated as unsafe.",
+    "正则 Worker 不可用，无法完成安全校验。": "The regex Worker isn't available, so the safety check couldn't finish.",
+    "{message}（{sample}）": "{message} ({sample})",
+    "精确匹配回复正文": "Exact reply text",
+    "精确匹配显示名": "Exact display name",
+    "精确匹配账号 handle": "Exact account handle",
+    "未找到可安全复用的模板；仅精确匹配当前回复正文，保存前仍需用户确认。": "No safely reusable template found; this only matches this exact reply text and needs your confirmation before saving.",
+    "未找到可安全复用的模板；仅精确匹配当前显示名，保存前仍需用户确认。": "No safely reusable template found; this only matches this exact display name and needs your confirmation before saving.",
+    "未找到可安全复用的模板；仅精确匹配当前账号 handle，保存前仍需用户确认。": "No safely reusable template found; this only matches this exact handle and needs your confirmation before saving.",
+    "划词：{phrase}": "Selected: {phrase}",
+    "划词：{n} 个词语": "Selected: {n} phrases",
+    "根据勾选词语生成规则：{phrases}": "Rule built from the ticked phrases: {phrases}",
+    "颜值骚对比引流": "“Prettier/hornier than her” spam",
+    "复用常见黄推对比口号，任一半句即可命中；代词、@账号、表情和尾号可变。": "Reuses a common adult-spam comparison slogan; either half matches, and the pronouns, @mentions, emoji and trailing numbers can vary.",
+    "玩得开引流模板": "“Nobody's wilder than me” spam template",
+    "复用「玩的开」黄推开场白，代词和结尾话术可变。": "Reuses the “wilder than me” adult-spam opener; the pronoun and closing line can vary.",
+    "太涩引流模板": "“Too spicy” spam template",
+    "复用「太涩…不信你看」黄推话术，中间内容可变。": "Reuses the “too spicy… see for yourself” adult-spam line; the middle can vary.",
+    "加微约炮引流": "“Add me on WeChat” hookup spam",
+    "命中「加微 / 私信 + 成人内容」的引流组合，联系方式本身可变。": "Matches “add on WeChat / DM + adult content” combos; the contact details themselves can vary.",
+    "同城约炮引流": "Local hookup spam",
+    "命中「同城 / 附近 + 约炮服务」组合，地名和措辞可变。": "Matches “same city / nearby + hookup service” combos; the place and wording can vary.",
+    "成人服务话术": "Adult service wording",
+    "命中高特异的成人服务词，正常讨论很少使用。": "Matches highly specific adult-service words that normal discussion rarely uses.",
+    "领取空投导流": "“Claim your airdrop” funnel",
+    "命中「领取空投 / Claim now」导流话术。": "Matches “claim the airdrop / Claim now” funnel wording.",
+    "免费空投导流": "“Free airdrop” funnel",
+    "命中「免费 / 官方空投 + 领取」组合，币种和链接可变。": "Matches “free / official airdrop + claim” combos; the coin and link can vary.",
+    "预售带单导流": "Presale and signal-group funnel",
+    "命中预售开启、百倍币、带单等币圈推广话术。": "Matches crypto promotion wording such as presale launches, 100x coins and trading signals.",
+    "可复用口号": "Reusable slogan",
+    "可复用短语": "Reusable phrase",
+    "提取回复中稳定的口号，去掉 @账号、链接、表情和数字等可变部分。": "Takes the stable slogan from the reply, dropping variable parts such as @mentions, links, emoji and numbers.",
+    "推广显示名": "Promotional display name",
+    "显示名含成人或币圈推广的复合词。": "The display name contains an adult or crypto promotion compound term.",
+    "{tokens}引流": "{tokens} promotion",
+    "按显示名中的引流词组合生成，词之间允许夹杂表情和符号。": "Built from the promotional words in the display name, allowing emoji and symbols between them.",
+    "推广域名": "Promotional domain",
+    "链接指向常见成人或币圈推广域名。": "The link points to a common adult or crypto promotion domain.",
+    "规则草稿弹窗：从一条回复生成正则规则，支持划词、本地模板、AI 生成与追问，保存前在 Worker 中做安全校验。": "Rule draft dialog: builds a regex rule from a reply, with word selection, local templates, AI generation and follow-ups, and a safety check in a Worker before saving.",
+    "用这条回复生成屏蔽规则": "Create a blocking rule from this reply",
+    "这条回复已不在可处理范围内。": "This reply can no longer be handled.",
+    "无法生成屏蔽规则。": "Couldn't create a blocking rule.",
+    "正在分析回复；如果没有可复用模式，将保留这条本地精确规则。": "Analyzing the reply. If there's no reusable pattern, this exact local rule is kept.",
+    "当前回复没有可用于生成规则的稳定字段。": "This reply has no stable field to build a rule from.",
+    "AI 分析暂未完成（{error}）；已生成本地可复用规则，仍需你确认保存。": "AI analysis didn't finish ({error}). A reusable local rule was created; it still needs your confirmation to save.",
+    "AI 返回前回复内容或页面已变化，结果已丢弃。": "The reply or page changed before AI answered, so the result was discarded.",
+    "回复内容或页面已变化，请重新点击回复旁的屏蔽按钮。": "The reply or page changed. Click the shield next to the reply again.",
+    "页面或设置已变化，AI 规则生成已中止。": "The page or settings changed, so AI rule generation was stopped.",
+    "回复身份不完整，操作已中止。": "The reply's identity is incomplete; stopped.",
+    "当前规则正在生成或保存，请完成后再分析其他回复。": "A rule is being generated or saved. Finish it before analyzing another reply.",
+    "这条回复的规则草稿已经打开。": "The rule draft for this reply is already open.",
+    "请先保存或取消当前的规则草稿，再分析其他回复。": "Save or cancel the current rule draft before analyzing another reply.",
+    "例如：缩小匹配范围，并排除正常讨论。": "E.g. narrow the match and leave normal discussion alone.",
+    "补充要求": "Extra instructions",
+    "发送追问": "Send follow-up",
+    "重新生成": "Regenerate",
+    "保存并启用": "Save and enable",
+    "划词来源": "Select words from",
+    "加入勾选词语": "Add ticked phrases",
+    "分析勾选词语": "Analyze ticked phrases",
+    "当前回复": "This reply",
+    "分析目标": "Analysis target",
+    "AI 服务：{endpoint}": "AI service: {endpoint}",
+    "分析结论": "Conclusion",
+    "追问 AI": "Ask AI a follow-up",
+    "{field}，划选后可加入词语": "{field}; select text to add it as a phrase",
+    "该回复没有可划选的正文、显示名或账号。": "This reply has no text, display name or handle to select from.",
+    "在回复正文、显示名或账号中划选词语并勾选，可加入黑名单，或据此分析规则。": "Select and tick words in the reply text, display name or handle to add them to the blacklist or analyze a rule from them.",
+    "在原文中划选词语并勾选，可加入黑名单，或据此分析规则。": "Select and tick words in the text to add them to the blacklist or analyze a rule from them.",
+    "没有可加入的词语。": "No phrases to add.",
+    "已加入词语「{phrase}」。": "Added the phrase “{phrase}”.",
+    "已加入 {n} 个词语。": "Added {n} phrases.",
+    "已加入 {n} 个词语，其余已存在或无法加入。": "Added {n} phrases; the rest already exist or couldn't be added.",
+    "词语「{phrase}」已在黑名单中。": "“{phrase}” is already on the blacklist.",
+    "这些词语已在黑名单中。": "These phrases are already on the blacklist.",
+    "校验期间回复内容或页面发生了变化。": "The reply or page changed during validation.",
+    "已命中当前回复": "Matches this reply",
+    "未命中当前回复": "Doesn't match this reply",
+    "安全样本": "Safe samples",
+    "未命中安全样本": "No safe samples matched",
+    "安全样本检查未通过": "Safe-sample check failed",
+    "规则已通过安全校验。": "The rule passed the safety check.",
+    "回复分析": "Reply analysis",
+    "屏蔽规则": "Blocking rule",
+    "正在分析回复": "Analyzing the reply",
+    "检查并启用规则": "Review and enable the rule",
+    "已选择另一条回复，这次 AI 结果已丢弃。": "Another reply was selected, so this AI result was discarded.",
+    "已有更新的草稿请求，这次 AI 结果已丢弃。": "A newer draft request came in, so this AI result was discarded.",
+    "分析未完成：{error}。已保留本地可复用草稿。": "Analysis didn't finish: {error}. The reusable local draft was kept.",
+    "已达到本对话 {budget} 次 AI 调用上限。": "Reached the limit of {budget} AI calls for this conversation.",
+    "规则未通过最终安全校验。": "The rule failed the final safety check.",
+    "屏蔽规则已保存并启用。": "Blocking rule saved and enabled.",
+    "规则保存失败，草稿已保留。": "Couldn't save the rule; the draft was kept.",
+    "分析这条回复": "Analyze this reply",
+    "正在分析这条回复": "Analyzing this reply",
+    "回复旁的盾牌按钮：在每条可处理回复的 Grok 按钮左侧放一个盾牌，点击后打开规则草稿弹窗。": "Shield button next to replies: puts a shield left of the Grok button on each reply it can handle; click it to open the rule draft dialog.",
+    "远程 Endpoint 必须使用 HTTPS；HTTP 仅允许 localhost。": "A remote endpoint must use HTTPS; HTTP is only allowed for localhost.",
+    "Model 不能为空。": "The model can't be empty.",
+    "AI 未启用或尚未确认数据发送范围": "AI is off, or what it sends hasn't been confirmed yet",
+    "AI Endpoint 或 Model 尚未正确配置": "The AI endpoint or model isn't set up correctly",
+    "AI 规则必须且只能选择一个字段。": "An AI rule must target exactly one field.",
+    "AI 判定正常（{pct}）": "AI: looks fine ({pct})",
+    "AI：{reason}（{pct}）": "AI: {reason} ({pct})",
+    "AI：{reason}": "AI: {reason}",
+    "AI 复核：未判定为恶意引流。": "AI review: not judged as malicious promotion.",
+    "AI 复核：{reason}": "AI review: {reason}",
+    "AI 复核失败：{error}": "AI review failed: {error}",
+    "AI 复核这条回复": "Have AI review this reply",
+    "AI 未启用、已达本对话上限，或该回复已在复核中。": "AI is off, this conversation's limit was reached, or the reply is already being reviewed.",
+    "AI 复核已排队。": "AI review queued.",
+    "AI 复核：本地分类器处于临界分数、或带图且有语义信号的回复，送到你配置的 OpenAI 兼容服务复核。需要在设置中确认发送范围后才会启用。": "AI review: sends replies with a borderline local score, or with images and semantic signals, to the OpenAI-compatible service you configure. It only turns on after you confirm what gets sent in its settings.",
+    "复核中": "Reviewing",
+    "AI 复核": "AI review",
+    "保存 AI 设置": "Save AI settings",
+    "清除密钥": "Clear key",
+    "清除已保存的 API key？": "Clear the saved API key?",
+    "API key 已清除。": "API key cleared.",
+    "保存密钥": "Save key",
+    "启用 AI": "Enable AI",
+    "启用后，临界回复可能发送作者显示名、@handle、正文、链接及最多两张图片 URL 到你配置的服务。API key 单独保存，不随配置导出。": "When on, borderline replies may send the author's display name, @handle, text, links and up to two image URLs to the service you configure. The API key is stored separately and never exported with the config.",
+    "已保存；留空不更改": "Saved; leave empty to keep it",
+    "未保存": "Not saved",
+    "启用 AI 复核会把作者显示名、@handle、回复正文、链接及最多两张图片 URL 发送到：\n\n{target}\n\n是否继续？": `Turning on AI review sends the author's display name, @handle, reply text, links and up to two image URLs to:
+
+{target}
+
+Continue?`,
+    "Endpoint 已保存；请重新启用 AI 并确认发送范围。": "Endpoint saved. Turn AI on again and confirm what gets sent.",
+    "AI 设置已保存。": "AI settings saved.",
+    "留空时不会更改已保存密钥。": "Leaving it empty keeps the saved key.",
+    "请输入 API key。": "Enter an API key.",
+    "API key 已单独保存。": "API key saved separately.",
+    "AI 客户端：OpenAI 兼容接口的请求、解析，以及按对话计数的预算队列。": "AI client: requests to and parsing of OpenAI-compatible APIs, plus a per-conversation budget queue.",
+    "在 X 中拉黑：从复查页打开 X 原生的拉黑确认框。脚本只打开确认框，永远不会替你点最终确认。": "Block on X: opens X's own block confirmation from the review page. The script only opens it and never presses the final confirm for you.",
+    "在 X 中拉黑": "Block on X",
+    "无法打开 X 原生拉黑确认框。": "Couldn't open X's block confirmation.",
+    "回复身份已变化，已中止 X 原生拉黑。": "The reply's identity changed; X's block was stopped.",
+    "找不到该回复的 X 操作菜单。": "Can't find X's menu for this reply.",
+    "X 未显示原生拉黑菜单项，操作已中止。": "X didn't show its Block menu item; stopped.",
+    "菜单打开后回复身份发生变化，操作已中止。": "The reply's identity changed after the menu opened; stopped.",
+    "X 未显示原生确认框，操作已中止。": "X didn't show its confirmation; stopped.",
+    "缺少回复身份，无法核对拉黑目标。": "The reply's identity is missing, so the block target can't be checked.",
+    "找不到该回复，操作已中止。": "Can't find this reply; stopped.",
+    "已打开 X 原生确认框；脚本不会点击最终确认。": "Opened X's confirmation; the script won't press the final confirm.",
+    "已打开 X 原生确认框；最终确认必须由你完成。": "Opened X's confirmation; you have to press the final confirm yourself.",
+    "该回复已离开页面，请先打开回复再操作。": "This reply is no longer on the page. Open it first.",
+    "导出时间：{exportedAt}，共 {n} 条（只含页面上已加载的内容）。": "Exported {exportedAt}, {n} posts (only what was loaded on the page).",
+    "主帖": "Main post",
+    "楼主": "OP",
+    "已隐藏：{reason}": "Hidden: {reason}",
+    "- 链接：{url}": "- Link: {url}",
+    "- 图片：{url}": "- Image: {url}",
+    "页面上没有可导出的帖子。": "There are no posts on the page to export.",
+    "已导出 {n} 条帖子。": "Exported {n} posts.",
+    "导出本页帖子和回复（Markdown）": "Export this page's posts and replies (Markdown)",
+    "导出本页帖子和回复（JSON）": "Export this page's posts and replies (JSON)",
+    "导出帖子：在帖子页的「…」菜单里，把主帖和已加载的回复导出为 Markdown 或 JSON，并标出 X Cleaner 隐藏了哪些回复、原因是什么。只导出页面上已有的内容。": "Export posts: from the “…” menu on a post page, exports the main post and loaded replies as Markdown or JSON, marking which replies X Cleaner hid and why. Only what is already on the page is exported.",
+    "内置本地分类器：对成人引流、加密货币引流和推广用户名三类分别加权打分，有保守、均衡、激进三档灵敏度。": "Built-in local classifier: weighted scores for adult promotion, crypto promotion and promotional names, with conservative, balanced and aggressive sensitivity.",
+    "隐藏对话里 X 官方的「此帖子不可用」占位条；根帖本身被删除时保留它的提示。": "Hides X's “This post is unavailable” placeholders in conversations, but keeps the notice when the main post itself was deleted.",
+    "页面结构检查：X 改版后，如果插件依赖的按钮、菜单、侧栏找不到了，主动提示哪个插件受影响，而不是悄悄失灵。": "Page structure check: when an X redesign removes a button, menu or sidebar a plugin relies on, tells you which plugin is affected instead of failing silently.",
+    "规则命中统计：记录每条词语、域名、正则和账号规则累计隐藏了多少条不重复回复。统计单独保存，不进入配置导出。": "Rule hit stats: counts how many distinct replies each phrase, domain, regex and account rule has hidden. Stats are stored separately and not included in config exports.",
+    "主面板：右下角悬浮按钮和抽屉，承载复查、黑名单、白名单、设置等页面。各页面由对应插件注册。": "Main panel: the floating button and drawer in the bottom right that hold the review, blacklist, allowlist and settings pages. Each page is added by its plugin.",
+    "屏蔽配置存储：默认值、规范化、导入导出、跨标签同步，API key 单独保存。": "Filter config storage: defaults, normalization, import and export, and sync across tabs. The API key is stored separately.",
+    "在帖子详情页扫描回复，判定对话作用域，并按优先级调用各个判定器隐藏垃圾回复。": "Scans replies on post pages, works out the conversation scope and runs each judge in priority order to hide spam replies.",
+    "所有界面共用的基础样式、原生风格 tooltip 与主题跟随。": "Base styles shared by every view, X-style tooltips and following X's theme.",
+    "应用插件管理里「主题」和「快速 CSS」两个标签页的自定义样式。": "Applies the custom styles from the Themes and Quick CSS tabs of the plugin manager.",
+    "插件管理：单独开关每个插件并修改插件设置。可从面板「插件」标签、脚本菜单或 Alt+Shift+X 打开。": "Plugin manager: turn each plugin on or off and change its settings. Open it from the panel's Plugins tab, the script menu or Alt+Shift+X.",
+    "X 不刷新页面就切换页面时，发出 navigate 事件。": "Emits a navigate event whenever X changes the page without reloading.",
+    "共享的 MutationObserver：X 渲染出元素时通知各插件。": "Shared MutationObserver that lets plugins react to elements as X renders them.",
+    "让插件在帖子或个人主页的「…」菜单里添加菜单项。": "Lets plugins add items to the “…” menu of a post or a profile.",
+    "主栏宽度": "Main column width",
+    "X 默认是 600px。屏幕不够宽时会自动收窄。": "X's default is 600px. It narrows automatically when the screen isn't wide enough.",
+    "隐藏右侧栏": "Hide the right sidebar",
+    "去掉搜索、趋势所在的右侧栏，把空间都给主栏。": "Removes the right sidebar with search and trends, giving all the space to the main column.",
+    "加宽主栏：大屏幕上把 600px 的时间线和帖子页加宽，宽度可调，可选隐藏右侧栏。": "Wider main column: widens the 600px timeline and post pages on large screens, with an adjustable width and an option to hide the right sidebar.",
+    "请填颜色值，例如 #1d9bf0 或 orange。": "Enter a color, e.g. #1d9bf0 or orange.",
+    "直接打开真实地址": "Open the real address",
+    "点击帖子里的链接时直接打开原网址，不经过 t.co 跳转。": "Links in posts open the original URL directly instead of going through t.co.",
+    "悬停显示完整地址": "Show the full address on hover",
+    "鼠标停在链接上时，用提示显示被截断的完整网址。": "Hovering a link shows its full, untruncated URL in a tooltip.",
+    "链接颜色": "Link color",
+    "留空则用 X 的默认蓝色。": "Leave empty for X's default blue.",
+    "已访问链接颜色": "Visited link color",
+    "打开过的链接换成这个颜色；留空则不区分。": "Links you've opened use this color; leave empty to not distinguish them.",
+    "链接增强：帖子里的链接直接打开真实网址、不经 t.co 跳转，悬停显示完整地址，可自定义链接和已访问链接的颜色。": "Better links: links in posts open the real URL without t.co, show the full address on hover, and can use custom colors for links and visited links.",
+    "有什么新鲜事": "What's happening",
+    "「What's happening」趋势卡片。": "The “What's happening” trends card.",
+    "推荐关注": "Who to follow",
+    "「Who to follow」卡片，帖子页的「相关用户」也算。": "The “Who to follow” card, including “Relevant people” on post pages.",
+    "页脚链接": "Footer links",
+    "服务条款、隐私政策、Cookie、© X Corp. 那一排链接。": "The row of Terms of Service, Privacy Policy, Cookie and © X Corp. links.",
+    "隐藏右侧栏三大件：「有什么新鲜事」趋势、「推荐关注」和底部页脚链接，可分别开关。": "Hides the three right-sidebar cards, each on its own switch: “What's happening” trends, “Who to follow” and the footer links.",
+    "账号菜单头像": "Account menu avatar",
+    "左下角账号菜单里的头像。": "The avatar in the account menu at the bottom left.",
+    "账号菜单名字": "Account menu name",
+    "左下角账号菜单里的昵称和 @handle。": "The name and @handle in the account menu at the bottom left.",
+    "自己的头像": "Your own avatar",
+    "页面其他位置（发帖框、自己的帖子）出现的你的头像。": "Your avatar elsewhere on the page (the compose box, your own posts).",
+    "私信列表": "Message list",
+    "私信页里对话的头像和名字。": "Avatars and names of conversations on the Messages page.",
+    "悬停时显示": "Reveal on hover",
+    "鼠标移上去时暂时取消模糊。": "Temporarily removes the blur while the mouse is over it.",
+    "模糊程度": "Blur amount",
+    "显示别名": "Display alias",
+    "填写后，左下角账号菜单里的昵称换成这段文字，认证徽标和 @handle 隐藏，不再模糊。留空则按上面的设置模糊。": "When set, the name in the account menu at the bottom left is replaced with this text, and the verified badge and @handle are hidden instead of blurred. Leave empty to blur them as set above.",
+    "例如：观众朋友们好": "E.g. Hello, viewers",
+    "主播模式：模糊你自己的头像、昵称和 @handle，可选模糊私信列表，也可以把账号菜单里的名字换成别名，截图和录屏时不暴露账号。": "Streamer mode: blurs your own avatar, name and @handle, optionally the message list too, and can swap the name in the account menu for an alias, so screenshots and recordings don't reveal your account.",
+    "Premium 推销": "Premium upsells",
+    "侧栏的「订阅 Premium」卡片和各处的升级提示。": "The “Subscribe to Premium” card in the sidebar and upgrade prompts elsewhere.",
+    "推广帖": "Promoted posts",
+    "时间线和回复里标着「广告 / Promoted」的帖子。": "Posts marked “Ad / Promoted” in timelines and replies.",
+    "每条帖子右上角的 Grok 按钮。回复盾牌仍会正常显示。": "The Grok button at the top right of each post. The reply shield still shows.",
+    "Grok 浮窗": "Grok drawer",
+    "右下角的 Grok 对话浮窗。": "The Grok chat drawer at the bottom right.",
+    "私信浮窗": "Messages drawer",
+    "右下角的私信浮窗。": "The messages drawer at the bottom right.",
+    "浏览量": "View counts",
+    "帖子操作栏里的浏览量数字。": "The view count in each post's action bar.",
+    "标题未读数": "Unread count in the title",
+    "去掉浏览器标签页标题前面的「(3)」未读数。": "Removes the “(3)” unread count at the start of the browser tab title.",
+    "精简 X 的页面：分别隐藏 Premium 推销、推广帖、Grok 按钮和浮窗、浏览量等干扰元素。右侧栏的趋势、推荐关注和页脚见 RightSidebarCleaner。": "Declutters X: hides Premium upsells, promoted posts, Grok buttons and drawer, view counts and other distractions, each on its own switch. For the right sidebar's trends, Who to follow and footer, see RightSidebarCleaner.",
+    "侧栏入口": "Sidebar entries",
+    "拖动或用箭头调整顺序，开关控制是否显示。没出现在当前页面的入口会保留你的设置。": "Drag or use the arrows to reorder; the switches show or hide each entry. Entries not on the current page keep your settings.",
+    "管理 X 左侧栏的入口：选择显示哪些、按什么顺序排列，还能把「更多」菜单里的项目固定到侧栏。": "Manage the entries in X's left sidebar: choose which show and in what order, and pin items from the “More” menu into the sidebar.",
+    "「更多」菜单里的项目": "Items in the “More” menu",
+    "正在读取「更多」菜单…": "Reading the “More” menu…",
+    "没能打开「更多」菜单。在 x.com 的桌面版页面上点一下侧栏的「更多」，再回来这里。": "Couldn't open the “More” menu. On the desktop version of x.com, click “More” in the sidebar once, then come back here.",
+    "还没有读到「更多」菜单的项目。点「读取」，或在侧栏点一下「更多」。": "No “More” menu items read yet. Click “Read”, or click “More” in the sidebar once.",
+    "固定 {label} 到侧栏": "Pin {label} to the sidebar",
+    "固定「更多」菜单里的项目": "Pin items from the “More” menu",
+    "打开的项目会出现在侧栏「更多」的正上方，侧栏收起成图标时也一样。固定后可以在上面的列表里调整位置。": "Items you switch on appear right above “More” in the sidebar, also when the sidebar is collapsed to icons. Once pinned, you can move them in the list above.",
+    "读取": "Read",
+    "{label}（来自「更多」）": "{label} (from “More”)",
+    "还没有读到侧栏入口。在 x.com 的桌面版页面打开此设置即可。": "No sidebar entries read yet. Open this setting on the desktop version of x.com.",
+    "拖动排序，或按 ↑ ↓ 移动": "Drag to reorder, or press ↑ ↓ to move",
+    "移动 {label}": "Move {label}",
+    "当前页面没有这个入口": "Not on the current page",
+    "上移 {label}": "Move {label} up",
+    "下移 {label}": "Move {label} down",
+    "显示 {label}": "Show {label}",
+    "隐藏后侧栏里就没有 X 的「设置和隐私」入口了。": "Hiding it removes the sidebar's only way to X's “Settings and privacy”.",
+    "主页": "Home",
+    "探索": "Explore",
+    "通知": "Notifications",
+    "关注": "Follow",
+    "通话": "Calls",
+    "书签": "Bookmarks",
+    "列表": "Lists",
+    "社群": "Communities",
+    "历史记录": "History",
+    "工作": "Jobs",
+    "订阅": "Premium",
+    "个人资料": "Profile",
+    "更多": "More",
+    "显示收藏的插件": "Show favorite plugins",
+    "在入口下面列出你收藏的插件，点一下就能开关。": "Lists your favorite plugins under the entry, each one a click to toggle.",
+    "在 X 左侧栏的「更多」菜单里加一个「X Cleaner 插件管理」入口，并列出收藏的插件供快速开关。": "Adds an “X Cleaner plugins” entry to the “More” menu in X's left sidebar, plus your favorite plugins for quick toggling.",
+    "显示格式": "Format",
+    "「智能」：今天只显示时间，今年显示月日，更早的显示完整日期。": "“Smart”: only the time for today, month and day for this year, and the full date before that.",
+    "智能（14:05 / 10-23 14:05 / 2025-10-23 14:05）": "Smart (14:05 / 10-23 14:05 / 2025-10-23 14:05)",
+    "完整日期（2026-10-23 14:05）": "Full date (2026-10-23 14:05)",
+    "精确到秒（2026-10-23 14:05:09）": "With seconds (2026-10-23 14:05:09)",
+    "绝对时间：帖子时间从「3 小时」改成「10-23 14:05」这样的具体时间，格式可选。": "Absolute timestamps: post times show as “10-23 14:05” instead of “3h”, in a format you choose."
+  };
+  var en_default = en;
+
+  // src/utils/i18n.ts
+  var LOCALE_NAMES = { zh: "简体中文", en: "English" };
+  var CATALOGS = { zh: null, en: en_default };
+  function localeFromTag(tag) {
+    const t = (tag ?? "").trim().toLowerCase();
+    if (!t)
+      return null;
+    return t === "zh" || t.startsWith("zh-") || t.startsWith("zh_") ? "zh" : "en";
+  }
+  function xLocale() {
+    return localeFromTag(document.documentElement?.getAttribute("lang")) ?? localeFromTag(navigator.language) ?? "en";
+  }
+  function getLocalePreference() {
+    const pref = PlainSettings.core.language;
+    return pref === "zh" || pref === "en" ? pref : "auto";
+  }
+  function setLocalePreference(pref) {
+    Settings.core.language = pref;
+  }
+  function getLocale() {
+    const pref = getLocalePreference();
+    return pref === "auto" ? xLocale() : pref;
+  }
+  function t(text, vars) {
+    const out = CATALOGS[getLocale()]?.[text] ?? text;
+    return vars ? out.replace(/\{(\w+)\}/g, (m, k) => (k in vars) ? String(vars[k]) : m) : out;
+  }
+  var aiLanguageName = () => getLocale() === "zh" ? "Simplified Chinese" : "English";
+  var dateLocale = () => getLocale() === "zh" ? "zh-CN" : "en-US";
+  var listJoin = (items) => items.join(getLocale() === "zh" ? "、" : ", ");
+  var N_ = (text) => text;
+
   // src/api/Events.ts
   var logger3 = new Logger("Events");
   var listeners = new Map;
@@ -643,13 +1304,13 @@
       const dep = plugins[depName];
       if (!dep) {
         logger4.error(`${plugin.name} is missing dependency ${depName}`);
-        plugin.startError = `缺少依赖插件 ${depName}`;
+        plugin.startError = t("缺少依赖插件 {depName}", { depName });
         return false;
       }
       if (!dep.started) {
         dep.isDependency = true;
         if (!startPlugin(dep, [...chain, plugin.name])) {
-          plugin.startError = `依赖插件 ${depName} 启动失败`;
+          plugin.startError = t("依赖插件 {depName} 启动失败", { depName });
           return false;
         }
       }
@@ -943,15 +1604,15 @@
   function domainWarning(raw) {
     const domain = normalizeDomain(raw);
     if (!domain)
-      return { domain, warning: { level: "error", message: "请输入有效域名。" } };
+      return { domain, warning: { level: "error", message: t("请输入有效域名。") } };
     if (domain === "t.co")
-      return { domain, warning: { level: "warning", message: "t.co 隐藏了最终目标；脚本不会访问短链，因此仅有 t.co 时会保持可见。" } };
+      return { domain, warning: { level: "warning", message: t("t.co 隐藏了最终目标；脚本不会访问短链，因此仅有 t.co 时会保持可见。") } };
     if (!domain.includes(".") || BROAD_SUFFIXES.has(domain))
-      return { domain, warning: { level: "warning", message: "该规则范围过宽，可能匹配大量无关链接。" } };
+      return { domain, warning: { level: "warning", message: t("该规则范围过宽，可能匹配大量无关链接。") } };
     if (BROAD_PLATFORMS.has(domain))
-      return { domain, warning: { level: "warning", message: `屏蔽 ${domain} 会命中该平台上的所有相关链接。` } };
+      return { domain, warning: { level: "warning", message: t("屏蔽 {domain} 会命中该平台上的所有相关链接。", { domain }) } };
     if (SHORTENERS.has(domain))
-      return { domain, warning: { level: "warning", message: `屏蔽 ${domain} 会命中使用该短链服务的所有链接。` } };
+      return { domain, warning: { level: "warning", message: t("屏蔽 {domain} 会命中使用该短链服务的所有链接。", { domain }) } };
     return { domain, warning: null };
   }
 
@@ -1522,7 +2183,7 @@
   var timer;
   var coreUI_default = definePlugin({
     name: "CoreUI",
-    description: "所有界面共用的基础样式、原生风格 tooltip 与主题跟随。",
+    description: N_("所有界面共用的基础样式、原生风格 tooltip 与主题跟随。"),
     tags: ["core"],
     required: true,
     hidden: true,
@@ -1647,10 +2308,10 @@ ${TOOLTIP_CSS}`,
     try {
       url = new URL(raw.trim());
     } catch {
-      return "请输入完整的网址，例如 https://example.com/theme.css。";
+      return t("请输入完整的网址，例如 https://example.com/theme.css。");
     }
     if (url.protocol !== "https:")
-      return "只支持 https:// 开头的主题地址。";
+      return t("只支持 https:// 开头的主题地址。");
     return null;
   }
   function fetchText(url) {
@@ -1667,8 +2328,8 @@ ${TOOLTIP_CSS}`,
         url,
         timeout: FETCH_TIMEOUT_MS,
         onload: (r) => r.status >= 200 && r.status < 300 ? resolve(r.responseText) : reject(new Error(`HTTP ${r.status}`)),
-        onerror: () => reject(new Error("网络错误")),
-        ontimeout: () => reject(new Error("请求超时"))
+        onerror: () => reject(new Error(t("网络错误"))),
+        ontimeout: () => reject(new Error(t("请求超时")))
       });
     });
   }
@@ -1683,12 +2344,12 @@ ${TOOLTIP_CSS}`,
       throw new Error(invalid);
     const url = new URL(raw.trim()).href;
     if (getThemes().some((t) => t.url === url))
-      throw new Error("这个主题已经添加过了。");
+      throw new Error(t("这个主题已经添加过了。"));
     let css;
     try {
       css = await fetchText(url);
     } catch (e) {
-      throw new Error(`下载主题失败：${errorMessage(e)}`);
+      throw new Error(t("下载主题失败：{error}", { error: errorMessage(e) }));
     }
     const theme = makeTheme(css, url, url);
     setThemes([...getThemes(), theme]);
@@ -1707,7 +2368,7 @@ ${TOOLTIP_CSS}`,
     try {
       css = await fetchText(theme.url);
     } catch (e) {
-      throw new Error(`更新主题失败：${errorMessage(e)}`);
+      throw new Error(t("更新主题失败：{error}", { error: errorMessage(e) }));
     }
     const meta = parseThemeMeta(css);
     setThemes(getThemes().map((t) => t.id === id ? { ...t, css, name: meta.name || t.name, author: meta.author || t.author, description: meta.description || t.description, updatedAt: Date.now() } : t));
@@ -1786,9 +2447,9 @@ ${TOOLTIP_CSS}`,
     let list = [...values];
     const items = h("div", { class: "xc-list-items" });
     const error = h("div", { class: "xc-field-error", hidden: true });
-    const input = h("input", { class: "xc-input", placeholder: opts.placeholder ?? "Add an item and press Enter" });
+    const input = h("input", { class: "xc-input", placeholder: opts.placeholder ? t(opts.placeholder) : t("输入后按回车添加") });
     const render = () => {
-      items.replaceChildren(...list.map((v, i) => h("span", { class: "xc-chip", title: v }, h("span", null, v), h("button", { type: "button", "aria-label": `Remove ${v}`, onclick: () => {
+      items.replaceChildren(...list.map((v, i) => h("span", { class: "xc-chip", title: v }, h("span", null, v), h("button", { type: "button", "aria-label": t("移除 {value}", { value: v }), onclick: () => {
         list = list.filter((_, j) => j !== i);
         onChange(list);
         render();
@@ -1800,7 +2461,7 @@ ${TOOLTIP_CSS}`,
       for (const value of parts) {
         const valid = opts.isValid?.(value) ?? true;
         if (valid !== true) {
-          error.textContent = valid;
+          error.textContent = t(valid);
           error.hidden = false;
           return;
         }
@@ -1821,7 +2482,7 @@ ${TOOLTIP_CSS}`,
       }
     });
     render();
-    return h("div", { class: "xc-list-editor" }, items, h("div", { class: "xc-field-row" }, input, h("button", { class: "xc-btn xc-btn-sm", type: "button", onclick: add }, "Add")), error);
+    return h("div", { class: "xc-list-editor" }, items, h("div", { class: "xc-field-row" }, input, h("button", { class: "xc-btn xc-btn-sm", type: "button", onclick: add }, t("添加"))), error);
   }
   function control(key, def, settings, onError) {
     const store = settings.store;
@@ -1834,13 +2495,13 @@ ${TOOLTIP_CSS}`,
     const disabled = def.disabled?.() ?? false;
     switch (def.type) {
       case "boolean" /* BOOLEAN */:
-        return switchEl(!!store[key], set, def.label ?? key, disabled);
+        return switchEl(!!store[key], set, def.label ? t(def.label) : key, disabled);
       case "string" /* STRING */: {
-        const input = def.multiline ? h("textarea", { class: "xc-textarea", placeholder: def.placeholder, disabled }) : h("input", { class: "xc-input", type: def.secret ? "password" : "text", placeholder: def.placeholder, disabled, autocomplete: "off" });
+        const input = def.multiline ? h("textarea", { class: "xc-textarea", placeholder: def.placeholder && t(def.placeholder), disabled }) : h("input", { class: "xc-input", type: def.secret ? "password" : "text", placeholder: def.placeholder && t(def.placeholder), disabled, autocomplete: "off" });
         input.value = store[key] ?? "";
         input.addEventListener("change", () => {
           const valid = def.isValid?.(input.value) ?? true;
-          onError(valid === true ? null : valid);
+          onError(valid === true ? null : t(valid));
           if (valid === true)
             set(input.value);
         });
@@ -1852,7 +2513,7 @@ ${TOOLTIP_CSS}`,
         input.addEventListener("change", () => {
           const n = Number(input.value);
           const ok = input.value !== "" && Number.isFinite(n) && (def.min == null || n >= def.min) && (def.max == null || n <= def.max);
-          onError(ok ? null : "Invalid number");
+          onError(ok ? null : t("数字无效"));
           if (ok)
             set(n);
         });
@@ -1871,7 +2532,7 @@ ${TOOLTIP_CSS}`,
         return h("div", { class: "xc-slider" }, input, out);
       }
       case "select" /* SELECT */: {
-        const select = h("select", { class: "xc-select", disabled, style: "max-width:240px" }, def.options.map((o) => h("option", { value: String(o.value) }, o.label)));
+        const select = h("select", { class: "xc-select", disabled, style: "max-width:240px" }, def.options.map((o) => h("option", { value: String(o.value) }, t(o.label))));
         select.value = String(store[key]);
         select.addEventListener("change", () => set(def.options.find((o) => String(o.value) === select.value)?.value));
         return select;
@@ -1889,7 +2550,7 @@ ${TOOLTIP_CSS}`,
       error.hidden = !msg;
     });
     const inline = def.type === "boolean" /* BOOLEAN */ || def.type === "select" /* SELECT */ || def.type === "number" /* NUMBER */;
-    const label = h("div", null, h("div", { class: "xc-field-label" }, def.label ?? key, def.restartNeeded ? h("span", { class: "xc-badge", style: "margin-left:6px" }, "需刷新") : null), def.description ? h("div", { class: "xc-field-desc" }, def.description) : null);
+    const label = h("div", null, h("div", { class: "xc-field-label" }, def.label ? t(def.label) : key, def.restartNeeded ? h("span", { class: "xc-badge", style: "margin-left:6px" }, t("需刷新")) : null), def.description ? h("div", { class: "xc-field-desc" }, t(def.description)) : null);
     return h("div", { class: "xc-field", dataset: { key } }, inline ? h("div", { class: "xc-field-row" }, label, ctrl) : [label, ctrl], error);
   }
   function renderPluginSettings(settings) {
@@ -1923,25 +2584,25 @@ ${TOOLTIP_CSS}`,
 
   // src/plugins/_core/settings/panel.ts
   var CATEGORY_TABS = [
-    { id: "favorites", label: "收藏" },
-    { id: "recent", label: "最近" },
-    { id: "all", label: "全部" },
-    { id: "replies", label: "回复" },
-    { id: "filters", label: "过滤" },
+    { id: "favorites", label: N_("收藏") },
+    { id: "recent", label: N_("最近") },
+    { id: "all", label: N_("全部") },
+    { id: "replies", label: N_("回复") },
+    { id: "filters", label: N_("过滤") },
     { id: "ai", label: "AI" },
-    { id: "moderation", label: "拉黑" },
-    { id: "timeline", label: "时间线" },
-    { id: "messages", label: "私信" },
-    { id: "appearance", label: "外观" },
-    { id: "declutter", label: "精简" },
-    { id: "privacy", label: "隐私" },
-    { id: "developer", label: "开发者" },
-    { id: "core", label: "核心" }
+    { id: "moderation", label: N_("拉黑") },
+    { id: "timeline", label: N_("时间线") },
+    { id: "messages", label: N_("私信") },
+    { id: "appearance", label: N_("外观") },
+    { id: "declutter", label: N_("精简") },
+    { id: "privacy", label: N_("隐私") },
+    { id: "developer", label: N_("开发者") },
+    { id: "core", label: N_("核心") }
   ];
   var FILTER_OPTIONS = [
-    { value: "all", label: "全部" },
-    { value: "enabled", label: "已启用" },
-    { value: "disabled", label: "已停用" }
+    { value: "all", label: N_("全部") },
+    { value: "enabled", label: N_("已启用") },
+    { value: "disabled", label: N_("已停用") }
   ];
   var RECENT_TTL_MS = 2 * 24 * 60 * 60 * 1000;
   var isNewPlugin = (name) => {
@@ -1974,14 +2635,18 @@ ${TOOLTIP_CSS}`,
   }
   function emptyHint(search, category) {
     if (search)
-      return "没有匹配搜索的插件。";
+      return t("没有匹配搜索的插件。");
     if (category === "favorites")
-      return "还没有收藏。给插件点星后会出现在这里。";
+      return t("还没有收藏。给插件点星后会出现在这里。");
     if (category === "recent")
-      return "最近 7 天没有新增的插件。";
-    return "没有可用的插件。";
+      return t("最近 7 天没有新增的插件。");
+    return t("没有可用的插件。");
   }
-  var matchesSearch = (name, q) => !q || `${name} ${plugins[name].description ?? ""}`.toLowerCase().includes(q.trim().toLowerCase());
+  var pluginSearchText = (name) => {
+    const d = plugins[name].description ?? "";
+    return `${name} ${t(d)} ${d}`.toLowerCase();
+  };
+  var matchesSearch = (name, q) => !q || pluginSearchText(name).includes(q.trim().toLowerCase());
   function hasConfig(p) {
     const hasSettings = !!p.settings && Object.values(p.settings.def).some((s) => !s.hidden);
     return hasSettings || !!p.panelPages?.length;
@@ -2005,43 +2670,43 @@ ${TOOLTIP_CSS}`,
     const badges = [];
     if (crashed) {
       const icon = h("span", { class: "xc-pm-card-badge xc-pm-card-crashed-icon" }, svgIcon(Icons.alert, 13));
-      opts.tips.push(attachTooltip(icon, p.startError ? `该插件启动失败：${p.startError}` : "该插件启动失败", "top"));
+      opts.tips.push(attachTooltip(icon, p.startError ? t("该插件启动失败：{startError}", { startError: p.startError }) : t("该插件启动失败"), "top"));
       badges.push(icon);
     }
     if (p.healthWarnings?.length) {
       const icon = h("span", { class: "xc-pm-card-badge xc-pm-card-health-icon" }, svgIcon(Icons.heartPulse, 13));
-      opts.tips.push(attachTooltip(icon, `X 页面上找不到：${p.healthWarnings.join("、")}`, "top"));
+      opts.tips.push(attachTooltip(icon, t("X 页面上找不到：{items}", { items: listJoin(p.healthWarnings.map((w) => t(w))) }), "top"));
       badges.push(icon);
     }
     if (p.required) {
       const icon = h("span", { class: "xc-pm-card-badge" }, svgIcon(Icons.info, 13));
-      opts.tips.push(attachTooltip(icon, "X Cleaner 运行必需的插件", "top"));
+      opts.tips.push(attachTooltip(icon, t("X Cleaner 运行必需的插件"), "top"));
       badges.push(icon);
     }
     if (isNewPlugin(name))
-      badges.push(h("span", { class: "xc-pm-badge-accent" }, "新"));
+      badges.push(h("span", { class: "xc-pm-badge-accent" }, t("新")));
     const controls = [
-      iconButton(starred ? Icons.starFilled : Icons.star, starred ? "取消收藏" : "收藏", () => {
+      iconButton(starred ? Icons.starFilled : Icons.star, starred ? t("取消收藏") : t("收藏"), () => {
         toggleStarred(name);
         opts.rerender();
       }, `xc-pm-star${starred ? " is-active" : ""}`, opts.tips)
     ];
     if (!p.required)
-      controls.push(iconButton(pinned ? Icons.pinFilled : Icons.pin, pinned ? "取消置顶" : "置顶", () => {
+      controls.push(iconButton(pinned ? Icons.pinFilled : Icons.pin, pinned ? t("取消置顶") : t("置顶"), () => {
         togglePinned(name);
         opts.rerender();
       }, `xc-pm-pin${pinned ? " is-active" : ""}`, opts.tips));
     if (hasConfig(p))
-      controls.push(iconButton(Icons.sliders, "配置", () => opts.onConfig(p), "xc-pm-config", opts.tips));
+      controls.push(iconButton(Icons.sliders, t("配置"), () => opts.onConfig(p), "xc-pm-config", opts.tips));
     controls.push(switchEl(enabled, (v) => {
       if (!setPluginEnabled(name, v))
-        showToast(`${name} ${v ? "启动" : "停止"}失败，详见控制台。`, { type: "error" });
+        showToast(v ? t("{name} 启动失败，详见控制台。", { name }) : t("{name} 停止失败，详见控制台。", { name }), { type: "error" });
       opts.rerender();
-    }, `启用 ${name}`, !!p.required));
-    return h("div", { class: `xc-pm-card${p.required ? " is-required" : ""}${crashed ? " is-crashed" : ""}`, dataset: { plugin: name, enabled: String(enabled) } }, h("div", { class: "xc-pm-card-body" }, h("div", { class: "xc-pm-card-head" }, h("div", { class: "xc-pm-card-name" }, h("span", { class: "xc-pm-card-icon" }, svgIcon(p.icon ?? Icons.unplug, 14)), title, badges), h("div", { class: "xc-pm-card-controls" }, controls)), p.description ? h("div", { class: "xc-pm-card-desc" }, p.description) : null, crashed && p.startError ? h("div", { class: "xc-pm-card-error" }, `启动失败：${p.startError}`) : null), h("div", { class: "xc-pm-card-sep" }), h("div", { class: "xc-pm-card-footer" }, h("span", { class: "xc-pm-card-author" }, p.authors?.join(", ") || "X Cleaner Contributors")));
+    }, t("启用 {name}", { name }), !!p.required));
+    return h("div", { class: `xc-pm-card${p.required ? " is-required" : ""}${crashed ? " is-crashed" : ""}`, dataset: { plugin: name, enabled: String(enabled) } }, h("div", { class: "xc-pm-card-body" }, h("div", { class: "xc-pm-card-head" }, h("div", { class: "xc-pm-card-name" }, h("span", { class: "xc-pm-card-icon" }, svgIcon(p.icon ?? Icons.unplug, 14)), title, badges), h("div", { class: "xc-pm-card-controls" }, controls)), p.description ? h("div", { class: "xc-pm-card-desc" }, t(p.description)) : null, crashed && p.startError ? h("div", { class: "xc-pm-card-error" }, t("启动失败：{startError}", { startError: p.startError })) : null), h("div", { class: "xc-pm-card-sep" }), h("div", { class: "xc-pm-card-footer" }, h("span", { class: "xc-pm-card-author" }, p.authors?.join(", ") || "X Cleaner Contributors")));
   }
   function reloadBanner() {
-    const el = h("div", { class: "xc-pm-reload", role: "status" }, h("span", null, "部分改动需要刷新页面后才会生效。"), h("button", { type: "button", class: "xc-btn xc-btn-sm", onclick: () => location.reload() }, "刷新"));
+    const el = h("div", { class: "xc-pm-reload", role: "status" }, h("span", null, t("部分改动需要刷新页面后才会生效。")), h("button", { type: "button", class: "xc-btn xc-btn-sm", onclick: () => location.reload() }, t("刷新")));
     const sync = () => {
       el.hidden = !isReloadNeeded();
     };
@@ -2049,8 +2714,8 @@ ${TOOLTIP_CSS}`,
     return { el, dispose: subscribe("reloadNeeded", sync) };
   }
   function searchFilterBar(placeholder, onSearch, onFilter) {
-    const input = h("input", { class: "xc-input xc-pm-search", type: "text", placeholder, "aria-label": "搜索插件" });
-    const select = h("select", { class: "xc-select xc-pm-filter", "aria-label": "按状态筛选" }, FILTER_OPTIONS.map((o) => h("option", { value: o.value }, o.label)));
+    const input = h("input", { class: "xc-input xc-pm-search", type: "text", placeholder, "aria-label": t("搜索插件") });
+    const select = h("select", { class: "xc-select xc-pm-filter", "aria-label": t("按状态筛选") }, FILTER_OPTIONS.map((o) => h("option", { value: o.value }, t(o.label))));
     input.addEventListener("input", () => onSearch(input.value));
     select.addEventListener("change", () => onFilter(select.value));
     return { el: h("div", { class: "xc-pm-searchbar" }, input, select), input };
@@ -2086,7 +2751,7 @@ ${TOOLTIP_CSS}`,
     return close;
   }
   function closeButton(onClick) {
-    return h("button", { type: "button", class: "xc-pm-icon-btn xc-pm-close", "aria-label": "关闭", onclick: onClick }, svgIcon(Icons.close, 16));
+    return h("button", { type: "button", class: "xc-pm-icon-btn xc-pm-close", "aria-label": t("关闭"), onclick: onClick }, svgIcon(Icons.close, 16));
   }
   function openPluginSettings(plugin, nested = true) {
     let close = () => {};
@@ -2094,20 +2759,20 @@ ${TOOLTIP_CSS}`,
     const render = () => {
       content.replaceChildren(...[
         closeButton(() => close()),
-        h("div", { class: "xc-pm-dialog-header" }, h("h2", { class: "xc-pm-dialog-title" }, plugin.name), h("p", { class: "xc-pm-dialog-sub" }, plugin.description)),
+        h("div", { class: "xc-pm-dialog-header" }, h("h2", { class: "xc-pm-dialog-title" }, plugin.name), h("p", { class: "xc-pm-dialog-sub" }, t(plugin.description))),
         h("div", { class: "xc-pm-sep" }),
-        plugin.authors?.length ? h("div", { class: "xc-pm-field" }, h("span", { class: "xc-pm-field-label" }, "作者"), h("p", null, plugin.authors.join(", "))) : null,
-        h("div", { class: "xc-pm-field xc-pm-dialog-settings" }, h("span", { class: "xc-pm-field-label" }, "设置"), plugin.settings ? renderPluginSettings(plugin.settings) : h("p", { class: "xc-muted" }, "没有可配置的设置。")),
+        plugin.authors?.length ? h("div", { class: "xc-pm-field" }, h("span", { class: "xc-pm-field-label" }, t("作者")), h("p", null, plugin.authors.join(", "))) : null,
+        h("div", { class: "xc-pm-field xc-pm-dialog-settings" }, h("span", { class: "xc-pm-field-label" }, t("设置")), plugin.settings ? renderPluginSettings(plugin.settings) : h("p", { class: "xc-muted" }, t("没有可配置的设置。"))),
         plugin.settings ? h("div", { class: "xc-pm-dialog-footer" }, h("button", {
           type: "button",
           class: "xc-btn xc-btn-sm",
           onclick: () => {
-            if (!confirm("将该插件的设置恢复为默认值？此操作无法撤销。"))
+            if (!confirm(t("将该插件的设置恢复为默认值？此操作无法撤销。")))
               return;
             resetPluginSettings(plugin.name);
             render();
           }
-        }, "重置")) : null
+        }, t("重置"))) : null
       ].filter((n) => !!n));
     };
     render();
@@ -2122,7 +2787,7 @@ ${TOOLTIP_CSS}`,
     const all = Object.keys(plugins).filter((n) => visible(plugins[n])).sort((a, b) => a.localeCompare(b));
     const userPlugins = all.filter((n) => !plugins[n].required);
     const requiredPlugins = all.filter((n) => plugins[n].required);
-    const tabsEl = h("div", { class: "xc-pm-tabs", role: "tablist", "aria-label": "插件分类" });
+    const tabsEl = h("div", { class: "xc-pm-tabs", role: "tablist", "aria-label": t("插件分类") });
     const list = h("div", { class: "xc-pm-list" });
     const bar = searchFilterBar("", (v) => {
       search = v;
@@ -2147,17 +2812,17 @@ ${TOOLTIP_CSS}`,
       for (const t of tips)
         t.destroy();
       tips = [];
-      const visibleTabs = CATEGORY_TABS.filter((t) => t.id === "favorites" || t.id === "all" || t.id === "recent" || all.some((n) => pluginMatchesCategory(plugins[n], t.id)));
-      tabsEl.replaceChildren(...visibleTabs.map((t) => h("button", {
+      const visibleTabs = CATEGORY_TABS.filter((tab) => tab.id === "favorites" || tab.id === "all" || tab.id === "recent" || all.some((n) => pluginMatchesCategory(plugins[n], tab.id)));
+      tabsEl.replaceChildren(...visibleTabs.map((tab) => h("button", {
         type: "button",
         role: "tab",
-        class: `xc-pm-tab${t.id === category ? " is-active" : ""}`,
-        "aria-selected": String(t.id === category),
+        class: `xc-pm-tab${tab.id === category ? " is-active" : ""}`,
+        "aria-selected": String(tab.id === category),
         onclick: () => {
-          category = t.id;
+          category = tab.id;
           render();
         }
-      }, t.label)));
+      }, t(tab.label))));
       let tabUser;
       let tabRequired = [];
       if (category === "favorites")
@@ -2169,7 +2834,7 @@ ${TOOLTIP_CSS}`,
         tabRequired = filterByEnabled(requiredPlugins, filter);
       } else
         tabUser = sortPinnedFirst(filterByEnabled(all.filter((n) => pluginMatchesCategory(plugins[n], category)), filter));
-      bar.input.placeholder = `搜索 ${tabUser.length + tabRequired.length} 个插件...`;
+      bar.input.placeholder = t("搜索 {n} 个插件...", { n: tabUser.length + tabRequired.length });
       const shownUser = tabUser.filter((n) => matchesSearch(n, search));
       const shownRequired = tabRequired.filter((n) => matchesSearch(n, search));
       const children = [];
@@ -2205,7 +2870,7 @@ ${TOOLTIP_CSS}`,
       if (!file)
         return;
       const ok = importSettings(await file.text());
-      showToast(ok ? "插件设置已导入，刷新页面后全部生效。" : "该文件不是 X Cleaner 插件设置备份。", { type: ok ? "success" : "error", action: ok ? { label: "刷新", onClick: () => location.reload() } : undefined });
+      showToast(ok ? t("插件设置已导入，刷新页面后全部生效。") : t("该文件不是 X Cleaner 插件设置备份。"), { type: ok ? "success" : "error", action: ok ? { label: t("刷新"), onClick: () => location.reload() } : undefined });
       fileInput.value = "";
     });
     const exportBtn = h("button", {
@@ -2216,19 +2881,19 @@ ${TOOLTIP_CSS}`,
         h("a", { href: url, download: `x-cleaner-settings-${new Date().toISOString().slice(0, 10)}.json` }).click();
         setTimeout(() => URL.revokeObjectURL(url), 1000);
       }
-    }, "导出");
+    }, t("导出"));
     return {
-      el: h("div", { class: "xc-pm-tab-root" }, h("div", { class: "xc-pm-row" }, h("div", { class: "xc-pm-row-body" }, h("strong", null, "插件设置"), h("span", { class: "xc-muted" }, "导出或导入各插件的开关、收藏、置顶、插件设置、主题和快速 CSS。回复屏蔽的名单与规则在面板「设置 → 导入」里单独导入导出。")), h("div", { class: "xc-pm-row-actions" }, h("button", { type: "button", class: "xc-btn xc-btn-sm", onclick: () => fileInput.click() }, "导入"), exportBtn)), fileInput)
+      el: h("div", { class: "xc-pm-tab-root" }, h("div", { class: "xc-pm-row" }, h("div", { class: "xc-pm-row-body" }, h("strong", null, t("插件设置")), h("span", { class: "xc-muted" }, t("导出或导入各插件的开关、收藏、置顶、插件设置、主题和快速 CSS。回复屏蔽的名单与规则在面板「设置 → 导入」里单独导入导出。"))), h("div", { class: "xc-pm-row-actions" }, h("button", { type: "button", class: "xc-btn xc-btn-sm", onclick: () => fileInput.click() }, t("导入")), exportBtn)), fileInput)
     };
   }
   function themesTab() {
     let tips = [];
     const list = h("div", { class: "xc-pm-themes" });
     const error = h("div", { class: "xc-field-error", hidden: true });
-    const urlInput = h("input", { class: "xc-input", type: "url", placeholder: "https://example.com/theme.css", "aria-label": "主题地址" });
-    const addBtn = h("button", { type: "button", class: "xc-btn xc-btn-sm xc-btn-primary" }, "添加");
+    const urlInput = h("input", { class: "xc-input", type: "url", placeholder: "https://example.com/theme.css", "aria-label": t("主题地址") });
+    const addBtn = h("button", { type: "button", class: "xc-btn xc-btn-sm xc-btn-primary" }, t("添加"));
     const fileInput = h("input", { type: "file", accept: "text/css,.css", hidden: true });
-    const master = switchEl(PlainSettings.core.themesEnabled, (v) => setThemesEnabled(v), "启用主题");
+    const master = switchEl(PlainSettings.core.themesEnabled, (v) => setThemesEnabled(v), t("启用主题"));
     const fail = (msg) => {
       error.textContent = msg ?? "";
       error.hidden = !msg;
@@ -2240,9 +2905,9 @@ ${TOOLTIP_CSS}`,
       fail(null);
       addBtn.disabled = true;
       try {
-        const t = await addThemeFromUrl(urlInput.value);
+        const theme = await addThemeFromUrl(urlInput.value);
         urlInput.value = "";
-        showToast(`已添加主题「${t.name}」。`, { type: "success" });
+        showToast(t("已添加主题「{name}」。", { name: theme.name }), { type: "success" });
       } catch (e) {
         fail(errorMessage(e));
       } finally {
@@ -2268,32 +2933,32 @@ ${TOOLTIP_CSS}`,
       master.setAttribute("aria-checked", String(PlainSettings.core.themesEnabled));
       const themes = getThemes();
       if (!themes.length) {
-        list.replaceChildren(h("p", { class: "xc-pm-empty" }, "还没有主题。粘贴一个 CSS 主题地址，或导入本地 .css 文件。"));
+        list.replaceChildren(h("p", { class: "xc-pm-empty" }, t("还没有主题。粘贴一个 CSS 主题地址，或导入本地 .css 文件。")));
         return;
       }
-      list.replaceChildren(...themes.map((t) => {
+      list.replaceChildren(...themes.map((theme) => {
         const controls = [];
-        if (t.url)
-          controls.push(iconButton(Icons.refresh, "重新下载", async () => {
+        if (theme.url)
+          controls.push(iconButton(Icons.refresh, t("重新下载"), async () => {
             try {
-              await refreshTheme(t.id);
-              showToast(`主题「${t.name}」已更新。`, { type: "success" });
+              await refreshTheme(theme.id);
+              showToast(t("主题「{name}」已更新。", { name: theme.name }), { type: "success" });
             } catch (e) {
               showToast(errorMessage(e), { type: "error" });
             }
           }, "xc-pm-theme-refresh", tips));
-        controls.push(iconButton(Icons.trash, "删除", () => {
-          if (confirm(`删除主题「${t.name}」？`))
-            removeTheme(t.id);
+        controls.push(iconButton(Icons.trash, t("删除"), () => {
+          if (confirm(t("删除主题「{name}」？", { name: theme.name })))
+            removeTheme(theme.id);
         }, "xc-pm-theme-delete", tips));
-        controls.push(switchEl(t.enabled, (v) => setThemeEnabled(t.id, v), `启用 ${t.name}`));
-        return h("div", { class: "xc-pm-card xc-pm-theme", dataset: { theme: t.id } }, h("div", { class: "xc-pm-card-body" }, h("div", { class: "xc-pm-card-head" }, h("div", { class: "xc-pm-card-name" }, h("span", { class: "xc-pm-card-icon" }, svgIcon(t.url ? Icons.link : Icons.palette, 14)), h("span", { class: "xc-pm-card-title" }, t.name)), h("div", { class: "xc-pm-card-controls" }, controls)), t.description ? h("div", { class: "xc-pm-card-desc" }, t.description) : null), h("div", { class: "xc-pm-card-sep" }), h("div", { class: "xc-pm-card-footer" }, h("span", { class: "xc-pm-card-author" }, [t.author || (t.url ? new URL(t.url).hostname : "本地文件"), `更新于 ${new Date(t.updatedAt).toLocaleDateString()}`].join(" · "))));
+        controls.push(switchEl(theme.enabled, (v) => setThemeEnabled(theme.id, v), t("启用 {name}", { name: theme.name })));
+        return h("div", { class: "xc-pm-card xc-pm-theme", dataset: { theme: theme.id } }, h("div", { class: "xc-pm-card-body" }, h("div", { class: "xc-pm-card-head" }, h("div", { class: "xc-pm-card-name" }, h("span", { class: "xc-pm-card-icon" }, svgIcon(theme.url ? Icons.link : Icons.palette, 14)), h("span", { class: "xc-pm-card-title" }, theme.name)), h("div", { class: "xc-pm-card-controls" }, controls)), theme.description ? h("div", { class: "xc-pm-card-desc" }, theme.description) : null), h("div", { class: "xc-pm-card-sep" }), h("div", { class: "xc-pm-card-footer" }, h("span", { class: "xc-pm-card-author" }, [theme.author || (theme.url ? new URL(theme.url).hostname : t("本地文件")), t("更新于 {date}", { date: new Date(theme.updatedAt).toLocaleDateString(dateLocale()) })].join(" · "))));
       }));
     }
     const offs = [settingsStore.addPrefixChangeListener("core.themes", render), settingsStore.addPrefixChangeListener("core.themesEnabled", render)];
     render();
     return {
-      el: h("div", { class: "xc-pm-tab-root" }, h("div", { class: "xc-pm-row" }, h("div", { class: "xc-pm-row-body" }, h("strong", null, "启用主题"), h("span", { class: "xc-muted" }, "关闭后所有主题暂停生效，列表和开关会保留。")), h("div", { class: "xc-pm-row-actions" }, master)), h("div", { class: "xc-pm-theme-add" }, urlInput, addBtn, h("button", { type: "button", class: "xc-btn xc-btn-sm", onclick: () => fileInput.click() }, "导入文件"), fileInput), error, h("p", { class: "xc-muted xc-pm-theme-hint" }, "主题就是 CSS 文件，文件开头的 @name、@author、@description 注释会显示在卡片上。远程主题只在添加或点「重新下载」时联网。"), list),
+      el: h("div", { class: "xc-pm-tab-root" }, h("div", { class: "xc-pm-row" }, h("div", { class: "xc-pm-row-body" }, h("strong", null, t("启用主题")), h("span", { class: "xc-muted" }, t("关闭后所有主题暂停生效，列表和开关会保留。"))), h("div", { class: "xc-pm-row-actions" }, master)), h("div", { class: "xc-pm-theme-add" }, urlInput, addBtn, h("button", { type: "button", class: "xc-btn xc-btn-sm", onclick: () => fileInput.click() }, t("导入文件")), fileInput), error, h("p", { class: "xc-muted xc-pm-theme-hint" }, t("主题就是 CSS 文件，文件开头的 @name、@author、@description 注释会显示在卡片上。远程主题只在添加或点「重新下载」时联网。")), list),
       dispose() {
         for (const off of offs)
           off();
@@ -2303,8 +2968,8 @@ ${TOOLTIP_CSS}`,
     };
   }
   function quickCssTab() {
-    const editor = h("textarea", { class: "xc-textarea xc-pm-css-editor", spellcheck: false, placeholder: `/* 在这里写 CSS，输入后立即生效 */
-[data-testid="sidebarColumn"] { display: none; }`, "aria-label": "快速 CSS" });
+    const editor = h("textarea", { class: "xc-textarea xc-pm-css-editor", spellcheck: false, placeholder: t(`/* 在这里写 CSS，输入后立即生效 */
+[data-testid="sidebarColumn"] { display: none; }`), "aria-label": t("快速 CSS") });
     editor.value = PlainSettings.core.quickCss;
     const save = debounce(() => setQuickCss(editor.value), 300);
     editor.addEventListener("input", save);
@@ -2316,7 +2981,7 @@ ${TOOLTIP_CSS}`,
       save();
     });
     return {
-      el: h("div", { class: "xc-pm-tab-root" }, h("div", { class: "xc-pm-row" }, h("div", { class: "xc-pm-row-body" }, h("strong", null, "启用快速 CSS"), h("span", { class: "xc-muted" }, "在所有主题之后加载，所以同名规则以这里为准。")), h("div", { class: "xc-pm-row-actions" }, switchEl(PlainSettings.core.quickCssEnabled, (v) => setQuickCssEnabled(v), "启用快速 CSS"))), editor),
+      el: h("div", { class: "xc-pm-tab-root" }, h("div", { class: "xc-pm-row" }, h("div", { class: "xc-pm-row-body" }, h("strong", null, t("启用快速 CSS")), h("span", { class: "xc-muted" }, t("在所有主题之后加载，所以同名规则以这里为准。"))), h("div", { class: "xc-pm-row-actions" }, switchEl(PlainSettings.core.quickCssEnabled, (v) => setQuickCssEnabled(v), t("启用快速 CSS")))), editor),
       dispose() {
         save.cancel();
         if (editor.value !== PlainSettings.core.quickCss)
@@ -2325,39 +2990,50 @@ ${TOOLTIP_CSS}`,
     };
   }
   var TABS = [
-    { id: "plugins", name: "插件", icon: Icons.unplug, description: "开关功能。点击滑杆图标进入配置。", render: (ctx) => pluginsTab(ctx) },
-    { id: "themes", name: "主题", icon: Icons.palette, description: "从网址或本地 .css 文件添加主题，每个主题单独开关。", render: () => themesTab() },
-    { id: "quickCss", name: "快速 CSS", icon: Icons.braces, description: "直接写 CSS 改 X 的样式，输入后立即生效，不需要刷新。", render: () => quickCssTab() },
-    { id: "backup", name: "备份", icon: Icons.archive, render: () => backupTab() }
+    { id: "plugins", name: N_("插件"), icon: Icons.unplug, description: N_("开关功能。点击滑杆图标进入配置。"), render: (ctx) => pluginsTab(ctx) },
+    { id: "themes", name: N_("主题"), icon: Icons.palette, description: N_("从网址或本地 .css 文件添加主题，每个主题单独开关。"), render: () => themesTab() },
+    { id: "quickCss", name: N_("快速 CSS"), icon: Icons.braces, description: N_("直接写 CSS 改 X 的样式，输入后立即生效，不需要刷新。"), render: () => quickCssTab() },
+    { id: "backup", name: N_("备份"), icon: Icons.archive, render: () => backupTab() }
   ];
   var closeCurrent = null;
+  function languagePicker(onChange) {
+    const options = [["auto", t("跟随 X（{name}）", { name: LOCALE_NAMES[xLocale()] })], ["zh", LOCALE_NAMES.zh], ["en", LOCALE_NAMES.en]];
+    const select = h("select", { class: "xc-select", "aria-label": t("界面语言") }, options.map(([value, label]) => h("option", { value }, label)));
+    select.value = getLocalePreference();
+    select.addEventListener("change", () => {
+      setLocalePreference(select.value);
+      markReloadNeeded("language");
+      onChange();
+    });
+    return h("label", { class: "xc-pm-lang" }, h("span", null, t("界面语言")), select);
+  }
   function openSettingsPanel(options = {}) {
     closeCurrent?.();
     let current = null;
     let activeId = options.tab ?? "plugins";
-    const nav = h("nav", { class: "xc-pm-nav", "aria-label": "X Cleaner 设置" });
+    const nav = h("nav", { class: "xc-pm-nav", "aria-label": t("X Cleaner 设置") });
     const heading = h("h2", { class: "xc-pm-title" });
     const hint = h("span", { class: "xc-pm-hint", tabindex: "0" }, svgIcon(Icons.info, 14));
-    const hintTip = attachTooltip(hint, () => TABS.find((t) => t.id === activeId)?.description ?? "", "bottom");
+    const hintTip = attachTooltip(hint, () => t(TABS.find((tab) => tab.id === activeId)?.description ?? ""), "bottom");
     const body = h("div", { class: "xc-pm-body" });
-    const version = h("div", { class: "xc-pm-version" }, h("div", null, "X Cleaner · ", "0.1.0.202610240655"), h("div", null, "正式版", " · 用户脚本"), h("div", null, h("a", { href: "https://raw.githubusercontent.com/0-V-linuxdo/X-Cleaner/main/dist/X%20Cleaner.user.js", target: "_blank", rel: "noopener" }, "检查更新"), " · ", h("a", { href: `${"https://github.com/0-V-linuxdo/X-Cleaner"}/commits/main`, target: "_blank", rel: "noopener" }, "更新记录")));
-    const content = h("div", { class: "xc-pm-shell" }, h("aside", { class: "xc-pm-sidebar" }, nav, version), h("section", { class: "xc-pm-main" }, h("header", { class: "xc-pm-header" }, heading, hint, closeButton(() => close())), body));
+    const version = h("div", { class: "xc-pm-version" }, h("div", null, "X Cleaner · ", "0.1.0.202610240710"), h("div", null, t("正式版"), " · ", t("用户脚本")), h("div", null, h("a", { href: "https://raw.githubusercontent.com/0-V-linuxdo/X-Cleaner/main/dist/X%20Cleaner.user.js", target: "_blank", rel: "noopener" }, t("检查更新")), " · ", h("a", { href: `${"https://github.com/0-V-linuxdo/X-Cleaner"}/commits/main`, target: "_blank", rel: "noopener" }, t("更新记录"))));
+    const content = h("div", { class: "xc-pm-shell" }, h("aside", { class: "xc-pm-sidebar" }, nav, h("div", { class: "xc-pm-foot" }, languagePicker(() => openSettingsPanel({ tab: activeId })), version)), h("section", { class: "xc-pm-main" }, h("header", { class: "xc-pm-header" }, heading, hint, closeButton(() => close())), body));
     const show = (id, plugin) => {
       activeId = id;
       current?.dispose?.();
-      const tab = TABS.find((t) => t.id === id) ?? TABS[0];
-      heading.textContent = tab.name;
+      const tab = TABS.find((item) => item.id === id) ?? TABS[0];
+      heading.textContent = t(tab.name);
       hint.hidden = !tab.description;
       current = tab.id === "plugins" ? pluginsTab({ close: () => close() }, plugin) : tab.render({ close: () => close() });
       body.replaceChildren(current.el);
-      nav.replaceChildren(...TABS.map((t) => h("button", {
+      nav.replaceChildren(...TABS.map((item) => h("button", {
         type: "button",
-        class: `xc-pm-nav-item${t.id === id ? " is-active" : ""}`,
-        "aria-current": t.id === id ? "page" : null,
-        onclick: () => show(t.id)
-      }, svgIcon(t.icon, 16), h("span", null, t.name))));
+        class: `xc-pm-nav-item${item.id === id ? " is-active" : ""}`,
+        "aria-current": item.id === id ? "page" : null,
+        onclick: () => show(item.id)
+      }, svgIcon(item.icon, 16), h("span", null, t(item.name)))));
     };
-    const close = openLayer(content, "X Cleaner 设置", false, () => {
+    const close = openLayer(content, t("X Cleaner 设置"), false, () => {
       current?.dispose?.();
       hintTip.destroy();
       closeCurrent = null;
@@ -2381,7 +3057,10 @@ ${TOOLTIP_CSS}`,
 .xc-pm-nav-item { display: flex; align-items: center; gap: 0.625rem; width: 100%; padding: 0.5rem 0.625rem; border: 0; border-radius: 0.5rem; background: transparent; color: var(--xc-fg-2); font: inherit; font-weight: 500; text-align: left; cursor: pointer; }
 .xc-pm-nav-item:hover { background: var(--xc-bg-3); color: var(--xc-fg); }
 .xc-pm-nav-item.is-active { background: var(--xc-bg-3); color: var(--xc-fg); }
-.xc-pm-version { position: absolute; left: 0; right: 0; bottom: 0; padding: 0.75rem; font-size: 0.625rem; line-height: 1rem; color: var(--xc-fg-2); opacity: 0.5; user-select: text; }
+.xc-pm-foot { position: absolute; left: 0; right: 0; bottom: 0; padding: 0.75rem; display: flex; flex-direction: column; gap: 0.625rem; }
+.xc-pm-lang { display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.75rem; color: var(--xc-fg-2); }
+.xc-pm-lang .xc-select { width: 100%; font-size: 0.8125rem; }
+.xc-pm-version { font-size: 0.625rem; line-height: 1rem; color: var(--xc-fg-2); opacity: 0.5; user-select: text; }
 .xc-pm-version a { color: inherit; text-decoration: underline; }
 .xc-pm-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .xc-pm-header { display: flex; align-items: center; gap: 0.375rem; padding: 1rem 1.25rem 0.75rem; }
@@ -2468,6 +3147,7 @@ ${TOOLTIP_CSS}`,
     .xc-pm-sidebar { width: 100%; padding: 0.5rem; border-right: 0; border-bottom: 1px solid var(--xc-border); }
     .xc-pm-nav { flex-direction: row; }
     .xc-pm-nav-item { width: auto; }
+    .xc-pm-foot { position: static; padding: 0.5rem 0 0; }
     .xc-pm-version { display: none; }
     .xc-pm-grid { grid-template-columns: minmax(0, 1fr); }
 }
@@ -2518,15 +3198,15 @@ ${TOOLTIP_CSS}`,
         t.destroy();
       tips = [];
       const names = Object.keys(plugins).filter((n) => !plugins[n].hidden && !plugins[n].required && !(plugins[n].dev && true)).filter((n) => filter === "all" || isPluginEnabled(n) === (filter === "enabled")).sort((a, b) => a.localeCompare(b));
-      bar.input.placeholder = `搜索 ${names.length} 个插件...`;
-      const shown = names.filter((n) => !search || `${n} ${plugins[n].description}`.toLowerCase().includes(search));
+      bar.input.placeholder = t("搜索 {n} 个插件...", { n: names.length });
+      const shown = names.filter((n) => !search || pluginSearchText(n).includes(search));
       list.replaceChildren(...shown.map((n) => pluginCard(n, { tips, rerender: render, onConfig })));
       if (!shown.length)
-        list.replaceChildren(h("p", { class: "xc-pm-empty" }, "没有匹配搜索的插件。"));
+        list.replaceChildren(h("p", { class: "xc-pm-empty" }, t("没有匹配搜索的插件。")));
     }
     const off = subscribe("pluginToggle", render);
     const banner = reloadBanner();
-    const el = h("div", { class: "xc-pm-page" }, banner.el, h("div", { class: "xc-row" }, h("span", { class: "xc-muted", style: "flex:1;font-size:13px" }, "开关功能。点击滑杆图标进入配置。"), h("button", { class: "xc-btn xc-btn-sm", type: "button", onclick: openPanel }, "插件管理")), bar.el, list);
+    const el = h("div", { class: "xc-pm-page" }, banner.el, h("div", { class: "xc-row" }, h("span", { class: "xc-muted", style: "flex:1;font-size:13px" }, t("开关功能。点击滑杆图标进入配置。")), h("button", { class: "xc-btn xc-btn-sm", type: "button", onclick: openPanel }, t("插件管理"))), bar.el, list);
     render();
     return { el, update: render, dispose: () => {
       off();
@@ -2537,19 +3217,19 @@ ${TOOLTIP_CSS}`,
   }
   var settings_default = definePlugin({
     name: "Settings",
-    description: "插件管理：单独开关每个插件并修改插件设置。可从面板「插件」标签、脚本菜单或 Alt+Shift+X 打开。",
+    description: N_("插件管理：单独开关每个插件并修改插件设置。可从面板「插件」标签、脚本菜单或 Alt+Shift+X 打开。"),
     icon: Icons.settings,
     tags: ["core"],
     required: true,
     startAt: "DOMContentLoaded" /* DOMContentLoaded */,
     managedStyle: styles_default,
     dependencies: ["CoreUI"],
-    panelPages: [{ tab: "plugins", id: "list", label: "插件", order: 0, create: createPluginsPage }],
+    panelPages: [{ tab: "plugins", id: "list", label: N_("插件"), order: 0, create: createPluginsPage }],
     start() {
       document.addEventListener("keydown", onKey, true);
       try {
         if (typeof GM_registerMenuCommand === "function")
-          GM_registerMenuCommand("X Cleaner 插件管理", openPanel);
+          GM_registerMenuCommand(t("X Cleaner 插件管理"), openPanel);
       } catch (e) {
         logger5.error("Menu command registration failed", e);
       }
@@ -2563,7 +3243,7 @@ ${TOOLTIP_CSS}`,
   var stop = null;
   var themes_default = definePlugin({
     name: "UserStyles",
-    description: "应用插件管理里「主题」和「快速 CSS」两个标签页的自定义样式。",
+    description: N_("应用插件管理里「主题」和「快速 CSS」两个标签页的自定义样式。"),
     tags: ["core", "appearance"],
     required: true,
     hidden: true,
@@ -2641,25 +3321,25 @@ ${TOOLTIP_CSS}`,
     try {
       url = new URL(raw.trim());
     } catch {
-      return "远程 Endpoint 必须使用 HTTPS；HTTP 仅允许 localhost。";
+      return t("远程 Endpoint 必须使用 HTTPS；HTTP 仅允许 localhost。");
     }
     if (url.protocol === "https:")
       return null;
     if (url.protocol === "http:" && ["localhost", "127.0.0.1", "[::1]"].includes(url.hostname))
       return null;
-    return "远程 Endpoint 必须使用 HTTPS；HTTP 仅允许 localhost。";
+    return t("远程 Endpoint 必须使用 HTTPS；HTTP 仅允许 localhost。");
   }
   function validateAiSettings(endpoint, model) {
-    return validateEndpoint(endpoint) ?? (model.trim() ? null : "Model 不能为空。");
+    return validateEndpoint(endpoint) ?? (model.trim() ? null : t("Model 不能为空。"));
   }
   function aiReady(ai) {
     return ai.enabled && ai.consented && !validateAiSettings(ai.endpoint, ai.model);
   }
   function aiUnavailableReason(ai) {
     if (!ai.enabled || !ai.consented)
-      return "AI 未启用或尚未确认数据发送范围";
+      return t("AI 未启用或尚未确认数据发送范围");
     if (validateAiSettings(ai.endpoint, ai.model))
-      return "AI Endpoint 或 Model 尚未正确配置";
+      return t("AI Endpoint 或 Model 尚未正确配置");
     return null;
   }
 
@@ -2835,11 +3515,22 @@ ${TOOLTIP_CSS}`,
 
   // src/rules/regex.ts
   var REGEX_FIELDS = ["body", "displayName", "handle", "links"];
-  var FIELD_LABELS = { body: "回复正文", displayName: "显示名", handle: "@handle", links: "链接" };
+  var FIELD_LABELS = {
+    get body() {
+      return t("回复正文");
+    },
+    get displayName() {
+      return t("显示名");
+    },
+    handle: "@handle",
+    get links() {
+      return t("链接");
+    }
+  };
   var MAX_SOURCE = 200;
   var MAX_FIELD_TEXT = 4000;
   var MAX_REGEX_RULES = 200;
-  var TIMEOUT_MESSAGE = "正则执行超过 30ms，已自动禁用。";
+  var TIMEOUT_MESSAGE = N_("正则执行超过 30ms，已自动禁用。");
   var FIELD_ALIASES = {
     body: "body",
     bodytext: "body",
@@ -2861,19 +3552,19 @@ ${TOOLTIP_CSS}`,
   function validateRegex(source, flags, fields) {
     const fail = (errorCode, error) => ({ valid: false, error, errorCode });
     if (!source)
-      return fail("empty-source", "正则表达式不能为空。");
+      return fail("empty-source", t("正则表达式不能为空。"));
     if (source.length > MAX_SOURCE)
-      return fail("source-too-long", "正则表达式不能超过 200 个字符。");
+      return fail("source-too-long", t("正则表达式不能超过 200 个字符。"));
     if (/[gy]/.test(flags))
-      return fail("stateful-flags", "不支持有状态的 g 或 y flags。");
+      return fail("stateful-flags", t("不支持有状态的 g 或 y flags。"));
     const badFlags = [...new Set(flags.replace(/[imsu]/g, ""))].join("");
     if (badFlags)
-      return fail("invalid-flags", `不支持的 flags：${badFlags}`);
+      return fail("invalid-flags", t("不支持的 flags：{badFlags}", { badFlags }));
     if (!fields.length)
-      return fail("missing-fields", "请至少选择一个匹配字段。");
+      return fail("missing-fields", t("请至少选择一个匹配字段。"));
     const badField = fields.find((f) => !REGEX_FIELDS.includes(f));
     if (badField)
-      return fail("invalid-fields", `不支持的字段：${badField}`);
+      return fail("invalid-fields", t("不支持的字段：{badField}", { badField }));
     try {
       new RegExp(source, flags);
     } catch (e) {
@@ -2899,7 +3590,7 @@ ${TOOLTIP_CSS}`,
     const flagsRaw = typeof raw.flags === "string" ? raw.flags : "";
     const fields = rawFields(raw);
     const id = typeof raw.id === "string" && raw.id.trim() ? raw.id.trim().slice(0, 120) : `regex-${index + 1}`;
-    const name = typeof raw.name === "string" && raw.name.trim() ? raw.name.trim().slice(0, 100) : `正则规则 ${index + 1}`;
+    const name = typeof raw.name === "string" && raw.name.trim() ? raw.name.trim().slice(0, 100) : t("正则规则 {n}", { n: index + 1 });
     const check = validateRegex(source, flagsRaw, fields);
     const rule = {
       id,
@@ -2915,7 +3606,7 @@ ${TOOLTIP_CSS}`,
     if (rule.valid && raw.valid === false && typeof raw.errorCode === "string" && raw.errorCode !== "timeout") {
       rule.valid = false;
       rule.errorCode = raw.errorCode;
-      rule.error = typeof raw.error === "string" ? raw.error : "规则无效。";
+      rule.error = typeof raw.error === "string" ? raw.error : t("规则无效。");
     }
     if (!rule.valid)
       rule.enabled = false;
@@ -3334,7 +4025,7 @@ ${TOOLTIP_CSS}`,
   }
   var blockerConfig_default = definePlugin({
     name: "BlockerConfig",
-    description: "屏蔽配置存储：默认值、规范化、导入导出、跨标签同步，API key 单独保存。",
+    description: N_("屏蔽配置存储：默认值、规范化、导入导出、跨标签同步，API key 单独保存。"),
     tags: ["core"],
     required: true,
     hidden: true,
@@ -3364,7 +4055,7 @@ ${TOOLTIP_CSS}`,
   var aiKey = (ai) => JSON.stringify([ai.enabled, ai.consented, ai.endpoint, ai.model, ai.timeoutMs]);
   var aiClient_default = definePlugin({
     name: "AiClient",
-    description: "AI 客户端：OpenAI 兼容接口的请求、解析，以及按对话计数的预算队列。",
+    description: N_("AI 客户端：OpenAI 兼容接口的请求、解析，以及按对话计数的预算队列。"),
     tags: ["core", "ai"],
     required: true,
     hidden: true,
@@ -3483,7 +4174,7 @@ ${TOOLTIP_CSS}`,
   }
   var domObserver_default = definePlugin({
     name: "DomObserverAPI",
-    description: "Shared MutationObserver that lets plugins react to elements as X renders them.",
+    description: N_("共享的 MutationObserver：X 渲染出元素时通知各插件。"),
     tags: ["core"],
     required: true,
     hidden: true,
@@ -3521,7 +4212,7 @@ ${TOOLTIP_CSS}`,
   }
   var navigation_default = definePlugin({
     name: "NavigationAPI",
-    description: "Emits a navigate event whenever X changes the page without reloading.",
+    description: N_("X 不刷新页面就切换页面时，发出 navigate 事件。"),
     tags: ["core"],
     required: true,
     hidden: true,
@@ -3715,7 +4406,7 @@ ${TOOLTIP_CSS}`,
   }
   var postMenu_default = definePlugin({
     name: "PostMenuAPI",
-    description: "Lets plugins add items to the 「…」 menu of a post or a profile.",
+    description: N_("让插件在帖子或个人主页的「…」菜单里添加菜单项。"),
     tags: ["core"],
     hidden: true,
     start() {
@@ -4536,7 +5227,7 @@ ${TOOLTIP_CSS}`,
   }
   var ruleStats_default = definePlugin({
     name: "RuleStats",
-    description: "规则命中统计：记录每条词语、域名、正则和账号规则累计隐藏了多少条不重复回复。统计单独保存，不进入配置导出。",
+    description: N_("规则命中统计：记录每条词语、域名、正则和账号规则累计隐藏了多少条不重复回复。统计单独保存，不进入配置导出。"),
     icon: Icons.chart,
     tags: ["filters"],
     enabledByDefault: true,
@@ -4662,11 +5353,11 @@ ${TOOLTIP_CSS}`,
   // src/plugins/panel/kit.ts
   function hitPill(key) {
     const n = getRuleStats()?.count(key) ?? 0;
-    return pill(`${n} 次`, n ? "accent" : "muted", `累计隐藏 ${n} 条不重复回复`);
+    return pill(t("{n} 次", { n }), n ? "accent" : "muted", t("累计隐藏 {n} 条不重复回复", { n }));
   }
   function pageHeader(label, keys, onSearch) {
     let q = "";
-    const input = searchBox(`搜索${label}`, "", (v) => {
+    const input = searchBox(t("搜索{label}", { label }), "", (v) => {
       q = v;
       const { selectionStart, selectionEnd } = input;
       onSearch();
@@ -4676,15 +5367,15 @@ ${TOOLTIP_CSS}`,
       }
     });
     const summary = h("p", { class: "xc-page-summary xc-muted" });
-    const clear = button("清除统计", () => {
-      if (!confirm("清除全部规则命中统计？隐藏记录不会被删除。"))
+    const clear = button(t("清除统计"), () => {
+      if (!confirm(t("清除全部规则命中统计？隐藏记录不会被删除。")))
         return;
       getRuleStats()?.clear();
-      showToast("规则命中统计已清除。", { type: "success" });
+      showToast(t("规则命中统计已清除。"), { type: "success" });
     }, { small: true });
     const update = () => {
       const total = getRuleStats()?.total(keys()) ?? 0;
-      summary.textContent = `本页规则累计隐藏 ${total} 条不重复回复。`;
+      summary.textContent = t("本页规则累计隐藏 {total} 条不重复回复。", { total });
       clear.disabled = total === 0;
     };
     update();
@@ -4731,15 +5422,15 @@ ${TOOLTIP_CSS}`,
     const count = h("span", { class: "xc-bulk-count" });
     const refresh = () => {
       bar.hidden = selected.size === 0;
-      count.textContent = `已选 ${selected.size} 个${noun}`;
+      count.textContent = t("已选 {n} 个{noun}", { n: selected.size, noun });
       for (const [key, box] of boxes)
         box.checked = selected.has(key);
     };
-    const bar = h("div", { class: "xc-bulk-bar", role: "toolbar", "aria-label": `批量操作${noun}` }, count, h("div", { class: "xc-bulk-actions" }, button("全选", () => {
+    const bar = h("div", { class: "xc-bulk-bar", role: "toolbar", "aria-label": t("批量操作{noun}", { noun }) }, count, h("div", { class: "xc-bulk-actions" }, button(t("全选"), () => {
       for (const k of visible)
         selected.add(k);
       refresh();
-    }, { small: true }), button("取消选择", () => {
+    }, { small: true }), button(t("取消选择"), () => {
       selected.clear();
       refresh();
     }, { small: true }), ...actions.map((a) => button(a.label, () => {
@@ -4755,7 +5446,7 @@ ${TOOLTIP_CSS}`,
     return {
       bar,
       box(key, label) {
-        const box = h("input", { type: "checkbox", class: "xc-bulk-box", "aria-label": `选择 ${label}` });
+        const box = h("input", { type: "checkbox", class: "xc-bulk-box", "aria-label": t("选择 {label}", { label }) });
         box.checked = selected.has(key);
         box.addEventListener("click", (e) => e.stopPropagation());
         box.addEventListener("keydown", (e) => e.stopPropagation());
@@ -4787,14 +5478,14 @@ ${TOOLTIP_CSS}`,
   var hasPosts = () => !!document.querySelector(SEL.tweet);
   var hasBanner = () => !!document.querySelector('header[role="banner"]');
   var CHECKS = {
-    primaryColumn: { id: "primaryColumn", label: "主栏", selector: SEL.primaryColumn, when: onStatusPage },
-    posts: { id: "posts", label: "帖子页上的帖子", selector: SEL.tweet, when: () => onStatusPage() && !!document.querySelector(SEL.primaryColumn) && !document.querySelector('[data-testid="emptyState"], [data-testid="error-detail"]') },
-    postCaret: { id: "postCaret", label: "帖子的「更多」按钮", selector: `${SEL.tweet} ${SEL.caret}`, when: hasPosts },
-    postGrok: { id: "postGrok", label: "帖子上的 Grok 按钮", selector: `${SEL.tweet} button[aria-label*="Grok"]`, when: () => onStatusPage() && hasPosts() },
-    postTime: { id: "postTime", label: "帖子的发布时间", selector: `${SEL.tweet} time[datetime]`, when: hasPosts },
-    sideNav: { id: "sideNav", label: "左侧栏", selector: NAV, when: hasBanner },
-    accountSwitcher: { id: "accountSwitcher", label: "左下角账号菜单", selector: SEL.accountSwitcher, when: () => !!document.querySelector(NAV) && innerWidth >= 500 },
-    moreMenuButton: { id: "moreMenuButton", label: "左侧栏的「更多」", selector: '[data-testid="AppTabBar_More_Menu"]', when: () => !!document.querySelector(NAV) }
+    primaryColumn: { id: "primaryColumn", label: N_("主栏"), selector: SEL.primaryColumn, when: onStatusPage },
+    posts: { id: "posts", label: N_("帖子页上的帖子"), selector: SEL.tweet, when: () => onStatusPage() && !!document.querySelector(SEL.primaryColumn) && !document.querySelector('[data-testid="emptyState"], [data-testid="error-detail"]') },
+    postCaret: { id: "postCaret", label: N_("帖子的「更多」按钮"), selector: `${SEL.tweet} ${SEL.caret}`, when: hasPosts },
+    postGrok: { id: "postGrok", label: N_("帖子上的 Grok 按钮"), selector: `${SEL.tweet} button[aria-label*="Grok"]`, when: () => onStatusPage() && hasPosts() },
+    postTime: { id: "postTime", label: N_("帖子的发布时间"), selector: `${SEL.tweet} time[datetime]`, when: hasPosts },
+    sideNav: { id: "sideNav", label: N_("左侧栏"), selector: NAV, when: hasBanner },
+    accountSwitcher: { id: "accountSwitcher", label: N_("左下角账号菜单"), selector: SEL.accountSwitcher, when: () => !!document.querySelector(NAV) && innerWidth >= 500 },
+    moreMenuButton: { id: "moreMenuButton", label: N_("左侧栏的「更多」"), selector: '[data-testid="AppTabBar_More_Menu"]', when: () => !!document.querySelector(NAV) }
   };
 
   // src/plugins/_api/replyFilter/index.ts
@@ -4820,24 +5511,24 @@ ${TOOLTIP_CSS}`,
       return null;
     return ctx;
   }
-  var LEVELS = [["conservative", "保守"], ["balanced", "均衡"], ["aggressive", "激进"]];
+  var LEVELS = [["conservative", N_("保守")], ["balanced", N_("均衡")], ["aggressive", N_("激进")]];
   function createRunPage(ctx) {
     const c = () => ctx.store.config;
-    const enabled = checkRow("启用屏蔽", () => c().enabled, (v) => ctx.commit((d) => {
+    const enabled = checkRow(t("启用屏蔽"), () => c().enabled, (v) => ctx.commit((d) => {
       d.enabled = v;
     }));
-    const auto = checkRow("自动将垃圾回复作者加入账号黑名单", () => c().autoBlacklistAccounts, (v) => ctx.commit((d) => {
+    const auto = checkRow(t("自动将垃圾回复作者加入账号黑名单"), () => c().autoBlacklistAccounts, (v) => ctx.commit((d) => {
       d.autoBlacklistAccounts = v;
     }));
     const buttons = LEVELS.map(([value, label]) => h("button", { type: "button", onclick: () => ctx.commit((d) => {
       d.sensitivity = value;
-    }) }, label));
+    }) }, t(label)));
     const sync = () => {
       enabled.sync();
       auto.sync();
       LEVELS.forEach(([value], i) => buttons[i].setAttribute("aria-pressed", String(c().sensitivity === value)));
     };
-    const el = h("div", { class: "xc-page" }, enabled, auto, h("div", { class: "xc-toggle-row" }, h("strong", null, "识别强度"), h("div", { class: "xc-segmented", role: "group", "aria-label": "识别强度" }, buttons)));
+    const el = h("div", { class: "xc-page" }, enabled, auto, h("div", { class: "xc-toggle-row" }, h("strong", null, t("识别强度")), h("div", { class: "xc-segmented", role: "group", "aria-label": t("识别强度") }, buttons)));
     sync();
     return { el, update: sync };
   }
@@ -4852,14 +5543,14 @@ ${TOOLTIP_CSS}`,
   };
   var replyFilter_default = definePlugin({
     name: "ReplyFilter",
-    description: "在帖子详情页扫描回复，判定对话作用域，并按优先级调用各个判定器隐藏垃圾回复。",
+    description: N_("在帖子详情页扫描回复，判定对话作用域，并按优先级调用各个判定器隐藏垃圾回复。"),
     tags: ["replies", "core"],
     required: true,
     startAt: "DOMContentLoaded" /* DOMContentLoaded */,
     dependencies: ["BlockerConfig"],
     healthChecks: [CHECKS.primaryColumn, CHECKS.posts],
     replyJudges: [OP_PROTECTION],
-    panelPages: [{ tab: "settings", id: "run", label: "运行", order: 10, isDefault: true, create: createRunPage }],
+    panelPages: [{ tab: "settings", id: "run", label: N_("运行"), order: 10, isDefault: true, create: createRunPage }],
     managedStyle: '[data-xrb-hidden="true"]{display:none !important}',
     events: {
       navigate() {
@@ -4890,12 +5581,12 @@ ${TOOLTIP_CSS}`,
   var settings = definePluginSettings({
     format: {
       type: "select" /* SELECT */,
-      label: "显示格式",
-      description: "「智能」：今天只显示时间，今年显示月日，更早的显示完整日期。",
+      label: N_("显示格式"),
+      description: N_("「智能」：今天只显示时间，今年显示月日，更早的显示完整日期。"),
       options: [
-        { label: "智能（14:05 / 10-23 14:05 / 2025-10-23 14:05）", value: "smart", default: true },
-        { label: "完整日期（2026-10-23 14:05）", value: "full" },
-        { label: "精确到秒（2026-10-23 14:05:09）", value: "seconds" }
+        { label: N_("智能（14:05 / 10-23 14:05 / 2025-10-23 14:05）"), value: "smart", default: true },
+        { label: N_("完整日期（2026-10-23 14:05）"), value: "full" },
+        { label: N_("精确到秒（2026-10-23 14:05:09）"), value: "seconds" }
       ]
     }
   });
@@ -4929,7 +5620,7 @@ ${TOOLTIP_CSS}`,
   var minuteTimer;
   var absoluteTimestamps_default = definePlugin({
     name: "AbsoluteTimestamps",
-    description: "绝对时间：帖子时间从「3 小时」改成「10-23 14:05」这样的具体时间，格式可选。",
+    description: N_("绝对时间：帖子时间从「3 小时」改成「10-23 14:05」这样的具体时间，格式可选。"),
     icon: Icons.clock,
     tags: ["timeline", "appearance"],
     settings,
@@ -4981,26 +5672,26 @@ time[${ABS_ATTR}]::after { content: attr(${ABS_ATTR}); font-size: var(--xc-ts-si
     order: 10,
     icon: Icons.ban,
     visible: notSelf,
-    label: (ctx) => getConfigStore().findAccount(handleOf(ctx)) ? `从 X Cleaner 黑名单移出 ${handleOf(ctx)}` : `加入 X Cleaner 黑名单：${handleOf(ctx)}`,
+    label: (ctx) => getConfigStore().findAccount(handleOf(ctx)) ? t("从 X Cleaner 黑名单移出 {handle}", { handle: handleOf(ctx) }) : t("加入 X Cleaner 黑名单：{handle}", { handle: handleOf(ctx) }),
     run(ctx) {
       const store = getConfigStore();
       const handle = handleOf(ctx);
       if (store.findAccount(handle)) {
         store.removeBlockedAccount(handle);
         refilter(handle, false);
-        showToast(`${handle} 已移出账号黑名单。`, { type: "success" });
+        showToast(t("{handle} 已移出账号黑名单。", { handle }), { type: "success" });
         return;
       }
       if (store.config.allowHandles.includes(handle)) {
-        showToast(`${handle} 在白名单中，先移出白名单才能加入黑名单。`, { type: "error" });
+        showToast(t("{handle} 在白名单中，先移出白名单才能加入黑名单。", { handle }), { type: "error" });
         return;
       }
       if (!store.addBlockedAccount({ handle, source: "manual" })) {
-        showToast("保存设置失败。", { type: "error" });
+        showToast(t("保存设置失败。"), { type: "error" });
         return;
       }
       refilter(handle, false);
-      showToast(`${handle} 已加入账号黑名单，TA 的回复会被隐藏。`, { type: "success" });
+      showToast(t("{handle} 已加入账号黑名单，TA 的回复会被隐藏。", { handle }), { type: "success" });
     }
   };
   var allowListItem = {
@@ -5008,22 +5699,22 @@ time[${ABS_ATTR}]::after { content: attr(${ABS_ATTR}); font-size: var(--xc-ts-si
     order: 20,
     icon: Icons.shield,
     visible: notSelf,
-    label: (ctx) => getConfigStore().config.allowHandles.includes(handleOf(ctx)) ? `从 X Cleaner 白名单移出 ${handleOf(ctx)}` : `加入 X Cleaner 白名单：${handleOf(ctx)}`,
+    label: (ctx) => getConfigStore().config.allowHandles.includes(handleOf(ctx)) ? t("从 X Cleaner 白名单移出 {handle}", { handle: handleOf(ctx) }) : t("加入 X Cleaner 白名单：{handle}", { handle: handleOf(ctx) }),
     run(ctx) {
       const store = getConfigStore();
       const handle = handleOf(ctx);
       if (store.config.allowHandles.includes(handle)) {
         store.removeAllowHandle(handle);
         refilter(handle, false);
-        showToast(`${handle} 已移出白名单。`, { type: "success" });
+        showToast(t("{handle} 已移出白名单。", { handle }), { type: "success" });
         return;
       }
       if (!store.addAllowHandle(handle)) {
-        showToast("保存设置失败。", { type: "error" });
+        showToast(t("保存设置失败。"), { type: "error" });
         return;
       }
       refilter(handle, true);
-      showToast(`${handle} 已加入白名单，TA 的回复不会再被隐藏。`, { type: "success" });
+      showToast(t("{handle} 已加入白名单，TA 的回复不会再被隐藏。", { handle }), { type: "success" });
     }
   };
   var blacklistMenuItem = blacklistItem;
@@ -5032,7 +5723,17 @@ time[${ABS_ATTR}]::after { content: attr(${ABS_ATTR}); font-size: var(--xc-ts-si
   var allowListProfileItem = allowListItem;
 
   // src/rules/classifier.ts
-  var CATEGORY_LABELS = { adult: "成人引流", crypto: "加密货币引流", "promotional-name": "推广用户名" };
+  var CATEGORY_LABELS = {
+    get adult() {
+      return t("成人引流");
+    },
+    get crypto() {
+      return t("加密货币引流");
+    },
+    get "promotional-name"() {
+      return t("推广用户名");
+    }
+  };
   var R = (s) => new RegExp(s, "iu");
   var GENERIC_NEGATIVE = R("新闻|报道|研究|论文|分析|数据|监管|执法|打击|封禁|违法|犯罪|案例|科普|曝光|举报|警惕|谨防|小心|反诈|骗局|骗子|诈骗|不要上当|请勿|news|report|research|analysis|study|warning|beware|scam|fraud|expos(?:e|ed|ure)");
   var CRYPTO_NEGATIVE = R("开发|代码|协议|审计|漏洞|技术|教程|白皮书|风险|不要(?:点击|购买|买入|连接|参与|领取)|不要买|developer|development|github|source code|security|audit|vulnerability|do not (?:click|buy|connect|claim)|don't (?:click|buy|connect|claim)");
@@ -5097,26 +5798,26 @@ time[${ABS_ATTR}]::after { content: attr(${ABS_ATTR}); font-size: var(--xc-ts-si
     const s = [];
     const template = ADULT_TEMPLATE.some((r) => r.test(body));
     if (template)
-      s.push({ id: "adult-funnel-template", family: "adult-semantic", weight: 8, label: "高置信黄推引流模板", strong: true });
+      s.push({ id: "adult-funnel-template", family: "adult-semantic", weight: 8, label: t("高置信黄推引流模板"), strong: true });
     const strong = ADULT_STRONG.some((r) => r.test(body)) || ADULT_CONTACT_COMBO.test(compact);
     if (strong)
-      s.push({ id: "adult-strong-service", family: "adult-semantic", weight: 8, label: "成人服务复合语义", strong: true });
+      s.push({ id: "adult-strong-service", family: "adult-semantic", weight: 8, label: t("成人服务复合语义"), strong: true });
     if (!template && !strong && ADULT_EXPLICIT.test(body))
-      s.push({ id: "adult-explicit-language", family: "adult-semantic", weight: 5, label: "露骨成人语义" });
+      s.push({ id: "adult-explicit-language", family: "adult-semantic", weight: 5, label: t("露骨成人语义") });
     if (ADULT_PRIVATE.test(body))
-      s.push({ id: "adult-private-content", family: "adult-content", weight: 4, label: "成人或私密内容" });
+      s.push({ id: "adult-private-content", family: "adult-content", weight: 4, label: t("成人或私密内容") });
     if (ADULT_CONTACT.test(compact))
-      s.push({ id: "adult-contact-channel", family: "adult-contact", weight: 4, label: "站外联系方式" });
+      s.push({ id: "adult-contact-channel", family: "adult-contact", weight: 4, label: t("站外联系方式") });
     if (ADULT_CTA.test(body))
-      s.push({ id: "adult-call-to-action", family: "adult-action", weight: 3, label: "引流行动号召" });
+      s.push({ id: "adult-call-to-action", family: "adult-action", weight: 3, label: t("引流行动号召") });
     if (ADULT_COMMERCE.test(body))
-      s.push({ id: "adult-commercial-context", family: "adult-commerce", weight: 3, label: "交易或同城语境" });
+      s.push({ id: "adult-commercial-context", family: "adult-commerce", weight: 3, label: t("交易或同城语境") });
     if (hostMatches(hosts, ADULT_DOMAINS))
-      s.push({ id: "adult-domain", family: "adult-domain", weight: 5, label: "成人内容域名" });
+      s.push({ id: "adult-domain", family: "adult-domain", weight: 5, label: t("成人内容域名") });
     if (countAny(body, ["\uD83D\uDD1E", "\uD83D\uDCA6", "\uD83C\uDF51", "\uD83D\uDC44", "\uD83D\uDC8B"]) >= 2)
-      s.push({ id: "adult-emoji-cluster", family: "adult-emoji", weight: 1, label: "成人导向表情组合" });
+      s.push({ id: "adult-emoji-cluster", family: "adult-emoji", weight: 1, label: t("成人导向表情组合") });
     if (s.length && GENERIC_NEGATIVE.test(body))
-      s.push({ id: "adult-negative-context", family: "adult-negative", weight: -3, label: "新闻、研究或反诈语境" });
+      s.push({ id: "adult-negative-context", family: "adult-negative", weight: -3, label: t("新闻、研究或反诈语境") });
     return score("adult", s);
   }
   function scoreCrypto(input, hosts = linkHosts(input)) {
@@ -5127,27 +5828,27 @@ time[${ABS_ATTR}]::after { content: attr(${ABS_ATTR}); font-size: var(--xc-ts-si
     const s = [];
     const strong = CRYPTO_STRONG.test(body);
     if (strong)
-      s.push({ id: "crypto-strong-promotion", family: "crypto-semantic", weight: 8, label: "币圈推广复合语义", strong: true });
+      s.push({ id: "crypto-strong-promotion", family: "crypto-semantic", weight: 8, label: t("币圈推广复合语义"), strong: true });
     const language = !strong && CRYPTO_LANGUAGE.test(body);
     if (language)
-      s.push({ id: "crypto-promotion-language", family: "crypto-semantic", weight: 5, label: "空投、预售或发币语义" });
+      s.push({ id: "crypto-promotion-language", family: "crypto-semantic", weight: 5, label: t("空投、预售或发币语义") });
     const promoSemantic = strong || language;
     if (CRYPTO_CTA.test(body) && (promoSemantic || promoDomain) && !negative)
-      s.push({ id: "crypto-call-to-action", family: "crypto-action", weight: 4, label: "买入、领取或进群号召" });
+      s.push({ id: "crypto-call-to-action", family: "crypto-action", weight: 4, label: t("买入、领取或进群号召") });
     if (CRYPTO_CONTRACT.some((r) => r.test(body)) && (promoSemantic || promoDomain || CRYPTO_PROMO_CONTEXT.test(body)) && !negative)
-      s.push({ id: "crypto-contract-address", family: "crypto-contract", weight: 4, label: "带推广语境的合约地址" });
+      s.push({ id: "crypto-contract-address", family: "crypto-contract", weight: 4, label: t("带推广语境的合约地址") });
     if (promoDomain)
-      s.push({ id: "crypto-promotion-domain", family: "crypto-domain", weight: 4, label: "加密资产推广域名" });
+      s.push({ id: "crypto-promotion-domain", family: "crypto-domain", weight: 4, label: t("加密资产推广域名") });
     if ((promoSemantic || promoDomain) && CRYPTO_CONTACT.test(`${body} ${linksText}`) && !negative)
-      s.push({ id: "crypto-contact-channel", family: "crypto-contact", weight: 3, label: "币圈群组或联系渠道" });
+      s.push({ id: "crypto-contact-channel", family: "crypto-contact", weight: 3, label: t("币圈群组或联系渠道") });
     if (CRYPTO_PROFIT.test(body))
-      s.push({ id: "crypto-profit-promise", family: "crypto-profit", weight: 3, label: "夸张收益或保证性话术" });
+      s.push({ id: "crypto-profit-promise", family: "crypto-profit", weight: 3, label: t("夸张收益或保证性话术") });
     if (CRYPTO_CASHTAG.test(body))
-      s.push({ id: "crypto-cashtag", family: "crypto-weak", weight: 1, label: "Cashtag 弱信号" });
+      s.push({ id: "crypto-cashtag", family: "crypto-weak", weight: 1, label: t("Cashtag 弱信号") });
     if (countAny(body, ["\uD83D\uDE80", "\uD83D\uDC8E", "\uD83E\uDD11", "\uD83C\uDF19"]) >= 2)
-      s.push({ id: "crypto-emoji-cluster", family: "crypto-emoji", weight: 1, label: "币圈推广表情组合" });
+      s.push({ id: "crypto-emoji-cluster", family: "crypto-emoji", weight: 1, label: t("币圈推广表情组合") });
     if (s.length && negative)
-      s.push({ id: "crypto-negative-context", family: "crypto-negative", weight: -3, label: "新闻、技术或反诈语境" });
+      s.push({ id: "crypto-negative-context", family: "crypto-negative", weight: -3, label: t("新闻、技术或反诈语境") });
     return score("crypto", s);
   }
   function scoreName(input) {
@@ -5156,19 +5857,19 @@ time[${ABS_ATTR}]::after { content: attr(${ABS_ATTR}); font-size: var(--xc-ts-si
     const handle = (input.authorHandle ?? "").replace(/^@/, "");
     const s = [];
     if (NAME_STRONG.test(name))
-      s.push({ id: "name-strong-compound", family: "name-semantic", weight: 8, label: "推广用户名复合语义", strong: true });
+      s.push({ id: "name-strong-compound", family: "name-semantic", weight: 8, label: t("推广用户名复合语义"), strong: true });
     else if (NAME_SUSPICIOUS.test(name))
-      s.push({ id: "name-suspicious-semantic", family: "name-semantic", weight: 5, label: "成人或币圈推广语义" });
+      s.push({ id: "name-suspicious-semantic", family: "name-semantic", weight: 5, label: t("成人或币圈推广语义") });
     else if (NAME_WEAK.test(name))
-      s.push({ id: "name-weak-role", family: "name-semantic", weight: 2, label: "弱推广角色词" });
+      s.push({ id: "name-weak-role", family: "name-semantic", weight: 2, label: t("弱推广角色词") });
     if (NAME_CONTACT.test(name))
-      s.push({ id: "name-contact-channel", family: "name-contact", weight: 4, label: "用户名含站外联系方式" });
+      s.push({ id: "name-contact-channel", family: "name-contact", weight: 4, label: t("用户名含站外联系方式") });
     if (NAME_EMOJI.test(raw))
-      s.push({ id: "name-promotion-emoji", family: "name-emoji", weight: 1, label: "用户名含推广导向表情" });
+      s.push({ id: "name-promotion-emoji", family: "name-emoji", weight: 1, label: t("用户名含推广导向表情") });
     if (handle.length >= 8 && /[a-z]/i.test(handle) && (handle.match(/\d/g)?.length ?? 0) >= 3)
-      s.push({ id: "name-random-handle", family: "name-handle", weight: 1, label: "英文数字混合 handle 弱信号" });
+      s.push({ id: "name-random-handle", family: "name-handle", weight: 1, label: t("英文数字混合 handle 弱信号") });
     if (s.length && NAME_LEGIT.test(normalizeText(raw)))
-      s.push({ id: "name-legitimate-context", family: "name-negative", weight: -3, label: "职业或研究语境" });
+      s.push({ id: "name-legitimate-context", family: "name-negative", weight: -3, label: t("职业或研究语境") });
     return score("promotional-name", s);
   }
   var ORDER = ["adult", "crypto", "promotional-name"];
@@ -5177,7 +5878,7 @@ time[${ABS_ATTR}]::after { content: attr(${ABS_ATTR}); font-size: var(--xc-ts-si
     const empty = (reason) => ({ action: "allow", category: null, score: 0, threshold, reason, signals: [], positiveFamilyCount: 0, hasSemanticSignal: false, autoBlacklistEligible: false, categories: [] });
     const { adult, crypto, promotionalName } = config.categories;
     if (!adult && !crypto && !promotionalName)
-      return empty("所有内置识别类别均已关闭");
+      return empty(t("所有内置识别类别均已关闭"));
     const hosts = linkHosts(input);
     const categories = [];
     if (adult)
@@ -5187,7 +5888,7 @@ time[${ABS_ATTR}]::after { content: attr(${ABS_ATTR}); font-size: var(--xc-ts-si
     if (promotionalName)
       categories.push(scoreName(input));
     categories.sort((a, b) => b.score - a.score || b.positiveFamilyCount - a.positiveFamilyCount || ORDER.indexOf(a.category) - ORDER.indexOf(b.category));
-    const labels = (c) => c.signals.filter((s) => s.weight > 0).slice(0, 3).map((s) => s.label).join("、");
+    const labels = (c) => listJoin(c.signals.filter((s) => s.weight > 0).slice(0, 3).map((s) => s.label));
     const build = (action, c, reason) => ({
       action,
       category: c.category,
@@ -5202,29 +5903,29 @@ time[${ABS_ATTR}]::after { content: attr(${ABS_ATTR}); font-size: var(--xc-ts-si
     });
     const hideable = categories.find((c) => c.score >= threshold && (c.positiveFamilyCount >= 2 || c.hasStrongSignal));
     if (hideable)
-      return build("hide", hideable, `${CATEGORY_LABELS[hideable.category]}：${labels(hideable)}`);
+      return build("hide", hideable, t("{category}：{signals}", { category: CATEGORY_LABELS[hideable.category], signals: labels(hideable) }));
     const top = categories.find((c) => c.positiveFamilyCount > 0);
     if (!top)
-      return { ...empty("未发现可疑的内置规则信号"), categories };
+      return { ...empty(t("未发现可疑的内置规则信号")), categories };
     if (aiEnabled) {
       const hasMedia = (input.mediaUrls ?? []).length > 0;
       const candidate = categories.find((c) => c.score >= threshold - 3 && c.score < threshold && c.positiveFamilyCount >= 2 || hasMedia && c.hasSemanticSignal && c.score > 0);
       if (candidate)
-        return build("ai-review", candidate, `建议 AI 复核：${labels(candidate)}`);
+        return build("ai-review", candidate, t("建议 AI 复核：{signals}", { signals: labels(candidate) }));
     }
-    return build("allow", top, `低于屏蔽阈值：${labels(top)}`);
+    return build("allow", top, t("低于屏蔽阈值：{signals}", { signals: labels(top) }));
   }
 
   // src/plugins/accountBlacklist/page.ts
-  var SOURCE_LABELS = { manual: "手动", "local-auto": "本地自动", "ai-auto": "AI 自动" };
+  var SOURCE_LABELS = { manual: N_("手动"), "local-auto": N_("本地自动"), "ai-auto": N_("AI 自动") };
   function meta(a) {
     const parts = [];
     if (a.category)
-      parts.push(CATEGORY_LABELS[a.category] ?? a.category);
+      parts.push(CATEGORY_LABELS[a.category] ?? t(a.category));
     if (a.score != null)
-      parts.push(`分数 ${a.score}`);
+      parts.push(t("分数 {score}", { score: a.score }));
     if (a.confidence != null)
-      parts.push(`置信度 ${Math.round(a.confidence * 100)}%`);
+      parts.push(t("置信度 {pct}%", { pct: Math.round(a.confidence * 100) }));
     parts.push(formatTime(a.createdAt));
     return parts.join(" · ");
   }
@@ -5233,24 +5934,24 @@ time[${ABS_ATTR}]::after { content: attr(${ABS_ATTR}); font-size: var(--xc-ts-si
     let selected = null;
     const input = h("input", { class: "xc-input", type: "text", placeholder: "@handle", "aria-label": "@handle", autocomplete: "off" });
     const msg = errorLine();
-    const submit = h("button", { class: "xc-btn xc-btn-primary", type: "submit" }, "添加");
-    const cancel = button("取消编辑", () => stopEditing());
+    const submit = h("button", { class: "xc-btn xc-btn-primary", type: "submit" }, t("添加"));
+    const cancel = button(t("取消编辑"), () => stopEditing());
     const form = h("form", { class: "xc-form" }, h("div", { class: "xc-row" }, input, submit, cancel), msg);
-    const clearAuto = button("清除自动条目 (0)", () => {
-      if (!confirm("清除所有本地自动和 AI 自动账号条目？"))
+    const clearAuto = button(t("清除自动条目 ({n})", { n: 0 }), () => {
+      if (!confirm(t("清除所有本地自动和 AI 自动账号条目？")))
         return;
       ctx.store.clearAutomaticAccounts();
     }, { small: true });
     const listArea = h("div");
-    const header = pageHeader("账号", () => ctx.store.config.blacklists.accounts.map((a) => `account:${a.handle}`), () => renderList());
-    const bulk = bulkSelection("账号", [
+    const header = pageHeader(t("账号"), () => ctx.store.config.blacklists.accounts.map((a) => `account:${a.handle}`), () => renderList());
+    const bulk = bulkSelection(t("账号"), [
       {
-        label: "移到白名单",
-        confirm: (n) => `把 ${n} 个账号从黑名单移到白名单？TA 们的回复不会再被隐藏。`,
+        label: t("移到白名单"),
+        confirm: (n) => t("把 {n} 个账号从黑名单移到白名单？TA 们的回复不会再被隐藏。", { n }),
         run: (keys) => {
           const move = new Set(keys);
           if (new Set([...ctx.store.config.allowHandles, ...keys]).size > LIMITS.allowHandles) {
-            showToast(`白名单最多 ${LIMITS.allowHandles} 个账号。`, { type: "error" });
+            showToast(t("白名单最多 {max} 个账号。", { max: LIMITS.allowHandles }), { type: "error" });
             return false;
           }
           return ctx.commit((c) => {
@@ -5260,9 +5961,9 @@ time[${ABS_ATTR}]::after { content: attr(${ABS_ATTR}); font-size: var(--xc-ts-si
         }
       },
       {
-        label: "移除所选",
+        label: t("移除所选"),
         kind: "danger",
-        confirm: (n) => `从账号黑名单移除 ${n} 个账号？`,
+        confirm: (n) => t("从账号黑名单移除 {n} 个账号？", { n }),
         run: (keys) => {
           const drop = new Set(keys);
           const ok = ctx.commit((c) => {
@@ -5274,9 +5975,9 @@ time[${ABS_ATTR}]::after { content: attr(${ABS_ATTR}); font-size: var(--xc-ts-si
         }
       }
     ]);
-    const el = h("div", { class: "xc-page" }, header.el, section("账号", clearAuto), form, bulk.bar, listArea);
+    const el = h("div", { class: "xc-page" }, header.el, section(t("账号"), clearAuto), form, bulk.bar, listArea);
     const label = h("span", { class: "xc-footer-label" });
-    const footer = h("div", { class: "xc-review-bar" }, label, h("div", { class: "xc-footer-actions" }, button("编辑", () => {
+    const footer = h("div", { class: "xc-review-bar" }, label, h("div", { class: "xc-footer-actions" }, button(t("编辑"), () => {
       const entry = ctx.store.findAccount(selected ?? "");
       if (!entry)
         return;
@@ -5284,7 +5985,7 @@ time[${ABS_ATTR}]::after { content: attr(${ABS_ATTR}); font-size: var(--xc-ts-si
       input.value = entry.handle;
       renderForm();
       input.focus();
-    }, { small: true }), button("移除", () => {
+    }, { small: true }), button(t("移除"), () => {
       if (!selected)
         return;
       const handle = selected;
@@ -5300,20 +6001,20 @@ time[${ABS_ATTR}]::after { content: attr(${ABS_ATTR}); font-size: var(--xc-ts-si
       renderForm();
     };
     const renderForm = () => {
-      submit.textContent = editing ? "保存" : "添加";
+      submit.textContent = editing ? t("保存") : t("添加");
       cancel.hidden = !editing;
     };
     form.addEventListener("submit", (e) => {
       e.preventDefault();
       const handle = toConfigHandle(input.value);
       if (!handle)
-        return msg.show("请输入有效的完整 @handle。");
+        return msg.show(t("请输入有效的完整 @handle。"));
       const config = ctx.store.config;
       if (config.allowHandles.includes(handle))
-        return msg.show("该账号已在白名单中。");
+        return msg.show(t("该账号已在白名单中。"));
       const accounts = config.blacklists.accounts;
       if (!editing && !accounts.some((a) => a.handle === handle) && accounts.length >= 2000)
-        return msg.show("账号黑名单已满（2000）。");
+        return msg.show(t("账号黑名单已满（{max}）。", { max: 2000 }));
       const base = editing;
       const ok = ctx.commit((c) => {
         const entry = base ? { ...base, handle } : { handle, source: "manual", category: "", reason: "", score: null, confidence: null, createdAt: Date.now() };
@@ -5328,26 +6029,26 @@ time[${ABS_ATTR}]::after { content: attr(${ABS_ATTR}); font-size: var(--xc-ts-si
       if (!ok)
         return;
       selected = handle;
-      showToast("账号黑名单已保存。", { type: "success" });
+      showToast(t("账号黑名单已保存。"), { type: "success" });
       stopEditing();
     });
     const renderList = () => {
       header.update();
       const accounts = ctx.store.config.blacklists.accounts;
       const autoCount = accounts.filter((a) => a.source !== "manual").length;
-      clearAuto.textContent = `清除自动条目 (${autoCount})`;
+      clearAuto.textContent = t("清除自动条目 ({n})", { n: autoCount });
       clearAuto.disabled = autoCount === 0;
       const q = header.query();
-      const items = [...accounts].reverse().filter((a) => matches(q, a.handle, a.reason, SOURCE_LABELS[a.source]));
+      const items = [...accounts].reverse().filter((a) => matches(q, a.handle, a.reason, t(SOURCE_LABELS[a.source])));
       if (!items.some((a) => a.handle === selected))
         selected = items[0]?.handle ?? null;
       bulk.sync(accounts.map((a) => a.handle), items.map((a) => a.handle));
       listArea.replaceChildren(listbox({
-        label: "账号黑名单",
+        label: t("账号黑名单"),
         items,
         key: (a) => a.handle,
         selected,
-        empty: q ? "没有匹配的账号。" : "暂无账号黑名单。",
+        empty: q ? t("没有匹配的账号。") : t("暂无账号黑名单。"),
         onSelect: (k) => {
           const hadFocus = listArea.contains(document.activeElement);
           selected = k;
@@ -5356,13 +6057,13 @@ time[${ABS_ATTR}]::after { content: attr(${ABS_ATTR}); font-size: var(--xc-ts-si
             queueMicrotask(() => listArea.querySelector(`[data-key="${CSS.escape(k)}"]`)?.focus());
         },
         render: (a) => [
-          h("div", { class: "xc-item-head" }, bulk.box(a.handle, a.handle), h("strong", null, a.handle), hitPill(`account:${a.handle}`), pill(SOURCE_LABELS[a.source], a.source === "manual" ? "" : "accent")),
+          h("div", { class: "xc-item-head" }, bulk.box(a.handle, a.handle), h("strong", null, a.handle), hitPill(`account:${a.handle}`), pill(t(SOURCE_LABELS[a.source]), a.source === "manual" ? "" : "accent")),
           a.reason ? h("div", { class: "xc-rec-reason" }, a.reason) : null,
           h("div", { class: "xc-item-meta xc-muted" }, meta(a))
         ].filter(Boolean)
       }));
       footer.hidden = !selected;
-      label.textContent = selected ? `已选 ${selected}` : "";
+      label.textContent = selected ? t("已选 {n}", { n: selected }) : "";
     };
     renderForm();
     return {
@@ -5379,13 +6080,13 @@ time[${ABS_ATTR}]::after { content: attr(${ABS_ATTR}); font-size: var(--xc-ts-si
   // src/plugins/accountBlacklist/index.ts
   var accountBlacklist_default = definePlugin({
     name: "AccountBlacklist",
-    description: "账号黑名单：手动条目优先于根帖作者保护；本地自动和 AI 自动条目在保护之后生效。",
+    description: N_("账号黑名单：手动条目优先于根帖作者保护；本地自动和 AI 自动条目在保护之后生效。"),
     icon: Icons.ban,
     tags: ["filters", "moderation"],
     enabledByDefault: true,
     postMenuItems: [blacklistMenuItem],
     profileMenuItems: [blacklistProfileItem],
-    panelPages: [{ tab: "blacklist", id: "accounts", label: "账号", order: 40, isDefault: true, create: createAccountsPage }],
+    panelPages: [{ tab: "blacklist", id: "accounts", label: N_("账号"), order: 40, isDefault: true, create: createAccountsPage }],
     replyJudges: [
       {
         id: "manual-account",
@@ -5394,7 +6095,7 @@ time[${ABS_ATTR}]::after { content: attr(${ABS_ATTR}); font-size: var(--xc-ts-si
           const entry = findAccount(env.config, ctx.authorHandle);
           if (entry?.source !== "manual")
             return null;
-          return { action: "hide", source: "account", category: "手动账号黑名单", reason: `账号黑名单：${entry.handle}`, match: { kind: "account", value: entry.handle }, statsKey: `account:${entry.handle}` };
+          return { action: "hide", source: "account", category: N_("手动账号黑名单"), reason: t("账号黑名单：{handle}", { handle: entry.handle }), match: { kind: "account", value: entry.handle }, statsKey: `account:${entry.handle}` };
         },
         quick(input, env) {
           const entry = input.authorHandle ? findAccount(env.config, input.authorHandle) : undefined;
@@ -5408,7 +6109,7 @@ time[${ABS_ATTR}]::after { content: attr(${ABS_ATTR}); font-size: var(--xc-ts-si
           const entry = findAccount(env.config, ctx.authorHandle);
           if (!entry || entry.source === "manual")
             return null;
-          return { action: "hide", source: "auto-account", category: entry.category || "自动账号黑名单", reason: entry.reason || "自动账号黑名单", score: entry.score, confidence: entry.confidence, match: { kind: "account", value: entry.handle }, statsKey: `account:${entry.handle}` };
+          return { action: "hide", source: "auto-account", category: entry.category || N_("自动账号黑名单"), reason: entry.reason || t("自动账号黑名单"), score: entry.score, confidence: entry.confidence, match: { kind: "account", value: entry.handle }, statsKey: `account:${entry.handle}` };
         },
         quick(input, env) {
           const entry = input.authorHandle ? findAccount(env.config, input.authorHandle) : undefined;
@@ -5445,7 +6146,8 @@ time[${ABS_ATTR}]::after { content: attr(${ABS_ATTR}); font-size: var(--xc-ts-si
         { role: "system", content: REVIEW_SYSTEM_PROMPT },
         { role: "user", content: [
           { type: "text", text: `Classify this reply data:
-${JSON.stringify(data)}` },
+${JSON.stringify(data)}
+Write reason in ${aiLanguageName()}.` },
           ...images.map((url) => ({ type: "image_url", image_url: { url, detail: "low" } }))
         ] }
       ]
@@ -5474,23 +6176,23 @@ ${JSON.stringify(data)}` },
     const enable = h("input", { type: "checkbox" });
     const endpoint = h("input", { class: "xc-input", type: "url", "aria-label": "Endpoint", autocomplete: "off" });
     const model = h("input", { class: "xc-input", type: "text", "aria-label": "Model", autocomplete: "off" });
-    const save = h("button", { class: "xc-btn xc-btn-primary", type: "submit" }, "保存 AI 设置");
+    const save = h("button", { class: "xc-btn xc-btn-primary", type: "submit" }, t("保存 AI 设置"));
     const msg = errorLine();
     const settingsForm = h("form", { class: "xc-form" }, h("label", null, "Endpoint", endpoint), h("label", null, "Model", model), h("div", { class: "xc-row" }, save), msg);
     const key = h("input", { class: "xc-input", type: "password", "aria-label": "API key", autocomplete: "off" });
-    const clearKey = button("清除密钥", () => {
-      if (!confirm("清除已保存的 API key？"))
+    const clearKey = button(t("清除密钥"), () => {
+      if (!confirm(t("清除已保存的 API key？")))
         return;
       try {
         store.setApiKey("");
-        showToast("API key 已清除。", { type: "success" });
+        showToast(t("API key 已清除。"), { type: "success" });
       } catch {
-        showToast("保存设置失败。", { type: "error" });
+        showToast(t("保存设置失败。"), { type: "error" });
       }
       sync();
     }, { kind: "danger" });
-    const keyForm = h("form", { class: "xc-form" }, h("label", null, "API key", key), h("div", { class: "xc-row" }, h("button", { class: "xc-btn", type: "submit" }, "保存密钥"), clearKey));
-    const el = h("div", { class: "xc-page" }, h("label", { class: "xc-toggle-row" }, h("strong", null, "启用 AI"), enable), h("p", { class: "xc-muted" }, "启用后，临界回复可能发送作者显示名、@handle、正文、链接及最多两张图片 URL 到你配置的服务。API key 单独保存，不随配置导出。"), settingsForm, keyForm);
+    const keyForm = h("form", { class: "xc-form" }, h("label", null, "API key", key), h("div", { class: "xc-row" }, h("button", { class: "xc-btn", type: "submit" }, t("保存密钥")), clearKey));
+    const el = h("div", { class: "xc-page" }, h("label", { class: "xc-toggle-row" }, h("strong", null, t("启用 AI")), enable), h("p", { class: "xc-muted" }, t("启用后，临界回复可能发送作者显示名、@handle、正文、链接及最多两张图片 URL 到你配置的服务。API key 单独保存，不随配置导出。")), settingsForm, keyForm);
     let seen = { endpoint: store.config.ai.endpoint, model: store.config.ai.model };
     endpoint.value = seen.endpoint;
     model.value = seen.model;
@@ -5502,7 +6204,7 @@ ${JSON.stringify(data)}` },
       if (model.value === seen.model)
         model.value = ai.model;
       seen = { endpoint: ai.endpoint, model: ai.model };
-      key.placeholder = store.apiKey ? "已保存；留空不更改" : "未保存";
+      key.placeholder = store.apiKey ? t("已保存；留空不更改") : t("未保存");
       clearKey.disabled = !store.apiKey;
     };
     const offImport = subscribe("configImported", () => {
@@ -5528,11 +6230,11 @@ ${JSON.stringify(data)}` },
         return;
       }
       const target = endpoint.value.trim();
-      if (!confirm(`启用 AI 复核会把作者显示名、@handle、回复正文、链接及最多两张图片 URL 发送到：
+      if (!confirm(t(`启用 AI 复核会把作者显示名、@handle、回复正文、链接及最多两张图片 URL 发送到：
 
-${target}
+{target}
 
-是否继续？`)) {
+是否继续？`, { target }))) {
         enable.checked = false;
         return;
       }
@@ -5554,7 +6256,7 @@ ${target}
       if (error)
         return msg.show(error);
       msg.show("");
-      save.textContent = "保存中…";
+      save.textContent = t("保存中…");
       settingsForm.setAttribute("aria-busy", "true");
       for (const c of [endpoint, model, save])
         c.disabled = true;
@@ -5572,10 +6274,10 @@ ${target}
         if (ok) {
           endpoint.value = store.config.ai.endpoint;
           model.value = store.config.ai.model;
-          showToast(changed ? "Endpoint 已保存；请重新启用 AI 并确认发送范围。" : "AI 设置已保存。", { type: "success" });
+          showToast(changed ? t("Endpoint 已保存；请重新启用 AI 并确认发送范围。") : t("AI 设置已保存。"), { type: "success" });
         }
       } finally {
-        save.textContent = "保存 AI 设置";
+        save.textContent = t("保存 AI 设置");
         settingsForm.removeAttribute("aria-busy");
         for (const c of [endpoint, model, save])
           c.disabled = false;
@@ -5586,15 +6288,15 @@ ${target}
       e.preventDefault();
       const value = key.value.trim();
       if (!value) {
-        showToast(store.apiKey ? "留空时不会更改已保存密钥。" : "请输入 API key。", { type: "info" });
+        showToast(store.apiKey ? t("留空时不会更改已保存密钥。") : t("请输入 API key。"), { type: "info" });
         return;
       }
       try {
         store.setApiKey(value);
         key.value = "";
-        showToast("API key 已单独保存。", { type: "success" });
+        showToast(t("API key 已单独保存。"), { type: "success" });
       } catch {
-        showToast("保存设置失败。", { type: "error" });
+        showToast(t("保存设置失败。"), { type: "error" });
       }
       sync();
     });
@@ -5632,10 +6334,10 @@ ${target}
         return;
       }
       const allowed = result.verdict === "allow";
-      const status = allowed ? `AI 判定正常（${pct(result.confidence)}）` : `AI：${result.reason}（${pct(result.confidence)}）`;
+      const status = allowed ? t("AI 判定正常（{pct}）", { pct: pct(result.confidence) }) : t("AI：{reason}（{pct}）", { reason: result.reason, pct: pct(result.confidence) });
       const malicious = !allowed && result.confidence >= 0.8;
       if (malicious && !isAllowed(store.config, live.authorHandle) && !controller.isProtected(live)) {
-        const reason = `AI：${result.reason}`;
+        const reason = t("AI：{reason}", { reason: result.reason });
         controller.hideExternal(live, {
           action: "hide",
           source: "ai",
@@ -5647,9 +6349,9 @@ ${target}
       }
       controller.setAiStatus(ctx.tweetId, status);
       if (allowed)
-        showToast("AI 复核：未判定为恶意引流。", { type: "success" });
+        showToast(t("AI 复核：未判定为恶意引流。"), { type: "success" });
       else
-        showToast(`AI 复核：${result.reason}`, { type: malicious ? "error" : "success" });
+        showToast(t("AI 复核：{reason}", { reason: result.reason }), { type: malicious ? "error" : "success" });
     }, (e) => {
       if (e instanceof AiQueueError)
         return;
@@ -5657,8 +6359,8 @@ ${target}
       logger11.warn("Review failed", e);
       if (controller.route.routeKey !== routeKey)
         return;
-      controller.setAiStatus(ctx.tweetId, `AI 复核失败：${msg}`);
-      showToast(`AI 复核失败：${msg}`, { type: "error" });
+      controller.setAiStatus(ctx.tweetId, t("AI 复核失败：{error}", { error: msg }));
+      showToast(t("AI 复核失败：{error}", { error: msg }), { type: "error" });
     });
     return true;
   }
@@ -5666,21 +6368,21 @@ ${target}
     id: "ai-review",
     order: 40,
     icon: Icons.sparkles,
-    label: () => "AI 复核这条回复",
+    label: () => t("AI 复核这条回复"),
     visible: (ctx) => isAiReady() && !getAiQueue().has(ctx.tweetId) && !!eligibleReplyContext(ctx.article),
     run(ctx) {
       const reply = eligibleReplyContext(ctx.article);
       if (!reply || !requestAiReview(serializeContext(reply))) {
-        showToast("AI 未启用、已达本对话上限，或该回复已在复核中。", { type: "error" });
+        showToast(t("AI 未启用、已达本对话上限，或该回复已在复核中。"), { type: "error" });
         return;
       }
       getController().setAiStatus(reply.tweetId, "pending");
-      showToast("AI 复核已排队。", { type: "success" });
+      showToast(t("AI 复核已排队。"), { type: "success" });
     }
   };
   var aiReview_default = definePlugin({
     name: "AiReview",
-    description: "AI 复核：本地分类器处于临界分数、或带图且有语义信号的回复，送到你配置的 OpenAI 兼容服务复核。需要在设置中确认发送范围后才会启用。",
+    description: N_("AI 复核：本地分类器处于临界分数、或带图且有语义信号的回复，送到你配置的 OpenAI 兼容服务复核。需要在设置中确认发送范围后才会启用。"),
     icon: Icons.sparkles,
     tags: ["ai", "filters"],
     enabledByDefault: true,
@@ -5690,13 +6392,13 @@ ${target}
     reviewActions: [{
       id: "ai-review",
       order: 40,
-      label: (rec) => getAiQueue().has(rec.tweetId) ? "复核中" : "AI 复核",
+      label: (rec) => getAiQueue().has(rec.tweetId) ? t("复核中") : t("AI 复核"),
       disabled: (rec) => !isAiReady() || getAiQueue().has(rec.tweetId),
       run(rec) {
         if (!requestAiReview(rec.context))
-          throw new Error("AI 未启用、已达本对话上限，或该回复已在复核中。");
+          throw new Error(t("AI 未启用、已达本对话上限，或该回复已在复核中。"));
         getController().setAiStatus(rec.tweetId, "pending");
-        showToast("AI 复核已排队。", { type: "success" });
+        showToast(t("AI 复核已排队。"), { type: "success" });
       }
     }],
     events: {
@@ -5712,12 +6414,12 @@ ${target}
   function createAllowPage(ctx) {
     const input = h("input", { class: "xc-input", type: "text", placeholder: "@handle", "aria-label": "@handle", autocomplete: "off" });
     const msg = errorLine();
-    const form = h("form", { class: "xc-form" }, h("div", { class: "xc-row" }, input, h("button", { class: "xc-btn xc-btn-primary", type: "submit" }, "添加")), msg);
-    const list = h("div", { class: "xc-items", role: "list", "aria-label": "精确账号白名单" });
-    const bulk = bulkSelection("账号", [{
-      label: "移出白名单",
+    const form = h("form", { class: "xc-form" }, h("div", { class: "xc-row" }, input, h("button", { class: "xc-btn xc-btn-primary", type: "submit" }, t("添加"))), msg);
+    const list = h("div", { class: "xc-items", role: "list", "aria-label": t("精确账号白名单") });
+    const bulk = bulkSelection(t("账号"), [{
+      label: N_("移出白名单"),
       kind: "danger",
-      confirm: (n) => `把 ${n} 个账号移出白名单？`,
+      confirm: (n) => t("把 {n} 个账号移出白名单？", { n }),
       run: (keys) => {
         const drop = new Set(keys);
         return ctx.commit((c) => {
@@ -5725,15 +6427,15 @@ ${target}
         });
       }
     }]);
-    const el = h("div", { class: "xc-page" }, section("精确账号白名单"), form, bulk.bar, list);
+    const el = h("div", { class: "xc-page" }, section(t("精确账号白名单")), form, bulk.bar, list);
     form.addEventListener("submit", (e) => {
       e.preventDefault();
       const handle = toConfigHandle(input.value);
       if (!handle)
-        return msg.show("请输入有效的完整 @handle。");
+        return msg.show(t("请输入有效的完整 @handle。"));
       const current = ctx.store.config.allowHandles;
       if (!current.includes(handle) && current.length >= LIMITS.allowHandles)
-        return msg.show(`白名单已满（${LIMITS.allowHandles}）。`);
+        return msg.show(t("白名单已满（{max}）。", { max: LIMITS.allowHandles }));
       const ok = ctx.commit((c) => {
         c.allowHandles = [...c.allowHandles.filter((x) => x !== handle), handle];
         c.blacklists.accounts = c.blacklists.accounts.filter((a) => a.handle !== handle);
@@ -5742,16 +6444,16 @@ ${target}
         return;
       input.value = "";
       msg.show("");
-      showToast("已加入白名单。", { type: "success" });
+      showToast(t("已加入白名单。"), { type: "success" });
     });
     const render = () => {
       const handles = ctx.store.config.allowHandles;
       bulk.sync(handles, handles);
       if (!handles.length) {
-        list.replaceChildren(h("div", { class: "xc-empty" }, "暂无白名单账号。"));
+        list.replaceChildren(h("div", { class: "xc-empty" }, t("暂无白名单账号。")));
         return;
       }
-      list.replaceChildren(...[...handles].reverse().map((handle) => h("div", { class: "xc-item", role: "listitem" }, bulk.box(handle, handle), h("div", { class: "xc-item-main" }, h("div", { class: "xc-item-head" }, h("strong", null, handle), pill("最高优先级", "success"))), h("div", { class: "xc-item-actions" }, button("移除", () => ctx.commit((c) => {
+      list.replaceChildren(...[...handles].reverse().map((handle) => h("div", { class: "xc-item", role: "listitem" }, bulk.box(handle, handle), h("div", { class: "xc-item-main" }, h("div", { class: "xc-item-head" }, h("strong", null, handle), pill(t("最高优先级"), "success"))), h("div", { class: "xc-item-actions" }, button(t("移除"), () => ctx.commit((c) => {
         c.allowHandles = c.allowHandles.filter((x) => x !== handle);
       }), { small: true, kind: "danger" })))));
     };
@@ -5764,13 +6466,13 @@ ${target}
   // src/plugins/allowList/index.ts
   var allowList_default = definePlugin({
     name: "AllowList",
-    description: "精确账号白名单：名单内账号的回复永远不会被隐藏，也不会被自动加入黑名单。",
+    description: N_("精确账号白名单：名单内账号的回复永远不会被隐藏，也不会被自动加入黑名单。"),
     icon: Icons.shield,
     tags: ["filters"],
     enabledByDefault: true,
     postMenuItems: [allowListMenuItem],
     profileMenuItems: [allowListProfileItem],
-    panelPages: [{ tab: "allowlist", id: "handles", label: "白名单", order: 0, create: createAllowPage }],
+    panelPages: [{ tab: "allowlist", id: "handles", label: N_("白名单"), order: 0, create: createAllowPage }],
     replyJudges: [{
       id: "allowlist",
       priority: 20,
@@ -5832,7 +6534,7 @@ ${target}
   }
   var autoBlacklist_default = definePlugin({
     name: "AutoBlacklist",
-    description: "自动账号黑名单：词语、域名、正则命中或分类器高分时，把作者加入账号黑名单（本地自动）；AI 高置信恶意时加入（AI 自动）。",
+    description: N_("自动账号黑名单：词语、域名、正则命中或分类器高分时，把作者加入账号黑名单（本地自动）；AI 高置信恶意时加入（AI 自动）。"),
     icon: Icons.ban,
     tags: ["filters", "moderation"],
     enabledByDefault: true,
@@ -5866,12 +6568,12 @@ ${target}
   var ORIGINAL_ATTR = "data-xc-tco";
   var TCO_SEL = `${SEL.tweet} a[href^="https://t.co/"]`;
   var COLOR_RE = /^(?:#[0-9a-f]{3,8}|(?:rgb|hsl)a?\([^)]*\)|[a-z]+)$/i;
-  var isValidColor = (v) => !v.trim() || COLOR_RE.test(v.trim()) ? true : "请填颜色值，例如 #1d9bf0 或 orange。";
+  var isValidColor = (v) => !v.trim() || COLOR_RE.test(v.trim()) ? true : t("请填颜色值，例如 #1d9bf0 或 orange。");
   var settings2 = definePluginSettings({
-    bypassTco: { type: "boolean" /* BOOLEAN */, label: "直接打开真实地址", description: "点击帖子里的链接时直接打开原网址，不经过 t.co 跳转。", default: true },
-    showFullUrl: { type: "boolean" /* BOOLEAN */, label: "悬停显示完整地址", description: "鼠标停在链接上时，用提示显示被截断的完整网址。", default: true },
-    linkColor: { type: "string" /* STRING */, label: "链接颜色", description: "留空则用 X 的默认蓝色。", placeholder: "#1d9bf0", default: "", isValid: isValidColor },
-    visitedColor: { type: "string" /* STRING */, label: "已访问链接颜色", description: "打开过的链接换成这个颜色；留空则不区分。", placeholder: "#a371f7", default: "", isValid: isValidColor }
+    bypassTco: { type: "boolean" /* BOOLEAN */, label: N_("直接打开真实地址"), description: N_("点击帖子里的链接时直接打开原网址，不经过 t.co 跳转。"), default: true },
+    showFullUrl: { type: "boolean" /* BOOLEAN */, label: N_("悬停显示完整地址"), description: N_("鼠标停在链接上时，用提示显示被截断的完整网址。"), default: true },
+    linkColor: { type: "string" /* STRING */, label: N_("链接颜色"), description: N_("留空则用 X 的默认蓝色。"), placeholder: "#1d9bf0", default: "", isValid: isValidColor },
+    visitedColor: { type: "string" /* STRING */, label: N_("已访问链接颜色"), description: N_("打开过的链接换成这个颜色；留空则不区分。"), placeholder: "#a371f7", default: "", isValid: isValidColor }
   });
   function expandedUrl(a) {
     const href = a.getAttribute(ORIGINAL_ATTR) ?? a.getAttribute("href") ?? "";
@@ -5935,7 +6637,7 @@ ${target}
   }
   var betterLinks_default = definePlugin({
     name: "BetterLinks",
-    description: "链接增强：帖子里的链接直接打开真实网址、不经 t.co 跳转，悬停显示完整地址，可自定义链接和已访问链接的颜色。",
+    description: N_("链接增强：帖子里的链接直接打开真实网址、不经 t.co 跳转，悬停显示完整地址，可自定义链接和已访问链接的颜色。"),
     icon: Icons.link,
     tags: ["timeline", "privacy"],
     settings: settings2,
@@ -5957,16 +6659,16 @@ ${target}
   function createCategoriesPage(ctx) {
     const c = () => ctx.store.config;
     const rows = [
-      checkRow("成人引流", () => c().categories.adult, (v) => ctx.commit((d) => {
+      checkRow(t("成人引流"), () => c().categories.adult, (v) => ctx.commit((d) => {
         d.categories.adult = v;
       })),
-      checkRow("加密货币引流", () => c().categories.crypto, (v) => ctx.commit((d) => {
+      checkRow(t("加密货币引流"), () => c().categories.crypto, (v) => ctx.commit((d) => {
         d.categories.crypto = v;
       })),
-      checkRow("推广用户名", () => c().categories.promotionalName, (v) => ctx.commit((d) => {
+      checkRow(t("推广用户名"), () => c().categories.promotionalName, (v) => ctx.commit((d) => {
         d.categories.promotionalName = v;
       })),
-      checkRow("保护根帖作者回复", () => c().protections.op, (v) => ctx.commit((d) => {
+      checkRow(t("保护根帖作者回复"), () => c().protections.op, (v) => ctx.commit((d) => {
         d.protections.op = v;
       }))
     ];
@@ -5974,11 +6676,11 @@ ${target}
   }
   var builtinClassifier_default = definePlugin({
     name: "BuiltinClassifier",
-    description: "内置本地分类器：对成人引流、加密货币引流和推广用户名三类分别加权打分，有保守、均衡、激进三档灵敏度。",
+    description: N_("内置本地分类器：对成人引流、加密货币引流和推广用户名三类分别加权打分，有保守、均衡、激进三档灵敏度。"),
     icon: Icons.sparkles,
     tags: ["filters"],
     enabledByDefault: true,
-    panelPages: [{ tab: "settings", id: "categories", label: "类别", order: 20, create: createCategoriesPage }],
+    panelPages: [{ tab: "settings", id: "categories", label: N_("类别"), order: 20, create: createCategoriesPage }],
     replyJudges: [{
       id: "classifier",
       priority: 90,
@@ -6007,13 +6709,13 @@ ${target}
   var SIDE = '[data-testid="sidebarColumn"]';
   var opt = (label, description, def) => ({ type: "boolean" /* BOOLEAN */, label, description, default: def });
   var settings3 = definePluginSettings({
-    hidePremiumUpsell: opt("Premium 推销", "侧栏的「订阅 Premium」卡片和各处的升级提示。", true),
-    hidePromoted: opt("推广帖", "时间线和回复里标着「广告 / Promoted」的帖子。", true),
-    hideGrokButtons: opt("帖子上的 Grok 按钮", "每条帖子右上角的 Grok 按钮。回复盾牌仍会正常显示。", false),
-    hideGrokDrawer: opt("Grok 浮窗", "右下角的 Grok 对话浮窗。", false),
-    hideMessagesDrawer: opt("私信浮窗", "右下角的私信浮窗。", false),
-    hideViewCounts: opt("浏览量", "帖子操作栏里的浏览量数字。", false),
-    hideTitleCount: opt("标题未读数", "去掉浏览器标签页标题前面的「(3)」未读数。", false)
+    hidePremiumUpsell: opt(N_("Premium 推销"), N_("侧栏的「订阅 Premium」卡片和各处的升级提示。"), true),
+    hidePromoted: opt(N_("推广帖"), N_("时间线和回复里标着「广告 / Promoted」的帖子。"), true),
+    hideGrokButtons: opt(N_("帖子上的 Grok 按钮"), N_("每条帖子右上角的 Grok 按钮。回复盾牌仍会正常显示。"), false),
+    hideGrokDrawer: opt(N_("Grok 浮窗"), N_("右下角的 Grok 对话浮窗。"), false),
+    hideMessagesDrawer: opt(N_("私信浮窗"), N_("右下角的私信浮窗。"), false),
+    hideViewCounts: opt(N_("浏览量"), N_("帖子操作栏里的浏览量数字。"), false),
+    hideTitleCount: opt(N_("标题未读数"), N_("去掉浏览器标签页标题前面的「(3)」未读数。"), false)
   });
   var RULES = {
     hidePremiumUpsell: [
@@ -6077,7 +6779,7 @@ ${target}
   }
   var declutter_default = definePlugin({
     name: "Declutter",
-    description: "精简 X 的页面：分别隐藏 Premium 推销、推广帖、Grok 按钮和浮窗、浏览量等干扰元素。右侧栏的趋势、推荐关注和页脚见 RightSidebarCleaner。",
+    description: N_("精简 X 的页面：分别隐藏 Premium 推销、推广帖、Grok 按钮和浮窗、浏览量等干扰元素。右侧栏的趋势、推荐关注和页脚见 RightSidebarCleaner。"),
     icon: Icons.broom,
     tags: ["declutter", "timeline"],
     settings: settings3,
@@ -6105,17 +6807,19 @@ ${target}
   function stringListPage(opts) {
     return (ctx) => {
       let editing = null;
-      const input = h("input", { class: "xc-input", type: "text", placeholder: opts.placeholder, "aria-label": opts.placeholder });
+      const label = t(opts.label);
+      const placeholder = t(opts.placeholder);
+      const input = h("input", { class: "xc-input", type: "text", placeholder, "aria-label": placeholder });
       const msg = errorLine();
-      const submit = h("button", { class: "xc-btn xc-btn-primary", type: "submit" }, "添加");
-      const cancel = button("取消编辑", () => stopEditing());
-      const form = h("form", { class: "xc-form" }, opts.description ? h("p", { class: "xc-muted" }, opts.description) : null, h("div", { class: "xc-row" }, input, submit, cancel), msg);
-      const list = h("div", { class: "xc-items", role: "list", "aria-label": opts.label });
-      const header = pageHeader(opts.label, () => opts.get(ctx.store.config).map((v) => `${opts.statsPrefix}:${v}`), () => renderList());
-      const bulk = bulkSelection("条目", [{
-        label: "移除所选",
+      const submit = h("button", { class: "xc-btn xc-btn-primary", type: "submit" }, t("添加"));
+      const cancel = button(t("取消编辑"), () => stopEditing());
+      const form = h("form", { class: "xc-form" }, opts.description ? h("p", { class: "xc-muted" }, t(opts.description)) : null, h("div", { class: "xc-row" }, input, submit, cancel), msg);
+      const list = h("div", { class: "xc-items", role: "list", "aria-label": label });
+      const header = pageHeader(label, () => opts.get(ctx.store.config).map((v) => `${opts.statsPrefix}:${v}`), () => renderList());
+      const bulk = bulkSelection(t("条目"), [{
+        label: t("移除所选"),
         kind: "danger",
-        confirm: (n) => `从${opts.label}中移除 ${n} 个条目？`,
+        confirm: (n) => t("从{label}中移除 {n} 个条目？", { label, n }),
         run: (keys) => {
           const drop = new Set(keys);
           const ok = ctx.commit((c) => opts.set(c, opts.get(c).filter((x) => !drop.has(x))));
@@ -6132,7 +6836,7 @@ ${target}
         renderForm();
       };
       const renderForm = () => {
-        submit.textContent = editing === null ? "添加" : "保存";
+        submit.textContent = editing === null ? t("添加") : t("保存");
         cancel.hidden = editing === null;
       };
       const hint = () => {
@@ -6149,14 +6853,14 @@ ${target}
           return;
         }
         const warn = opts.hint?.(input.value);
-        if (warn?.level === "warning" && !confirm(`${warn.message}
+        if (warn?.level === "warning" && !confirm(t(`{message}
 
-仍要保存吗？`))
+仍要保存吗？`, { message: warn.message })))
           return;
         const current = opts.get(ctx.store.config);
         const value = result.value;
         if (editing === null && !current.includes(value) && current.length >= opts.limit) {
-          msg.show(opts.fullMessage);
+          msg.show(t(opts.fullMessage, { max: opts.limit }));
           return;
         }
         const ok = ctx.commit((c) => {
@@ -6166,7 +6870,7 @@ ${target}
         });
         if (!ok)
           return;
-        showToast(opts.savedToast, { type: "success" });
+        showToast(t(opts.savedToast), { type: "success" });
         stopEditing();
       });
       const renderList = () => {
@@ -6176,16 +6880,16 @@ ${target}
         header.update();
         bulk.sync(all, items);
         if (!items.length) {
-          list.replaceChildren(h("div", { class: "xc-empty" }, q ? "没有匹配的条目。" : `暂无${opts.label}。`));
+          list.replaceChildren(h("div", { class: "xc-empty" }, q ? t("没有匹配的条目。") : t("暂无{label}。", { label })));
           return;
         }
-        list.replaceChildren(...items.map((v) => h("div", { class: "xc-item", role: "listitem" }, bulk.box(v, v), h("div", { class: "xc-item-main" }, h("div", { class: "xc-item-head" }, h("span", null, v), hitPill(`${opts.statsPrefix}:${v}`))), h("div", { class: "xc-item-actions" }, button("编辑", () => {
+        list.replaceChildren(...items.map((v) => h("div", { class: "xc-item", role: "listitem" }, bulk.box(v, v), h("div", { class: "xc-item-main" }, h("div", { class: "xc-item-head" }, h("span", null, v), hitPill(`${opts.statsPrefix}:${v}`))), h("div", { class: "xc-item-actions" }, button(t("编辑"), () => {
           editing = v;
           input.value = v;
           renderForm();
           hint();
           input.focus();
-        }, { small: true }), button("移除", () => {
+        }, { small: true }), button(t("移除"), () => {
           if (ctx.commit((c) => opts.set(c, opts.get(c).filter((x) => x !== v))) && editing === v)
             stopEditing();
         }, { small: true, kind: "danger" })))));
@@ -6205,29 +6909,29 @@ ${target}
   // src/plugins/domainBlacklist/index.ts
   var domainBlacklist_default = definePlugin({
     name: "DomainBlacklist",
-    description: "域名黑名单：匹配回复中可见链接的域名及其子域。不访问链接，也不解析 t.co 短链。",
+    description: N_("域名黑名单：匹配回复中可见链接的域名及其子域。不访问链接，也不解析 t.co 短链。"),
     icon: Icons.ban,
     tags: ["filters"],
     enabledByDefault: true,
     panelPages: [{
       tab: "blacklist",
       id: "domains",
-      label: "域名",
+      label: N_("域名"),
       order: 20,
       create: stringListPage({
-        label: "域名",
+        label: t("域名"),
         placeholder: "example.com",
         statsPrefix: "domain",
         limit: LIMITS.domains,
-        fullMessage: `域名黑名单已满（${LIMITS.domains}）。`,
-        savedToast: "域名黑名单已保存。",
+        fullMessage: N_("域名黑名单已满（{max}）。"),
+        savedToast: t("域名黑名单已保存。"),
         get: (c) => c.blacklists.domains,
         set: (c, list) => {
           c.blacklists.domains = list;
         },
         normalize: (raw) => {
           const { domain } = domainWarning(raw);
-          return domain ? { value: domain } : { error: "请输入有效域名。" };
+          return domain ? { value: domain } : { error: t("请输入有效域名。") };
         },
         hint: (raw) => domainWarning(raw).warning
       })
@@ -6239,8 +6943,8 @@ ${target}
         const hit = matchDomain(env.config.blacklists.domains, ctx);
         if (!hit)
           return null;
-        const reason = `域名黑名单：${hit.domain}`;
-        return { action: "hide", source: "domain", category: "域名黑名单", reason, match: { kind: "domain", value: hit.domain }, statsKey: `domain:${hit.domain}`, autoEntry: { source: "local-auto", category: "域名黑名单", reason } };
+        const reason = t("域名黑名单：{domain}", { domain: hit.domain });
+        return { action: "hide", source: "domain", category: N_("域名黑名单"), reason, match: { kind: "domain", value: hit.domain }, statsKey: `domain:${hit.domain}`, autoEntry: { source: "local-auto", category: N_("域名黑名单"), reason } };
       }
     }]
   });
@@ -6273,17 +6977,17 @@ ${target}
 `).map((l) => `> ${l}`).join(`
 `);
   function toMarkdown(data) {
-    const out = [`# ${data.url}`, "", `导出时间：${data.exportedAt}，共 ${data.posts.length} 条（只含页面上已加载的内容）。`, ""];
+    const out = [`# ${data.url}`, "", t("导出时间：{exportedAt}，共 {n} 条（只含页面上已加载的内容）。", { exportedAt: data.exportedAt, n: data.posts.length }), ""];
     for (const p of data.posts) {
       const who = p.displayName ? `${p.displayName} (@${p.authorHandle})` : `@${p.authorHandle}`;
-      const tags = [p.isRoot ? "主帖" : "", p.isOp && !p.isRoot ? "楼主" : "", p.hidden ? `已隐藏：${p.hiddenReason ?? ""}` : ""].filter(Boolean);
+      const tags = [p.isRoot ? t("主帖") : "", p.isOp && !p.isRoot ? t("楼主") : "", p.hidden ? t("已隐藏：{reason}", { reason: p.hiddenReason ?? "" }) : ""].filter(Boolean);
       out.push(`## ${who}${tags.length ? ` · ${tags.join(" · ")}` : ""}`, "", `${p.time ?? ""} · ${p.statusUrl}`.replace(/^ · /, ""), "");
       if (p.bodyText)
         out.push(quote(p.bodyText), "");
       for (const u of p.visibleUrls)
-        out.push(`- 链接：${u}`);
+        out.push(t("- 链接：{url}", { url: u }));
       for (const m of p.mediaUrls)
-        out.push(`- 图片：${m}`);
+        out.push(t("- 图片：{url}", { url: m }));
       if (p.visibleUrls.length || p.mediaUrls.length)
         out.push("");
     }
@@ -6301,7 +7005,7 @@ ${target}
   function exportAs(format, ctx) {
     const data = collectThread();
     if (!data.posts.length) {
-      showToast("页面上没有可导出的帖子。", { type: "error" });
+      showToast(t("页面上没有可导出的帖子。"), { type: "error" });
       return;
     }
     const name = `x-${ctx.handle}-${ctx.tweetId}-${data.exportedAt.slice(0, 10)}.${format}`;
@@ -6309,16 +7013,16 @@ ${target}
       download(name, toMarkdown(data), "text/markdown;charset=utf-8");
     else
       download(name, JSON.stringify(data, null, 2), "application/json");
-    showToast(`已导出 ${data.posts.length} 条帖子。`, { type: "success" });
+    showToast(t("已导出 {n} 条帖子。", { n: data.posts.length }), { type: "success" });
   }
   var onStatusPage2 = () => parseRoute().isStatusRoute;
   var exportMenuItems = [
-    { id: "export-md", order: 60, icon: Icons.download, label: () => "导出本页帖子和回复（Markdown）", visible: onStatusPage2, run: (ctx) => exportAs("md", ctx) },
-    { id: "export-json", order: 61, icon: Icons.download, label: () => "导出本页帖子和回复（JSON）", visible: onStatusPage2, run: (ctx) => exportAs("json", ctx) }
+    { id: "export-md", order: 60, icon: Icons.download, label: () => t("导出本页帖子和回复（Markdown）"), visible: onStatusPage2, run: (ctx) => exportAs("md", ctx) },
+    { id: "export-json", order: 61, icon: Icons.download, label: () => t("导出本页帖子和回复（JSON）"), visible: onStatusPage2, run: (ctx) => exportAs("json", ctx) }
   ];
   var exportThread_default = definePlugin({
     name: "ExportThread",
-    description: "导出帖子：在帖子页的「…」菜单里，把主帖和已加载的回复导出为 Markdown 或 JSON，并标出 X Cleaner 隐藏了哪些回复、原因是什么。只导出页面上已有的内容。",
+    description: N_("导出帖子：在帖子页的「…」菜单里，把主帖和已加载的回复导出为 Markdown 或 JSON，并标出 X Cleaner 隐藏了哪些回复、原因是什么。只导出页面上已有的内容。"),
     icon: Icons.download,
     tags: ["replies", "moderation"],
     enabledByDefault: true,
@@ -6330,7 +7034,7 @@ ${target}
   var ENTRY_ATTR = "data-xc-more-entry";
   var WAIT_MS2 = 1500;
   var settings4 = definePluginSettings({
-    showStarred: { type: "boolean" /* BOOLEAN */, label: "显示收藏的插件", description: "在入口下面列出你收藏的插件，点一下就能开关。", default: true }
+    showStarred: { type: "boolean" /* BOOLEAN */, label: N_("显示收藏的插件"), description: N_("在入口下面列出你收藏的插件，点一下就能开关。"), default: true }
   });
   function templateRow(menu) {
     const link = menu.querySelector('[data-testid="Dropdown"] a[href="/settings"]') ?? [...menu.querySelectorAll('[data-testid="Dropdown"] a[role="link"]')].at(-1);
@@ -6369,15 +7073,15 @@ ${target}
       host.appendChild(row);
       rows.push(row);
     };
-    add("manager", "X Cleaner 插件管理", Icons.broom, openPanel);
+    add("manager", t("X Cleaner 插件管理"), Icons.broom, openPanel);
     if (settings4.store.showStarred) {
       for (const name of starredPlugins()) {
         const on = isPluginEnabled(name);
-        add(`plugin:${name}`, `${on ? "停用" : "启用"} ${name}`, on ? Icons.check : Icons.plug, () => {
+        add(`plugin:${name}`, on ? t("停用 {name}", { name }) : t("启用 {name}", { name }), on ? Icons.check : Icons.plug, () => {
           if (setPluginEnabled(name, !on))
-            showToast(`${name} 已${on ? "停用" : "启用"}。`, { type: "success" });
+            showToast(on ? t("{name} 已停用。", { name }) : t("{name} 已启用。", { name }), { type: "success" });
           else
-            showToast(`${name} ${on ? "停用" : "启用"}失败，详见控制台。`, { type: "error" });
+            showToast(on ? t("{name} 停用失败，详见控制台。", { name }) : t("{name} 启用失败，详见控制台。", { name }), { type: "error" });
         });
       }
     }
@@ -6406,7 +7110,7 @@ ${target}
   }
   var moreMenuEntry_default = definePlugin({
     name: "MoreMenuEntry",
-    description: "在 X 左侧栏的「更多」菜单里加一个「X Cleaner 插件管理」入口，并列出收藏的插件供快速开关。",
+    description: N_("在 X 左侧栏的「更多」菜单里加一个「X Cleaner 插件管理」入口，并列出收藏的插件供快速开关。"),
     icon: Icons.menu,
     tags: ["core", "appearance"],
     enabledByDefault: true,
@@ -6438,7 +7142,7 @@ ${target}
   var RESUME_INTERVAL_MS = 250;
   var WAIT_MS3 = 2500;
   var POLL_MS = 50;
-  var DEFAULT_ERROR = "无法打开 X 原生拉黑确认框。";
+  var DEFAULT_ERROR = N_("无法打开 X 原生拉黑确认框。");
   var sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   function identityMatches(article, tweetId, handle) {
     const id = article.isConnected ? findIdentityLink(article) : null;
@@ -6458,26 +7162,26 @@ ${target}
   var snapshot = (selector) => new Set(document.querySelectorAll(selector));
   async function openNativeBlock(article, tweetId, handle) {
     if (!identityMatches(article, tweetId, handle))
-      throw new Error("回复身份已变化，已中止 X 原生拉黑。");
+      throw new Error(t("回复身份已变化，已中止 X 原生拉黑。"));
     const caret = [...article.querySelectorAll(SEL.caret)].find((c) => !isInNestedStatusCard(c, article, tweetId));
     if (!caret || !isRendered(caret))
-      throw new Error("找不到该回复的 X 操作菜单。");
+      throw new Error(t("找不到该回复的 X 操作菜单。"));
     const blockSel = '[role="menuitem"][data-testid="block"]';
     const beforeMenu = snapshot(blockSel);
     caret.click();
     const item = await waitForNew(blockSel, beforeMenu);
     if (!item)
-      throw new Error("X 未显示原生拉黑菜单项，操作已中止。");
+      throw new Error(t("X 未显示原生拉黑菜单项，操作已中止。"));
     if (!identityMatches(article, tweetId, handle)) {
       document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", code: "Escape", bubbles: true }));
-      throw new Error("菜单打开后回复身份发生变化，操作已中止。");
+      throw new Error(t("菜单打开后回复身份发生变化，操作已中止。"));
     }
     const confirmSel = '[data-testid="confirmationSheetConfirm"]';
     const beforeConfirm = snapshot(confirmSel);
     item.click();
     const confirmButton = await waitForNew(confirmSel, beforeConfirm);
     if (!confirmButton)
-      throw new Error("X 未显示原生确认框，操作已中止。");
+      throw new Error(t("X 未显示原生确认框，操作已中止。"));
   }
   function readIntent() {
     try {
@@ -6502,15 +7206,15 @@ ${target}
   async function blockRecord(rec) {
     const { tweetId, authorHandle, statusUrl } = rec.context;
     if (!tweetId || !authorHandle)
-      throw new Error("缺少回复身份，无法核对拉黑目标。");
+      throw new Error(t("缺少回复身份，无法核对拉黑目标。"));
     const controller = getController();
     if (!controller.records.has(tweetId))
-      throw new Error("找不到该回复，操作已中止。");
+      throw new Error(t("找不到该回复，操作已中止。"));
     controller.restore(tweetId);
     const article = controller.findArticle(tweetId);
     if (article && identityMatches(article, tweetId, authorHandle)) {
       await openNativeBlock(article, tweetId, authorHandle);
-      showToast("已打开 X 原生确认框；脚本不会点击最终确认。", { type: "success" });
+      showToast(t("已打开 X 原生确认框；脚本不会点击最终确认。"), { type: "success" });
       return;
     }
     try {
@@ -6518,7 +7222,7 @@ ${target}
         throw new Error("no url");
       sessionStorage.setItem(INTENT_KEY, JSON.stringify({ tweetId, authorHandle, createdAt: Date.now() }));
     } catch {
-      throw new Error("该回复已离开页面，请先打开回复再操作。");
+      throw new Error(t("该回复已离开页面，请先打开回复再操作。"));
     }
     location.assign(statusUrl);
   }
@@ -6537,7 +7241,7 @@ ${target}
       if (article && identityMatches(article, live.tweetId, live.authorHandle)) {
         clearIntent();
         getController().restore(live.tweetId);
-        openNativeBlock(article, live.tweetId, live.authorHandle).then(() => showToast("已打开 X 原生确认框；最终确认必须由你完成。", { type: "success" }), (e) => showToast(e instanceof Error && e.message ? e.message : DEFAULT_ERROR, { type: "error" }));
+        openNativeBlock(article, live.tweetId, live.authorHandle).then(() => showToast(t("已打开 X 原生确认框；最终确认必须由你完成。"), { type: "success" }), (e) => showToast(e instanceof Error && e.message ? e.message : t(DEFAULT_ERROR), { type: "error" }));
         return;
       }
       if (++tries < RESUME_TRIES)
@@ -6547,7 +7251,7 @@ ${target}
   }
   var nativeBlock_default = definePlugin({
     name: "NativeBlock",
-    description: "在 X 中拉黑：从复查页打开 X 原生的拉黑确认框。脚本只打开确认框，永远不会替你点最终确认。",
+    description: N_("在 X 中拉黑：从复查页打开 X 原生的拉黑确认框。脚本只打开确认框，永远不会替你点最终确认。"),
     icon: Icons.ban,
     tags: ["moderation"],
     enabledByDefault: true,
@@ -6558,14 +7262,14 @@ ${target}
       id: "native-block",
       order: 50,
       danger: true,
-      label: () => "在 X 中拉黑",
+      label: () => t("在 X 中拉黑"),
       disabled: (rec) => !rec.context.authorHandle,
       async run(rec) {
         try {
           await blockRecord(rec);
         } catch (e) {
           logger12.warn("Native block failed", e);
-          throw new Error(e instanceof Error && e.message ? e.message : DEFAULT_ERROR);
+          throw new Error(e instanceof Error && e.message ? e.message : t(DEFAULT_ERROR));
         }
       }
     }],
@@ -6583,33 +7287,33 @@ ${target}
     try {
       parsed = JSON.parse(text);
     } catch {
-      throw new Error("配置 JSON 无法解析。");
+      throw new Error(t("配置 JSON 无法解析。"));
     }
     if (!parsed || typeof parsed !== "object" || Array.isArray(parsed))
-      throw new Error("配置必须是 JSON 对象。");
+      throw new Error(t("配置必须是 JSON 对象。"));
     const rules = parsed.blacklists?.regexRules;
     if (Array.isArray(rules)) {
       const bad = rules.map((r, i) => normalizeRegexRule(r, i)).filter((r) => !r.valid).map((r) => r.name);
       if (bad.length)
-        throw new Error(`正则规则无效：${bad.join("、")}`);
+        throw new Error(t("正则规则无效：{rules}", { rules: listJoin(bad) }));
     }
     return parsed;
   }
   function createImportPage(ctx) {
-    const area = h("textarea", { class: "xc-textarea xc-mono", rows: 12, placeholder: "配置 JSON（不包含 API key）", "aria-label": "配置 JSON" });
+    const area = h("textarea", { class: "xc-textarea xc-mono", rows: 12, placeholder: t("配置 JSON（不包含 API key）"), "aria-label": t("配置 JSON") });
     const msg = errorLine();
-    const el = h("div", { class: "xc-page" }, h("p", { class: "xc-muted" }, "导出不包含 API key。导入会强制关闭 AI，且不会读取、覆盖或清除当前已保存的 API key。"), area, h("div", { class: "xc-row" }, button("生成导出内容", () => {
+    const el = h("div", { class: "xc-page" }, h("p", { class: "xc-muted" }, t("导出不包含 API key。导入会强制关闭 AI，且不会读取、覆盖或清除当前已保存的 API key。")), area, h("div", { class: "xc-row" }, button(t("生成导出内容"), () => {
       area.value = ctx.store.exportConfig();
       area.focus();
       area.select();
       msg.show("");
-      showToast("导出内容已生成，不包含 API key。", { type: "success" });
-    }), button("导入配置", () => {
+      showToast(t("导出内容已生成，不包含 API key。"), { type: "success" });
+    }), button(t("导入配置"), () => {
       try {
         ctx.store.importConfig(parseImport(area.value));
         dispatch("configImported");
         msg.show("");
-        showToast("配置已导入；AI 已关闭，API key 未导出或更改。", { type: "success" });
+        showToast(t("配置已导入；AI 已关闭，API key 未导出或更改。"), { type: "success" });
       } catch (e) {
         msg.show(e instanceof Error ? e.message : String(e));
       }
@@ -6659,7 +7363,7 @@ ${target}
             return true;
           } catch (e) {
             logger13.error("Commit failed", e);
-            showToast("保存设置失败。", { type: "error" });
+            showToast(t("保存设置失败。"), { type: "error" });
             return false;
           }
         },
@@ -6668,12 +7372,12 @@ ${target}
       };
       this.badge = h("span", { class: "xc-fab-badge", hidden: true });
       this.fab = h("button", { class: "xc-fab", type: "button", onclick: () => this.show() }, svgIcon(shield, 28), this.badge);
-      this.fabTip = attachTooltip(this.fab, () => `X Cleaner · ${this.count} 条待复查`, "left");
+      this.fabTip = attachTooltip(this.fab, () => t("X Cleaner · {count} 条待复查", { count: this.count }), "left");
       this.tabArea = h("div", { class: "xc-drawer-tabs" });
       this.subTabArea = h("div", { class: "xc-drawer-subtabs" });
       this.content = h("div", { class: "xc-drawer-content", role: "tabpanel" });
       this.footer = h("div", { class: "xc-drawer-footer", hidden: true });
-      this.drawer = h("section", { class: "xc-drawer", role: "dialog", "aria-modal": "true", "aria-label": "X Cleaner" }, h("header", { class: "xc-drawer-head" }, h("h2", { class: "xc-drawer-title" }, "X Cleaner"), h("button", { class: "xc-btn xc-btn-icon", type: "button", "aria-label": "关闭", onclick: () => this.close() }, svgIcon(Icons.close, 20))), this.tabArea, this.subTabArea, this.content, this.footer);
+      this.drawer = h("section", { class: "xc-drawer", role: "dialog", "aria-modal": "true", "aria-label": "X Cleaner" }, h("header", { class: "xc-drawer-head" }, h("h2", { class: "xc-drawer-title" }, "X Cleaner"), h("button", { class: "xc-btn xc-btn-icon xc-drawer-close", type: "button", "aria-label": t("关闭"), onclick: () => this.close() }, svgIcon(Icons.close, 20))), this.tabArea, this.subTabArea, this.content, this.footer);
       this.overlay = h("div", { class: "xc-drawer-overlay", hidden: true }, this.drawer);
       this.overlay.addEventListener("mousedown", (e) => {
         if (e.target === this.overlay)
@@ -6717,7 +7421,7 @@ ${target}
     updateFab() {
       this.badge.hidden = this.count <= 0;
       this.badge.textContent = this.count > 99 ? "99+" : String(this.count);
-      this.fab.setAttribute("aria-label", `X Cleaner，${this.count} 条待复查`);
+      this.fab.setAttribute("aria-label", t("X Cleaner，{count} 条待复查", { count: this.count }));
       this.fabTip.refresh();
     }
     updateActive() {
@@ -6811,7 +7515,7 @@ ${target}
       this.overlay.inert = false;
       document.documentElement.classList.add("xc-drawer-open");
       this.render(true);
-      queueMicrotask(() => this.drawer.querySelector('[aria-label="关闭"]')?.focus());
+      queueMicrotask(() => this.drawer.querySelector(".xc-drawer-close")?.focus());
     }
     close() {
       if (!this.open)
@@ -6859,7 +7563,7 @@ ${target}
     render(showing = false) {
       const tabs = this.visibleTabs();
       const def = this.currentPage();
-      const bar = tabBar({ label: "主标签", items: tabs.map((t) => ({ id: t.id, label: t.label, panelId: "xc-drawer-content" })), selected: this.currentTab, className: "xc-tabs xc-main-tabs", onSelect: (id) => {
+      const bar = tabBar({ label: t("主标签"), items: tabs.map((tab) => ({ id: tab.id, label: t(tab.label), panelId: "xc-drawer-content" })), selected: this.currentTab, className: "xc-tabs xc-main-tabs", onSelect: (id) => {
         this.currentTab = id;
         this.render(true);
         this.tabArea.querySelector(`[data-id="${id}"]`)?.focus();
@@ -6867,8 +7571,8 @@ ${target}
       this.tabArea.replaceChildren(bar.el);
       const pages = this.pagesOf(this.currentTab);
       if (pages.length > 1 && def) {
-        const label = this.currentTab === "blacklist" ? "黑名单类型" : this.currentTab === "settings" ? "设置类型" : "子标签";
-        const sub = tabBar({ label, items: pages.map((p) => ({ id: p.id, label: p.label })), selected: def.id, className: "xc-tabs xc-sub-tabs", onSelect: (id) => {
+        const label = this.currentTab === "blacklist" ? t("黑名单类型") : this.currentTab === "settings" ? t("设置类型") : t("子标签");
+        const sub = tabBar({ label, items: pages.map((p) => ({ id: p.id, label: t(p.label) })), selected: def.id, className: "xc-tabs xc-sub-tabs", onSelect: (id) => {
           this.subSelection.set(this.currentTab, id);
           this.render(true);
           this.subTabArea.querySelector(`[data-id="${id}"]`)?.focus();
@@ -6881,7 +7585,7 @@ ${target}
       }
       this.content.id = "xc-drawer-content";
       if (!def) {
-        this.content.replaceChildren(h("div", { class: "xc-empty" }, "没有可用的页面。"));
+        this.content.replaceChildren(h("div", { class: "xc-empty" }, t("没有可用的页面。")));
         this.syncFooter({ el: this.content });
         return;
       }
@@ -6904,32 +7608,32 @@ ${target}
 
   // src/plugins/panel/review.ts
   var reviewActions = new Map;
-  var SOURCE_LABELS2 = { ai: "AI", regex: "正则", phrase: "词语", domain: "域名", account: "账号", "auto-account": "自动账号" };
+  var SOURCE_LABELS2 = { ai: "AI", regex: N_("正则"), phrase: N_("词语"), domain: N_("域名"), account: N_("账号"), "auto-account": N_("自动账号") };
   function sourceLabel(rec) {
     if (rec.source === "classifier")
-      return CATEGORY_LABELS[rec.category] ?? "本地识别";
-    return SOURCE_LABELS2[rec.source] ?? "本地识别";
+      return CATEGORY_LABELS[rec.category] ?? t("本地识别");
+    return t(SOURCE_LABELS2[rec.source] ?? "本地识别");
   }
   function recordName(rec) {
-    return rec.context.displayName || (rec.context.authorHandle ? `@${rec.context.authorHandle}` : "") || "未知账号";
+    return rec.context.displayName || (rec.context.authorHandle ? `@${rec.context.authorHandle}` : "") || t("未知账号");
   }
   function details(rec) {
     const lines = [];
     if (rec.score != null && rec.threshold != null)
-      lines.push(`得分 ${rec.score} / 阈值 ${rec.threshold}`);
+      lines.push(t("得分 {score} / 阈值 {threshold}", { score: rec.score, threshold: rec.threshold }));
     if (rec.confidence != null)
-      lines.push(`AI 置信度 ${Math.round(rec.confidence * 100)}%`);
+      lines.push(t("AI 置信度 {pct}%", { pct: Math.round(rec.confidence * 100) }));
     for (const s of rec.signals)
       lines.push(`${s.label} (${s.weight >= 0 ? "+" : ""}${s.weight})`);
     if (rec.regexMatch)
-      lines.push(`规则 ${rec.regexMatch.ruleName || rec.regexMatch.ruleId} · ${FIELD_LABELS[rec.regexMatch.field]}`);
+      lines.push(t("规则 {rule} · {field}", { rule: rec.regexMatch.ruleName || rec.regexMatch.ruleId, field: FIELD_LABELS[rec.regexMatch.field] }));
     else if (rec.match?.kind === "phrase")
-      lines.push(`词语 ${rec.match.value}`);
+      lines.push(t("词语 {value}", { value: rec.match.value }));
     else if (rec.match?.kind === "domain")
-      lines.push(`域名 ${rec.match.value}`);
+      lines.push(t("域名 {value}", { value: rec.match.value }));
     if (!lines.length)
       return null;
-    const d = h("details", { class: "xc-rec-details" }, h("summary", null, "查看命中规则"), h("ul", null, lines.map((l) => h("li", null, l))));
+    const d = h("details", { class: "xc-rec-details" }, h("summary", null, t("查看命中规则")), h("ul", null, lines.map((l) => h("li", null, l))));
     d.addEventListener("click", (e) => e.stopPropagation());
     return d;
   }
@@ -6953,9 +7657,9 @@ ${target}
       records = isFilterActive() ? getController().visibleRecords() : [];
       if (!records.some((r) => r.tweetId === selected))
         selected = records[0]?.tweetId ?? null;
-      const empty = parseRoute().isStatusRoute ? "当前对话暂无已隐藏回复。" : "打开一条 X 帖子的对话页后开始工作。";
+      const empty = parseRoute().isStatusRoute ? t("当前对话暂无已隐藏回复。") : t("打开一条 X 帖子的对话页后开始工作。");
       el.replaceChildren(listbox({
-        label: "已隐藏回复",
+        label: t("已隐藏回复"),
         items: records,
         key: (r) => r.tweetId,
         render: row,
@@ -6973,7 +7677,7 @@ ${target}
       footer.hidden = !rec;
       if (!rec)
         return;
-      label.textContent = `已选 ${recordName(rec)}${rec.context.authorHandle ? ` · @${rec.context.authorHandle}` : ""}`;
+      label.textContent = t("已选 {name}", { name: `${recordName(rec)}${rec.context.authorHandle ? ` · @${rec.context.authorHandle}` : ""}` });
       buttons.replaceChildren(...[...reviewActions.values()].sort((a, b) => a.order - b.order).map((action) => {
         const btn = h("button", {
           type: "button",
@@ -7105,58 +7809,58 @@ ${target}
     panel?.show(tab, page);
   }
   var TABS2 = [
-    { id: "review", label: "复查", order: 10 },
-    { id: "blacklist", label: "黑名单", order: 20 },
-    { id: "allowlist", label: "白名单", order: 30 },
-    { id: "settings", label: "设置", order: 40 },
-    { id: "plugins", label: "插件", order: 50 }
+    { id: "review", label: N_("复查"), order: 10 },
+    { id: "blacklist", label: N_("黑名单"), order: 20 },
+    { id: "allowlist", label: N_("白名单"), order: 30 },
+    { id: "settings", label: N_("设置"), order: 40 },
+    { id: "plugins", label: N_("插件"), order: 50 }
   ];
   var PAGES = [
-    { tab: "review", id: "records", label: "复查", order: 0, create: createReviewPage },
-    { tab: "settings", id: "import", label: "导入", order: 40, create: createImportPage }
+    { tab: "review", id: "records", label: N_("复查"), order: 0, create: createReviewPage },
+    { tab: "settings", id: "import", label: N_("导入"), order: 40, create: createImportPage }
   ];
   var handleOf2 = (rec) => toConfigHandle(rec.context.authorHandle);
   var BASE_ACTIONS = [
     {
       id: "restore",
       order: 10,
-      label: () => "恢复",
+      label: () => t("恢复"),
       run(rec) {
         getController().restore(rec.tweetId);
-        showToast("该回复已恢复显示。", { type: "success" });
+        showToast(t("该回复已恢复显示。"), { type: "success" });
       }
     },
     {
       id: "allow",
       order: 20,
-      label: () => "加入白名单",
+      label: () => t("加入白名单"),
       disabled: (rec) => !handleOf2(rec),
       run(rec) {
         const handle = handleOf2(rec);
         if (!getConfigStore().addAllowHandle(handle))
-          throw new Error("保存设置失败。");
+          throw new Error(t("保存设置失败。"));
         getController().restoreAuthor(handle);
-        showToast(`${handle} 已加入白名单。`, { type: "success" });
+        showToast(t("{handle} 已加入白名单。", { handle }), { type: "success" });
       }
     },
     {
       id: "block",
       order: 30,
-      label: (rec) => handleOf2(rec) && getConfigStore().findAccount(handleOf2(rec)) ? "移出黑名单" : "加入黑名单",
+      label: (rec) => handleOf2(rec) && getConfigStore().findAccount(handleOf2(rec)) ? t("移出黑名单") : t("加入黑名单"),
       disabled: (rec) => !handleOf2(rec),
       run(rec) {
         const store = getConfigStore();
         const handle = handleOf2(rec);
         if (store.findAccount(handle)) {
           store.removeBlockedAccount(handle);
-          showToast(`${handle} 已移出账号黑名单。`, { type: "success" });
+          showToast(t("{handle} 已移出账号黑名单。", { handle }), { type: "success" });
           return;
         }
         if (!store.addBlockedAccount({ handle, source: "manual" }))
-          throw new Error(store.config.allowHandles.includes(handle) ? "该账号已在白名单中。" : "保存设置失败。");
+          throw new Error(store.config.allowHandles.includes(handle) ? t("该账号已在白名单中。") : t("保存设置失败。"));
         getController().unrestore(handle);
         getController().configurationChanged();
-        showToast(`${handle} 已加入账号黑名单。`, { type: "success" });
+        showToast(t("{handle} 已加入账号黑名单。", { handle }), { type: "success" });
       }
     }
   ];
@@ -7164,8 +7868,8 @@ ${target}
     if (typeof GM_registerMenuCommand !== "function")
       return;
     try {
-      GM_registerMenuCommand("打开 X Cleaner", () => openPanel2("review"));
-      GM_registerMenuCommand("打开黑名单与正则", () => openPanel2("blacklist"));
+      GM_registerMenuCommand(t("打开 X Cleaner"), () => openPanel2("review"));
+      GM_registerMenuCommand(t("打开黑名单与正则"), () => openPanel2("blacklist"));
     } catch (e) {
       logger14.error("Menu command registration failed", e);
     }
@@ -7173,7 +7877,7 @@ ${target}
   var menuRegistered = false;
   var panel_default = definePlugin({
     name: "Panel",
-    description: "主面板：右下角悬浮按钮和抽屉，承载复查、黑名单、白名单、设置等页面。各页面由对应插件注册。",
+    description: N_("主面板：右下角悬浮按钮和抽屉，承载复查、黑名单、白名单、设置等页面。各页面由对应插件注册。"),
     icon: Icons.shield,
     tags: ["core", "replies"],
     enabledByDefault: true,
@@ -7273,30 +7977,30 @@ ${target}
   // src/plugins/phraseBlacklist/index.ts
   var phraseBlacklist_default = definePlugin({
     name: "PhraseBlacklist",
-    description: "词语黑名单：依次检查回复正文、显示名和 handle，忽略全角和零宽字符混淆。",
+    description: N_("词语黑名单：依次检查回复正文、显示名和 handle，忽略全角和零宽字符混淆。"),
     icon: Icons.filter,
     tags: ["filters"],
     enabledByDefault: true,
     panelPages: [{
       tab: "blacklist",
       id: "phrases",
-      label: "词语",
+      label: N_("词语"),
       order: 10,
       create: stringListPage({
-        label: "词语",
-        placeholder: "要屏蔽的词语",
-        description: "点击回复旁的盾牌，在弹窗正文、显示名或账号中划词并勾选后加入，或据此分析规则。",
+        label: t("词语"),
+        placeholder: t("要屏蔽的词语"),
+        description: t("点击回复旁的盾牌，在弹窗正文、显示名或账号中划词并勾选后加入，或据此分析规则。"),
         statsPrefix: "phrase",
         limit: LIMITS.phrases,
-        fullMessage: `词语黑名单已满（${LIMITS.phrases}）。`,
-        savedToast: "词语黑名单已保存。",
+        fullMessage: N_("词语黑名单已满（{max}）。"),
+        savedToast: t("词语黑名单已保存。"),
         get: (c) => c.blacklists.phrases,
         set: (c, list) => {
           c.blacklists.phrases = list;
         },
         normalize: (raw) => {
           const value = normalizePhrase(raw);
-          return value ? { value } : { error: "词语不能为空。" };
+          return value ? { value } : { error: t("词语不能为空。") };
         }
       })
     }],
@@ -7307,8 +8011,8 @@ ${target}
         const hit = matchPhrase(env.config.blacklists.phrases, ctx);
         if (!hit)
           return null;
-        const reason = `词语黑名单：“${hit.phrase}”`;
-        return { action: "hide", source: "phrase", category: "词语黑名单", reason, match: { kind: "phrase", value: hit.phrase, field: hit.field }, statsKey: `phrase:${hit.phrase}`, autoEntry: { source: "local-auto", category: "词语黑名单", reason } };
+        const reason = t("词语黑名单：“{phrase}”", { phrase: hit.phrase });
+        return { action: "hide", source: "phrase", category: N_("词语黑名单"), reason, match: { kind: "phrase", value: hit.phrase, field: hit.field }, statsKey: `phrase:${hit.phrase}`, autoEntry: { source: "local-auto", category: N_("词语黑名单"), reason } };
       },
       quick: (input, env) => matchPhrase(env.config.blacklists.phrases, input) ? { action: "hide" } : null
     }]
@@ -7459,21 +8163,21 @@ self.postMessage({ type: "ready" });
   function createRegexPage(ctx) {
     let editing = null;
     let testSeq = 0;
-    const name = h("input", { class: "xc-input", type: "text", maxLength: 100, "aria-label": "规则名称", placeholder: "规则名称" });
-    const source = h("textarea", { class: "xc-textarea xc-mono", rows: 1, maxLength: MAX_SOURCE, placeholder: `正则表达式（最多 ${MAX_SOURCE} 字符）`, "aria-label": "正则表达式" });
+    const name = h("input", { class: "xc-input", type: "text", maxLength: 100, "aria-label": t("规则名称"), placeholder: t("规则名称") });
+    const source = h("textarea", { class: "xc-textarea xc-mono", rows: 1, maxLength: MAX_SOURCE, placeholder: t("正则表达式（最多 {max} 字符）", { max: MAX_SOURCE }), "aria-label": t("正则表达式") });
     source.style.minHeight = "34px";
     autoGrow(source);
     const flags = h("input", { class: "xc-input xc-mono", type: "text", maxLength: 4, placeholder: "flags：i / m / s / u", "aria-label": "flags" });
     const fieldBoxes = FIELDS.map((f) => h("input", { type: "checkbox", value: f }));
     const enabled = h("input", { type: "checkbox" });
-    const sample = h("textarea", { class: "xc-textarea", rows: 2, placeholder: "样本文本", "aria-label": "样本文本" });
+    const sample = h("textarea", { class: "xc-textarea", rows: 2, placeholder: t("样本文本"), "aria-label": t("样本文本") });
     const sampleMsg = errorLine();
     const msg = errorLine();
-    const submit = h("button", { class: "xc-btn xc-btn-primary", type: "submit" }, "添加规则");
-    const cancel = button("取消编辑", () => resetForm());
-    const form = h("form", { class: "xc-form" }, h("label", null, "规则名称", name), h("label", null, "正则表达式", source), h("label", null, "Flags", flags), h("div", { class: "xc-checks", role: "group", "aria-label": "匹配字段" }, FIELDS.map((f, i) => h("label", { class: "xc-check" }, fieldBoxes[i], FIELD_LABELS[f]))), h("label", { class: "xc-check" }, enabled, "启用规则"), h("label", null, "样本文本", sample), sampleMsg, h("div", { class: "xc-row" }, button("测试样本", () => void testSample()), submit, cancel), msg);
-    const list = h("div", { class: "xc-items", role: "list", "aria-label": "正则规则" });
-    const header = pageHeader("正则", () => ctx.store.config.blacklists.regexRules.map((r) => `regex:${r.id.trim().slice(0, 120)}`), () => renderList());
+    const submit = h("button", { class: "xc-btn xc-btn-primary", type: "submit" }, t("添加规则"));
+    const cancel = button(t("取消编辑"), () => resetForm());
+    const form = h("form", { class: "xc-form" }, h("label", null, t("规则名称"), name), h("label", null, t("正则表达式"), source), h("label", null, "Flags", flags), h("div", { class: "xc-checks", role: "group", "aria-label": t("匹配字段") }, FIELDS.map((f, i) => h("label", { class: "xc-check" }, fieldBoxes[i], FIELD_LABELS[f]))), h("label", { class: "xc-check" }, enabled, t("启用规则")), h("label", null, t("样本文本"), sample), sampleMsg, h("div", { class: "xc-row" }, button(t("测试样本"), () => void testSample()), submit, cancel), msg);
+    const list = h("div", { class: "xc-items", role: "list", "aria-label": t("正则规则") });
+    const header = pageHeader(t("正则"), () => ctx.store.config.blacklists.regexRules.map((r) => `regex:${r.id.trim().slice(0, 120)}`), () => renderList());
     const el = h("div", { class: "xc-page" }, header.el, form, list);
     const selectedFields = () => fieldBoxes.filter((b) => b.checked).map((b) => b.value);
     function resetForm() {
@@ -7489,7 +8193,7 @@ self.postMessage({ type: "ready" });
       });
       msg.show("");
       sampleMsg.show("");
-      submit.textContent = "添加规则";
+      submit.textContent = t("添加规则");
       cancel.hidden = true;
       source.dispatchEvent(new Event("input"));
     }
@@ -7504,7 +8208,7 @@ self.postMessage({ type: "ready" });
       });
       msg.show("");
       sampleMsg.show("");
-      submit.textContent = "保存规则";
+      submit.textContent = t("保存规则");
       cancel.hidden = false;
       source.dispatchEvent(new Event("input"));
       name.focus();
@@ -7514,7 +8218,7 @@ self.postMessage({ type: "ready" });
       if (!check.valid)
         return sampleMsg.show(check.error);
       const seq = ++testSeq;
-      sampleMsg.show("Worker 测试中...", "info");
+      sampleMsg.show(t("Worker 测试中..."), "info");
       const samples = selectedFields().map((f) => ({ key: f, text: sample.value.slice(0, 4000) }));
       let outcome;
       try {
@@ -7527,30 +8231,30 @@ self.postMessage({ type: "ready" });
       switch (outcome.status) {
         case "timeout":
           enabled.checked = false;
-          return sampleMsg.show("执行超过 30ms；样本按未命中处理，规则已在表单中停用。");
+          return sampleMsg.show(t("执行超过 30ms；样本按未命中处理，规则已在表单中停用。"));
         case "unavailable":
-          return sampleMsg.show("正则 Worker 不可用；为避免阻塞页面，样本未执行。", "warning");
+          return sampleMsg.show(t("正则 Worker 不可用；为避免阻塞页面，样本未执行。"), "warning");
         case "error":
-          return sampleMsg.show("正则 Worker 执行失败；样本按未命中处理。");
+          return sampleMsg.show(t("正则 Worker 执行失败；样本按未命中处理。"));
         default:
           if (outcome.value.length)
-            sampleMsg.show(`命中：${outcome.value.map((k) => FIELD_LABELS[k]).join("、")}`, "success");
+            sampleMsg.show(t("命中：{fields}", { fields: listJoin(outcome.value.map((k) => FIELD_LABELS[k])) }), "success");
           else
-            sampleMsg.show("未命中样本文本。", "info");
+            sampleMsg.show(t("未命中样本文本。"), "info");
       }
     }
     form.addEventListener("submit", (e) => {
       e.preventDefault();
       const ruleName = name.value.trim().slice(0, 100);
       if (!ruleName)
-        return msg.show("规则名称不能为空。");
+        return msg.show(t("规则名称不能为空。"));
       const fields = selectedFields();
       const check = validateRegex(source.value, flags.value, fields);
       if (!check.valid)
         return msg.show(check.error);
       const rules = ctx.store.config.blacklists.regexRules;
       if (!editing && rules.length >= MAX_REGEX_RULES)
-        return msg.show(`正则规则已达到 ${MAX_REGEX_RULES} 条上限。`);
+        return msg.show(t("正则规则已达到 {max} 条上限。", { max: MAX_REGEX_RULES }));
       const rule = {
         id: editing?.id ?? newRegexId(),
         name: ruleName,
@@ -7572,7 +8276,7 @@ self.postMessage({ type: "ready" });
       });
       if (!ok)
         return;
-      showToast("正则规则已保存。", { type: "success" });
+      showToast(t("正则规则已保存。"), { type: "success" });
       resetForm();
     });
     function toggle(rule) {
@@ -7599,10 +8303,10 @@ self.postMessage({ type: "ready" });
       const q = header.query();
       const rules = ctx.store.config.blacklists.regexRules.filter((r) => matches(q, r.name, r.source, r.fields.map((f) => FIELD_LABELS[f]).join(" "), r.fields.join(" ")));
       if (!rules.length) {
-        list.replaceChildren(h("div", { class: "xc-empty" }, q ? "没有匹配的规则。" : "暂无正则规则。"));
+        list.replaceChildren(h("div", { class: "xc-empty" }, q ? t("没有匹配的规则。") : t("暂无正则规则。")));
         return;
       }
-      list.replaceChildren(...rules.map((r) => h("div", { class: "xc-item", role: "listitem" }, h("div", { class: "xc-item-main" }, h("div", { class: "xc-item-head" }, h("strong", null, r.name), hitPill(`regex:${r.id.trim().slice(0, 120)}`), pill(r.enabled ? "已启用" : "已停用", r.enabled ? "success" : "muted")), h("code", { class: "xc-mono", style: "font-size:12px" }, `/${r.source}/${r.flags}`), h("span", { class: "xc-item-meta xc-muted" }, r.fields.map((f) => FIELD_LABELS[f] ?? f).join("、")), r.error ? h("span", { class: "xc-item-error" }, r.error) : null), h("div", { class: "xc-item-actions" }, button(r.enabled ? "停用" : "启用", () => toggle(r), { small: true }), button("编辑", () => edit(r), { small: true }), button("移除", () => {
+      list.replaceChildren(...rules.map((r) => h("div", { class: "xc-item", role: "listitem" }, h("div", { class: "xc-item-main" }, h("div", { class: "xc-item-head" }, h("strong", null, r.name), hitPill(`regex:${r.id.trim().slice(0, 120)}`), pill(r.enabled ? t("已启用") : t("已停用"), r.enabled ? "success" : "muted")), h("code", { class: "xc-mono", style: "font-size:12px" }, `/${r.source}/${r.flags}`), h("span", { class: "xc-item-meta xc-muted" }, listJoin(r.fields.map((f) => FIELD_LABELS[f] ?? f))), r.error ? h("span", { class: "xc-item-error" }, r.error) : null), h("div", { class: "xc-item-actions" }, button(r.enabled ? t("停用") : t("启用"), () => toggle(r), { small: true }), button(t("编辑"), () => edit(r), { small: true }), button(t("移除"), () => {
         if (ctx.commit((c) => {
           c.blacklists.regexRules = c.blacklists.regexRules.filter((x) => x.id !== r.id);
         }) && editing?.id === r.id)
@@ -7626,8 +8330,8 @@ self.postMessage({ type: "ready" });
     return activeRules(config.blacklists.regexRules).filter((r) => !runtimeDisabled.has(r.id));
   }
   function verdictOf(result) {
-    const reason = `正则“${result.ruleName || result.ruleId}”命中 ${FIELD_LABELS[result.field]}`;
-    return { action: "hide", source: "regex", category: "正则黑名单", reason, regexMatch: result, match: { kind: "regex", value: result.ruleId, field: result.field }, statsKey: `regex:${result.ruleId.trim().slice(0, 120)}`, autoEntry: { source: "local-auto", category: "正则黑名单", reason } };
+    const reason = t("正则“{rule}”命中 {field}", { rule: result.ruleName || result.ruleId, field: FIELD_LABELS[result.field] });
+    return { action: "hide", source: "regex", category: N_("正则黑名单"), reason, regexMatch: result, match: { kind: "regex", value: result.ruleId, field: result.field }, statsKey: `regex:${result.ruleId.trim().slice(0, 120)}`, autoEntry: { source: "local-auto", category: N_("正则黑名单"), reason } };
   }
   function disableTimedOut(ids) {
     const store = getConfigStore();
@@ -7643,19 +8347,19 @@ self.postMessage({ type: "ready" });
           continue;
         r.enabled = false;
         r.errorCode = "timeout";
-        r.error = "正则执行超过 30ms，已自动禁用。";
+        r.error = t("正则执行超过 30ms，已自动禁用。");
       }
     });
-    showToast("有正则执行超过 30ms，已自动禁用。", { type: "error" });
+    showToast(t("有正则执行超过 30ms，已自动禁用。"), { type: "error" });
   }
   var regexBlacklist_default = definePlugin({
     name: "RegexBlacklist",
-    description: "正则黑名单：安全模式在主线程同步执行，其余规则放进可终止的 Worker，超过 30ms 自动停用。",
+    description: N_("正则黑名单：安全模式在主线程同步执行，其余规则放进可终止的 Worker，超过 30ms 自动停用。"),
     icon: Icons.regex,
     tags: ["filters"],
     enabledByDefault: true,
     dependencies: ["BlockerConfig"],
-    panelPages: [{ tab: "blacklist", id: "regex", label: "正则", order: 30, create: createRegexPage }],
+    panelPages: [{ tab: "blacklist", id: "regex", label: N_("正则"), order: 30, create: createRegexPage }],
     events: {
       configurationChanged() {
         runtimeDisabled.clear();
@@ -7708,15 +8412,15 @@ self.postMessage({ type: "ready" });
   }
   var R2 = (s) => new RegExp(s, "iu");
   var BODY_TEMPLATES = [
-    { id: "adult-looks-vs-slut", name: "颜值骚对比引流", trigger: R2("比[她我你].{0,2}好看的没[她我你].{0,2}骚|比[她我你].{0,2}骚的没[她我你].{0,2}好看"), sources: ["比[她我你]好看的没[她我你]骚|比[她我你]骚的没[她我你]好看"], confidence: 0.93, reason: "复用常见黄推对比口号，任一半句即可命中；代词、@账号、表情和尾号可变。" },
-    { id: "adult-play-open", name: "玩得开引流模板", trigger: R2("应该没人比[我她你]玩的开了吧"), sources: ["应该没人比[我她你]玩的开了吧.{0,48}(?:我福不黑|不信你看)", "应该没人比[我她你]玩的开了吧"], confidence: 0.91, reason: "复用「玩的开」黄推开场白，代词和结尾话术可变。" },
-    { id: "adult-too-spicy", name: "太涩引流模板", trigger: R2("太涩.{0,36}(?:我福不黑|不信你看)"), sources: ["太涩.{0,36}(?:我福不黑|不信你看)"], confidence: 0.9, reason: "复用「太涩…不信你看」黄推话术，中间内容可变。" },
-    { id: "adult-contact-funnel", name: "加微约炮引流", trigger: R2("(?:加[微v薇]|微信|私信).{0,10}(?:看片|私密|裸照|福利|约炮|可约|看主页)"), sources: ["(?:加[微v薇]|微信|私信).{0,8}(?:看片|私密|裸照|福利|约炮|可约|看主页)"], confidence: 0.9, reason: "命中「加微 / 私信 + 成人内容」的引流组合，联系方式本身可变。" },
-    { id: "adult-local-hookup", name: "同城约炮引流", trigger: R2("(?:同城|附近).{0,8}(?:约炮|裸聊|上门|空降|可约)"), sources: ["(?:同城|附近).{0,8}(?:约炮|裸聊|上门|空降|可约)"], confidence: 0.89, reason: "命中「同城 / 附近 + 约炮服务」组合，地名和措辞可变。" },
-    { id: "adult-explicit-service", name: "成人服务话术", trigger: R2("裸聊|福利姬|约炮|炮友|援交|陪睡"), sources: ["(?:裸聊|福利姬|约炮|炮友|援交|陪睡)"], confidence: 0.86, reason: "命中高特异的成人服务词，正常讨论很少使用。" },
-    { id: "crypto-claim", name: "领取空投导流", trigger: R2("claim\\s*now|领取(?:礼物|空投|福利)|马上领取|点击领取"), sources: ["(?:Claim\\s*now|领取(?:礼物|空投|福利)|马上领取|点击领取)"], confidence: 0.9, reason: "命中「领取空投 / Claim now」导流话术。" },
-    { id: "crypto-airdrop-funnel", name: "免费空投导流", trigger: R2("(?:免费|官方|独家|限时).{0,8}(?:空投|airdrop)|(?:空投|airdrop).{0,8}(?:领取|claim|开放|马上|免费)"), sources: ["(?:(?:免费|官方|独家|限时).{0,8}(?:空投|airdrop)|(?:空投|airdrop).{0,8}(?:领取|claim))"], confidence: 0.88, reason: "命中「免费 / 官方空投 + 领取」组合，币种和链接可变。" },
-    { id: "crypto-presale", name: "预售带单导流", trigger: R2("(?:预售|presale).{0,8}(?:开启|开始|live|now)|百倍币|千倍币|财富密码|稳赚带单|币圈带单"), sources: ["(?:(?:预售|presale).{0,8}(?:开启|开始|live|now)|百倍币|千倍币|财富密码|稳赚带单)"], confidence: 0.87, reason: "命中预售开启、百倍币、带单等币圈推广话术。" }
+    { id: "adult-looks-vs-slut", name: N_("颜值骚对比引流"), trigger: R2("比[她我你].{0,2}好看的没[她我你].{0,2}骚|比[她我你].{0,2}骚的没[她我你].{0,2}好看"), sources: ["比[她我你]好看的没[她我你]骚|比[她我你]骚的没[她我你]好看"], confidence: 0.93, reason: N_("复用常见黄推对比口号，任一半句即可命中；代词、@账号、表情和尾号可变。") },
+    { id: "adult-play-open", name: N_("玩得开引流模板"), trigger: R2("应该没人比[我她你]玩的开了吧"), sources: ["应该没人比[我她你]玩的开了吧.{0,48}(?:我福不黑|不信你看)", "应该没人比[我她你]玩的开了吧"], confidence: 0.91, reason: N_("复用「玩的开」黄推开场白，代词和结尾话术可变。") },
+    { id: "adult-too-spicy", name: N_("太涩引流模板"), trigger: R2("太涩.{0,36}(?:我福不黑|不信你看)"), sources: ["太涩.{0,36}(?:我福不黑|不信你看)"], confidence: 0.9, reason: N_("复用「太涩…不信你看」黄推话术，中间内容可变。") },
+    { id: "adult-contact-funnel", name: N_("加微约炮引流"), trigger: R2("(?:加[微v薇]|微信|私信).{0,10}(?:看片|私密|裸照|福利|约炮|可约|看主页)"), sources: ["(?:加[微v薇]|微信|私信).{0,8}(?:看片|私密|裸照|福利|约炮|可约|看主页)"], confidence: 0.9, reason: N_("命中「加微 / 私信 + 成人内容」的引流组合，联系方式本身可变。") },
+    { id: "adult-local-hookup", name: N_("同城约炮引流"), trigger: R2("(?:同城|附近).{0,8}(?:约炮|裸聊|上门|空降|可约)"), sources: ["(?:同城|附近).{0,8}(?:约炮|裸聊|上门|空降|可约)"], confidence: 0.89, reason: N_("命中「同城 / 附近 + 约炮服务」组合，地名和措辞可变。") },
+    { id: "adult-explicit-service", name: N_("成人服务话术"), trigger: R2("裸聊|福利姬|约炮|炮友|援交|陪睡"), sources: ["(?:裸聊|福利姬|约炮|炮友|援交|陪睡)"], confidence: 0.86, reason: N_("命中高特异的成人服务词，正常讨论很少使用。") },
+    { id: "crypto-claim", name: N_("领取空投导流"), trigger: R2("claim\\s*now|领取(?:礼物|空投|福利)|马上领取|点击领取"), sources: ["(?:Claim\\s*now|领取(?:礼物|空投|福利)|马上领取|点击领取)"], confidence: 0.9, reason: N_("命中「领取空投 / Claim now」导流话术。") },
+    { id: "crypto-airdrop-funnel", name: N_("免费空投导流"), trigger: R2("(?:免费|官方|独家|限时).{0,8}(?:空投|airdrop)|(?:空投|airdrop).{0,8}(?:领取|claim|开放|马上|免费)"), sources: ["(?:(?:免费|官方|独家|限时).{0,8}(?:空投|airdrop)|(?:空投|airdrop).{0,8}(?:领取|claim))"], confidence: 0.88, reason: N_("命中「免费 / 官方空投 + 领取」组合，币种和链接可变。") },
+    { id: "crypto-presale", name: N_("预售带单导流"), trigger: R2("(?:预售|presale).{0,8}(?:开启|开始|live|now)|百倍币|千倍币|财富密码|稳赚带单|币圈带单"), sources: ["(?:(?:预售|presale).{0,8}(?:开启|开始|live|now)|百倍币|千倍币|财富密码|稳赚带单)"], confidence: 0.87, reason: N_("命中预售开启、百倍币、带单等币圈推广话术。") }
   ];
   var NAME_COMPOUND = "(?:福利姬|裸聊|约炮|空投客服|币圈带单|加[微v薇].{0,6}(?:私密|裸聊|福利)|催情|春药|迷药)";
   var NAME_TOKENS = ["福利姬", "春药", "迷药", "催情", "听话", "男用", "女用", "裸聊", "约炮", "炮友", "上门", "空降", "同城", "私密", "看片"];
@@ -7773,13 +8477,13 @@ self.postMessage({ type: "ready" });
     const out = [];
     if (!body)
       return out;
-    for (const t of BODY_TEMPLATES) {
-      if (!t.trigger.test(body))
+    for (const tpl of BODY_TEMPLATES) {
+      if (!tpl.trigger.test(body))
         continue;
-      const source = t.sources.find((s) => matches2(s, body));
+      const source = tpl.sources.find((s) => matches2(s, body));
       if (!source)
         continue;
-      out.push({ rule: { name: t.name, source, flags: "iu", fields: ["body"] }, reason: t.reason, confidence: t.confidence, origin: "local-template", templateId: t.id, score: 100 + Math.round(t.confidence * 10) });
+      out.push({ rule: { name: t(tpl.name), source, flags: "iu", fields: ["body"] }, reason: t(tpl.reason), confidence: tpl.confidence, origin: "local-template", templateId: tpl.id, score: 100 + Math.round(tpl.confidence * 10) });
     }
     for (const core of denoiseSegments(body)) {
       if (!isDistinctiveCore(core))
@@ -7789,8 +8493,8 @@ self.postMessage({ type: "ready" });
         continue;
       const han = countHan(core);
       out.push({
-        rule: { name: han >= 6 ? "可复用口号" : "可复用短语", source, flags: "iu", fields: ["body"] },
-        reason: "提取回复中稳定的口号，去掉 @账号、链接、表情和数字等可变部分。",
+        rule: { name: han >= 6 ? t("可复用口号") : t("可复用短语"), source, flags: "iu", fields: ["body"] },
+        reason: t("提取回复中稳定的口号，去掉 @账号、链接、表情和数字等可变部分。"),
         confidence: han >= 8 ? 0.88 : 0.8,
         origin: "local-template",
         templateId: "stable-core",
@@ -7818,17 +8522,17 @@ self.postMessage({ type: "ready" });
     if (!name)
       return out;
     if (matches2(NAME_COMPOUND, name))
-      out.push({ rule: { name: "推广显示名", source: NAME_COMPOUND, flags: "iu", fields: ["displayName"] }, reason: "显示名含成人或币圈推广的复合词。", confidence: 0.84, origin: "local-template", templateId: "name-adult-compound", score: 108 });
+      out.push({ rule: { name: t("推广显示名"), source: NAME_COMPOUND, flags: "iu", fields: ["displayName"] }, reason: t("显示名含成人或币圈推广的复合词。"), confidence: 0.84, origin: "local-template", templateId: "name-adult-compound", score: 108 });
     const tokens = displayNameTokens(name);
     if (tokens.length >= 2 || tokens.length === 1 && STANDALONE_TOKENS.has(tokens[0])) {
       const source = tokens.slice(0, 4).map(escapeRegexLiteral).join(".{0,12}");
       if (matches2(source, name))
-        out.push({ rule: { name: `${tokens.slice(0, 3).join("")}引流`, source, flags: "iu", fields: ["displayName"] }, reason: "按显示名中的引流词组合生成，词之间允许夹杂表情和符号。", confidence: tokens.length >= 2 ? 0.88 : 0.84, origin: "local-template", templateId: "display-name-tokens", score: 115 + tokens.length });
+        out.push({ rule: { name: t("{tokens}引流", { tokens: tokens.slice(0, 3).join("") }), source, flags: "iu", fields: ["displayName"] }, reason: t("按显示名中的引流词组合生成，词之间允许夹杂表情和符号。"), confidence: tokens.length >= 2 ? 0.88 : 0.84, origin: "local-template", templateId: "display-name-tokens", score: 115 + tokens.length });
     }
     return out;
   }
   function linkCandidates(links) {
-    return links && matches2(PROMO_DOMAIN_SOURCE, links) ? [{ rule: { name: "推广域名", source: PROMO_DOMAIN_SOURCE, flags: "iu", fields: ["links"] }, reason: "链接指向常见成人或币圈推广域名。", confidence: 0.85, origin: "local-template", templateId: "promo-domain", score: 109 }] : [];
+    return links && matches2(PROMO_DOMAIN_SOURCE, links) ? [{ rule: { name: t("推广域名"), source: PROMO_DOMAIN_SOURCE, flags: "iu", fields: ["links"] }, reason: t("链接指向常见成人或币圈推广域名。"), confidence: 0.85, origin: "local-template", templateId: "promo-domain", score: 109 }] : [];
   }
   var NORMALIZE_RE = /[​-‏⁠﻿]/gu;
   var normalizeForCompare = (s) => s.normalize("NFKC").replace(NORMALIZE_RE, "").replace(/\s+/gu, " ").trim().toLowerCase();
@@ -7861,21 +8565,21 @@ self.postMessage({ type: "ready" });
 
   // src/rules/safety.ts
   var CANARIES = [
-    { label: "普通中文回复", field: "body", value: "谢谢分享，这个观点很有帮助。" },
-    { label: "正常联络语境", field: "body", value: "如需补充资料可以私信我，我们继续讨论。" },
-    { label: "正常福利语境", field: "body", value: "公司正在讨论员工福利和客户服务流程。" },
-    { label: "诈骗曝光语境", field: "body", value: "这是关于加密货币诈骗的新闻报道，请勿连接陌生钱包。" },
-    { label: "技术与客服讨论", field: "body", value: "我们正在讨论 Web3 安全和客服行业的技术问题。" },
-    { label: "English scam warning", field: "body", value: "This is a report about a crypto scam. Do not connect your wallet." },
-    { label: "普通显示名", field: "displayName", value: "张三" },
-    { label: "正常客服显示名", field: "displayName", value: "产品客服研究" },
-    { label: "安全研究显示名", field: "displayName", value: "Crypto Security Research" },
-    { label: "普通账号", field: "handle", value: "alice_dev" },
-    { label: "安全研究账号", field: "handle", value: "crypto_security" },
-    { label: "正常支持账号", field: "handle", value: "customer_support_news" },
-    { label: "普通 X 链接", field: "links", value: "https://x.com/openai/status/1234567890" },
-    { label: "普通项目链接", field: "links", value: "https://github.com/example/project" },
-    { label: "普通 Telegram 链接", field: "links", value: "https://t.me/legitimate_project" }
+    { label: N_("普通中文回复"), field: "body", value: "谢谢分享，这个观点很有帮助。" },
+    { label: N_("正常联络语境"), field: "body", value: "如需补充资料可以私信我，我们继续讨论。" },
+    { label: N_("正常福利语境"), field: "body", value: "公司正在讨论员工福利和客户服务流程。" },
+    { label: N_("诈骗曝光语境"), field: "body", value: "这是关于加密货币诈骗的新闻报道，请勿连接陌生钱包。" },
+    { label: N_("技术与客服讨论"), field: "body", value: "我们正在讨论 Web3 安全和客服行业的技术问题。" },
+    { label: N_("英文诈骗警示"), field: "body", value: "This is a report about a crypto scam. Do not connect your wallet." },
+    { label: N_("普通显示名"), field: "displayName", value: "张三" },
+    { label: N_("正常客服显示名"), field: "displayName", value: "产品客服研究" },
+    { label: N_("安全研究显示名"), field: "displayName", value: "Crypto Security Research" },
+    { label: N_("普通账号"), field: "handle", value: "alice_dev" },
+    { label: N_("安全研究账号"), field: "handle", value: "crypto_security" },
+    { label: N_("正常支持账号"), field: "handle", value: "customer_support_news" },
+    { label: N_("普通 X 链接"), field: "links", value: "https://x.com/openai/status/1234567890" },
+    { label: N_("普通项目链接"), field: "links", value: "https://github.com/example/project" },
+    { label: N_("普通 Telegram 链接"), field: "links", value: "https://t.me/legitimate_project" }
   ];
   var CATCH_ALL = /^\^?(?:\.\*|\.\+|\[\\s\\S\]\*)\$?$/;
   var TEMPLATE_SIGNAL = /比\[?她我你\]?好看的没|应该没人比|太涩.{0,12}(?:我福不黑|不信你看)|Claim\\s\*now|领取(?:礼物|空投|福利)|加\[?微v薇\]?|福利姬|裸聊|约炮|炮友|催情|春药|迷药|pump\\?\.fun/u;
@@ -7914,24 +8618,24 @@ self.postMessage({ type: "ready" });
     return null;
   }
   var MESSAGES = {
-    "invalid-rule": "规则结构无效。",
-    "overbroad-rule": "规则范围过宽。",
-    "lazy-exact-copy": "规则只是整条回复的精确拷贝，无法复用。",
-    "target-not-matched": "规则没有命中当前回复。",
-    "empty-match": "规则会命中空内容。",
-    "canary-match": "规则命中了内置安全样本。",
-    "negative-match": "规则命中了负例。",
-    "protected-match": "规则命中了当前对话中受保护的内容。",
-    "worker-error": "正则 Worker 返回了无效结果。",
-    "worker-timeout": "规则执行超时，已按不安全处理。",
-    "worker-unavailable": "正则 Worker 不可用，无法完成安全校验。"
+    "invalid-rule": N_("规则结构无效。"),
+    "overbroad-rule": N_("规则范围过宽。"),
+    "lazy-exact-copy": N_("规则只是整条回复的精确拷贝，无法复用。"),
+    "target-not-matched": N_("规则没有命中当前回复。"),
+    "empty-match": N_("规则会命中空内容。"),
+    "canary-match": N_("规则命中了内置安全样本。"),
+    "negative-match": N_("规则命中了负例。"),
+    "protected-match": N_("规则命中了当前对话中受保护的内容。"),
+    "worker-error": N_("正则 Worker 返回了无效结果。"),
+    "worker-timeout": N_("规则执行超时，已按不安全处理。"),
+    "worker-unavailable": N_("正则 Worker 不可用，无法完成安全校验。")
   };
-  var result = (code, targetMatch, canarySafe, message) => ({ valid: code == null, code, message: message ?? (code ? MESSAGES[code] : ""), targetMatch, canarySafe });
+  var result = (code, targetMatch, canarySafe, message) => ({ valid: code == null, code, message: message ?? (code ? t(MESSAGES[code]) : ""), targetMatch, canarySafe });
   async function checkCandidate(input, probe = probeRegex) {
     const { rule } = input;
     const check = validateRegex(rule.source, rule.flags, rule.fields);
     if (!check.valid || rule.fields.length !== 1)
-      return result("invalid-rule", false, false, check.error ?? "AI 规则必须且只能选择一个字段。");
+      return result("invalid-rule", false, false, check.error ?? t("AI 规则必须且只能选择一个字段。"));
     const field = rule.fields[0];
     if (!input.skipBreadth) {
       const broad = breadthCheck(rule);
@@ -7967,7 +8671,7 @@ self.postMessage({ type: "ready" });
     if (has("canary:")) {
       const idx = Number([...hit].find((k) => k.startsWith("canary:")).split(":")[1]);
       const label = CANARIES.filter((c) => c.field === field)[idx]?.label ?? "";
-      return result("canary-match", true, false, `${MESSAGES["canary-match"]}（${label}）`);
+      return result("canary-match", true, false, t("{message}（{sample}）", { message: t(MESSAGES["canary-match"]), sample: t(label) }));
     }
     if (has("negative:"))
       return result("negative-match", true, false);
@@ -7975,8 +8679,12 @@ self.postMessage({ type: "ready" });
       return result("protected-match", true, false);
     return result(null, true, true);
   }
-  var EXACT_NAMES = { body: "精确匹配回复正文", displayName: "精确匹配显示名", handle: "精确匹配账号 handle" };
-  var EXACT_LABEL = { body: "回复正文", displayName: "显示名", handle: "账号 handle" };
+  var EXACT_NAMES = { body: N_("精确匹配回复正文"), displayName: N_("精确匹配显示名"), handle: N_("精确匹配账号 handle") };
+  var EXACT_REASONS = {
+    body: N_("未找到可安全复用的模板；仅精确匹配当前回复正文，保存前仍需用户确认。"),
+    displayName: N_("未找到可安全复用的模板；仅精确匹配当前显示名，保存前仍需用户确认。"),
+    handle: N_("未找到可安全复用的模板；仅精确匹配当前账号 handle，保存前仍需用户确认。")
+  };
   function exactRule(values, field) {
     const value = values[field];
     if (!value)
@@ -7984,7 +8692,7 @@ self.postMessage({ type: "ready" });
     const source = `^${escapeRegexLiteral(value)}$`;
     if (source.length > MAX_SOURCE)
       return null;
-    return { name: EXACT_NAMES[field], source, flags: "iu", fields: [field] };
+    return { name: t(EXACT_NAMES[field]), source, flags: "iu", fields: [field] };
   }
   function exactFallback(values, only, reason) {
     const fields = only ? [only] : ["body", "displayName", "handle"];
@@ -7992,7 +8700,7 @@ self.postMessage({ type: "ready" });
       const rule = exactRule(values, field);
       if (!rule || !validateRegex(rule.source, rule.flags, rule.fields).valid || breadthCheck(rule))
         continue;
-      return { rule, reason: reason ?? `未找到可安全复用的模板；仅精确匹配当前${EXACT_LABEL[field]}，保存前仍需用户确认。`, confidence: null, origin: "exact-fallback" };
+      return { rule, reason: reason ?? t(EXACT_REASONS[field]), confidence: null, origin: "exact-fallback" };
     }
     return null;
   }
@@ -8009,12 +8717,12 @@ self.postMessage({ type: "ready" });
     const escaped = phrases.map(escapeRegexLiteral);
     return {
       rule: {
-        name: phrases.length === 1 ? `划词：${phrases[0]}` : `划词：${phrases.length} 个词语`,
+        name: phrases.length === 1 ? t("划词：{phrase}", { phrase: phrases[0] }) : t("划词：{n} 个词语", { n: phrases.length }),
         source: escaped.length === 1 ? escaped[0] : `(?:${escaped.join("|")})`,
         flags: "iu",
         fields: [field]
       },
-      reason: `根据勾选词语生成规则：${phrases.join("、")}`,
+      reason: t("根据勾选词语生成规则：{phrases}", { phrases: listJoin(phrases) }),
       confidence: 0.88,
       origin: "phrase-selection"
     };
@@ -8036,7 +8744,7 @@ self.postMessage({ type: "ready" });
     "Return JSON only."
   ].join(`
 `);
-  var RESPONSE_FORMAT = '{"version":1,"decision":"rule|insufficient","rule":{"name":"...","source":"...","flags":"iu","fields":["body"]},"reason":"short Chinese reason","confidence":0.0,"positive_examples":[],"negative_examples":[]}';
+  var responseFormat = () => `{"version":1,"decision":"rule|insufficient","rule":{"name":"...","source":"...","flags":"iu","fields":["body"]},"reason":"short ${aiLanguageName()} reason","confidence":0.0,"positive_examples":[],"negative_examples":[]}`;
   function draftJson(d) {
     return d ? { version: 1, decision: "rule", rule: d.rule, reason: d.reason, positive_examples: [], negative_examples: [] } : null;
   }
@@ -8078,7 +8786,8 @@ ${JSON.stringify(payload)}
 
 Requirements: ${instruction}
 Return exactly this JSON shape:
-${RESPONSE_FORMAT}` }
+${responseFormat()}
+Write rule.name and reason in ${aiLanguageName()}.` }
       ]
     };
   }
@@ -8119,10 +8828,10 @@ ${RESPONSE_FORMAT}` }
     if (typeof r.flags !== "string")
       throw new AiError("AI rule flags must be a string.");
     if (!Array.isArray(r.fields) || r.fields.length !== 1)
-      throw new AiError("AI 规则必须且只能选择一个字段。");
+      throw new AiError(t("AI 规则必须且只能选择一个字段。"));
     const field = canonicalField(r.fields[0]);
     if (!field)
-      throw new AiError(`不支持的字段：${String(r.fields[0])}`);
+      throw new AiError(t("不支持的字段：{badField}", { badField: String(r.fields[0]) }));
     const check = validateRegex(r.source, r.flags, [field]);
     if (!check.valid)
       throw new AiError(check.error ?? "AI rule is invalid.");
@@ -8211,7 +8920,7 @@ ${RESPONSE_FORMAT}` }
       const exact = await validatedExactFallback(env, check);
       if (exact)
         return exact;
-      throw new Error("当前回复没有可用于生成规则的稳定字段。");
+      throw new Error(t("当前回复没有可用于生成规则的稳定字段。"));
     };
     if (env.aiUnavailable)
       return { draft: await local(), aiNegatives: [] };
@@ -8233,10 +8942,10 @@ ${RESPONSE_FORMAT}` }
         throw e;
       const msg = e instanceof Error ? e.message : String(e);
       const draft = await local();
-      return { draft: { ...draft, reason: `AI 分析暂未完成（${msg}）；已生成本地可复用规则，仍需你确认保存。` }, aiNegatives: [] };
+      return { draft: { ...draft, reason: t("AI 分析暂未完成（{error}）；已生成本地可复用规则，仍需你确认保存。", { error: msg }) }, aiNegatives: [] };
     }
     if (!env.targetIntact())
-      throw new AnalysisAbort("AI 返回前回复内容或页面已变化，结果已丢弃。");
+      throw new AnalysisAbort(t("AI 返回前回复内容或页面已变化，结果已丢弃。"));
     if (response.decision !== "rule" || !response.rule)
       return { draft: await local(), aiNegatives: response.negatives };
     const rule = response.rule;
@@ -8252,8 +8961,8 @@ ${RESPONSE_FORMAT}` }
   }
 
   // src/plugins/ruleDraft/dialog.ts
-  var CHANGED = "回复内容或页面已变化，请重新点击回复旁的屏蔽按钮。";
-  var ABORTED = "页面或设置已变化，AI 规则生成已中止。";
+  var CHANGED = N_("回复内容或页面已变化，请重新点击回复旁的屏蔽按钮。");
+  var ABORTED = N_("页面或设置已变化，AI 规则生成已中止。");
   var SOURCE_FIELDS = ["body", "displayName", "handle"];
   var current2 = null;
   function liveTarget(t) {
@@ -8270,22 +8979,22 @@ ${RESPONSE_FORMAT}` }
   }
   function openRuleDraft(target, initial) {
     if (!target.signature || !target.tweetId)
-      throw new Error("回复身份不完整，操作已中止。");
+      throw new Error(t("回复身份不完整，操作已中止。"));
     if (current2) {
       if (current2.busy)
-        throw new Error("当前规则正在生成或保存，请完成后再分析其他回复。");
+        throw new Error(t("当前规则正在生成或保存，请完成后再分析其他回复。"));
       if (current2.target.tweetId === target.tweetId) {
-        showToast("这条回复的规则草稿已经打开。", { type: "info" });
+        showToast(t("这条回复的规则草稿已经打开。"), { type: "info" });
         return null;
       }
-      throw new Error("请先保存或取消当前的规则草稿，再分析其他回复。");
+      throw new Error(t("请先保存或取消当前的规则草稿，再分析其他回复。"));
     }
     const ctx = liveTarget(target);
     if (!ctx)
-      throw new Error(CHANGED);
+      throw new Error(t(CHANGED));
     const draft = initial(ctx);
     if (!draft)
-      throw new Error("当前回复没有可用于生成规则的稳定字段。");
+      throw new Error(t("当前回复没有可用于生成规则的稳定字段。"));
     return new Promise((resolve) => {
       current2 = new RuleDraftDialog(target, ctx, draft, (outcome) => {
         current2 = null;
@@ -8318,28 +9027,28 @@ ${RESPONSE_FORMAT}` }
     backdrop;
     eyebrow = h("p", { class: "xc-rd-eyebrow" });
     title = h("h2", { class: "xc-rd-title", id: "xc-rd-title" });
-    closeBtn = h("button", { class: "xc-btn xc-btn-icon", type: "button", "aria-label": "取消" }, svgIcon(Icons.close, 20));
-    nameInput = h("input", { class: "xc-input", type: "text", maxLength: 100, "aria-label": "规则名称" });
-    sourceInput = h("textarea", { class: "xc-textarea xc-mono", rows: 1, maxLength: 200, "aria-label": "正则表达式" });
+    closeBtn = h("button", { class: "xc-btn xc-btn-icon", type: "button", "aria-label": t("取消") }, svgIcon(Icons.close, 20));
+    nameInput = h("input", { class: "xc-input", type: "text", maxLength: 100, "aria-label": t("规则名称") });
+    sourceInput = h("textarea", { class: "xc-textarea xc-mono", rows: 1, maxLength: 200, "aria-label": t("正则表达式") });
     flagsInput = h("input", { class: "xc-input xc-mono", type: "text", maxLength: 4, "aria-label": "Flags" });
-    fieldSelect = h("select", { class: "xc-select", "aria-label": "匹配字段" }, Object.keys(FIELD_LABELS).map((f) => h("option", { value: f }, FIELD_LABELS[f])));
+    fieldSelect = h("select", { class: "xc-select", "aria-label": t("匹配字段") }, Object.keys(FIELD_LABELS).map((f) => h("option", { value: f }, FIELD_LABELS[f])));
     reasonText = h("p", { class: "xc-rd-reason" });
     confidenceText = h("span", { class: "xc-pill xc-pill-accent" });
     targetCard = h("div", { class: "xc-rd-card" });
     canaryCard = h("div", { class: "xc-rd-card" });
     validationMsg = h("p", { class: "xc-form-msg", role: "status" });
-    followup = h("textarea", { class: "xc-textarea", rows: 2, maxLength: 1000, placeholder: "例如：缩小匹配范围，并排除正常讨论。", "aria-label": "补充要求" });
-    followupBtn = h("button", { class: "xc-btn xc-btn-sm", type: "button" }, "发送追问");
-    regenBtn = h("button", { class: "xc-btn", type: "button" }, "重新生成");
-    cancelBtn = h("button", { class: "xc-btn", type: "button" }, "取消");
-    saveBtn = h("button", { class: "xc-btn xc-btn-primary", type: "submit" }, "保存并启用");
-    selectorTabs = h("div", { class: "xc-tabs xc-rd-sources", role: "tablist", "aria-label": "划词来源" });
+    followup = h("textarea", { class: "xc-textarea", rows: 2, maxLength: 1000, placeholder: t("例如：缩小匹配范围，并排除正常讨论。"), "aria-label": t("补充要求") });
+    followupBtn = h("button", { class: "xc-btn xc-btn-sm", type: "button" }, t("发送追问"));
+    regenBtn = h("button", { class: "xc-btn", type: "button" }, t("重新生成"));
+    cancelBtn = h("button", { class: "xc-btn", type: "button" }, t("取消"));
+    saveBtn = h("button", { class: "xc-btn xc-btn-primary", type: "submit" }, t("保存并启用"));
+    selectorTabs = h("div", { class: "xc-tabs xc-rd-sources", role: "tablist", "aria-label": t("划词来源") });
     selectorArea = h("div", { class: "xc-rd-selector-area" });
     preview = h("div", { class: "xc-rd-preview", hidden: true });
     candidateList = h("div", { class: "xc-rd-candidates" });
     selectorHint = h("p", { class: "xc-muted xc-rd-hint" });
-    addPhrasesBtn = h("button", { class: "xc-btn xc-btn-sm", type: "button" }, "加入勾选词语");
-    analyzePhrasesBtn = h("button", { class: "xc-btn xc-btn-sm", type: "button" }, "分析勾选词语");
+    addPhrasesBtn = h("button", { class: "xc-btn xc-btn-sm", type: "button" }, t("加入勾选词语"));
+    analyzePhrasesBtn = h("button", { class: "xc-btn xc-btn-sm", type: "button" }, t("分析勾选词语"));
     constructor(target, ctx, draft, done) {
       this.target = target;
       this.done = done;
@@ -8348,9 +9057,9 @@ ${RESPONSE_FORMAT}` }
       this.returnFocus = document.activeElement;
       this.source = SOURCE_FIELDS.find((f) => this.values[f]) ?? "body";
       const endpoint = getConfigStore().config.ai.endpoint;
-      const identity = [ctx.displayName, ctx.authorHandle && `@${ctx.authorHandle}`].filter(Boolean).join(" · ") || "当前回复";
+      const identity = [ctx.displayName, ctx.authorHandle && `@${ctx.authorHandle}`].filter(Boolean).join(" · ") || t("当前回复");
       autoGrow(this.sourceInput);
-      const form = h("form", { class: "xc-rd-form" }, h("section", { class: "xc-rd-target", "aria-label": "分析目标" }, h("p", { class: "xc-rd-identity" }, identity), this.selectorTabs, this.selectorArea, this.preview, this.candidateList, h("div", { class: "xc-row" }, this.addPhrasesBtn, this.analyzePhrasesBtn), this.selectorHint, endpoint ? h("p", { class: "xc-muted xc-rd-endpoint" }, `AI 服务：${endpoint}`) : null), h("label", null, "规则名称", this.nameInput), h("label", null, "正则表达式", this.sourceInput), h("div", { class: "xc-rd-grid" }, h("label", null, "Flags", this.flagsInput), h("label", null, "匹配字段", this.fieldSelect)), h("div", { class: "xc-rd-conclusion" }, h("strong", null, "分析结论"), this.reasonText, this.confidenceText), h("div", { class: "xc-rd-cards" }, this.targetCard, this.canaryCard), this.validationMsg, h("details", { class: "xc-rd-followup" }, h("summary", null, "追问 AI"), h("label", null, "补充要求", this.followup), h("div", null, this.followupBtn)), h("div", { class: "xc-rd-actions" }, this.regenBtn, this.cancelBtn, this.saveBtn));
+      const form = h("form", { class: "xc-rd-form" }, h("section", { class: "xc-rd-target", "aria-label": t("分析目标") }, h("p", { class: "xc-rd-identity" }, identity), this.selectorTabs, this.selectorArea, this.preview, this.candidateList, h("div", { class: "xc-row" }, this.addPhrasesBtn, this.analyzePhrasesBtn), this.selectorHint, endpoint ? h("p", { class: "xc-muted xc-rd-endpoint" }, t("AI 服务：{endpoint}", { endpoint })) : null), h("label", null, t("规则名称"), this.nameInput), h("label", null, t("正则表达式"), this.sourceInput), h("div", { class: "xc-rd-grid" }, h("label", null, "Flags", this.flagsInput), h("label", null, t("匹配字段"), this.fieldSelect)), h("div", { class: "xc-rd-conclusion" }, h("strong", null, t("分析结论")), this.reasonText, this.confidenceText), h("div", { class: "xc-rd-cards" }, this.targetCard, this.canaryCard), this.validationMsg, h("details", { class: "xc-rd-followup" }, h("summary", null, t("追问 AI")), h("label", null, t("补充要求"), this.followup), h("div", null, this.followupBtn)), h("div", { class: "xc-rd-actions" }, this.regenBtn, this.cancelBtn, this.saveBtn));
       const dialog = h("div", { class: "xc-rd-dialog", role: "dialog", "aria-modal": "true", "aria-labelledby": "xc-rd-title" }, h("header", { class: "xc-rd-head" }, h("div", null, this.eyebrow, this.title), this.closeBtn), form);
       this.backdrop = h("div", { class: "xc-root xc-rule-dialog-backdrop", [OWNED_ATTR]: "" }, dialog);
       this.backdrop.addEventListener("mousedown", (e) => {
@@ -8384,8 +9093,8 @@ ${RESPONSE_FORMAT}` }
       };
       document.addEventListener("keydown", onKey, true);
       this.offs.push(() => document.removeEventListener("keydown", onKey, true));
-      this.offs.push(onAiConfigChange(() => this.aborted?.(new AnalysisAbort(ABORTED))));
-      this.offs.push(subscribe("filterRouteChanged", () => this.aborted?.(new AnalysisAbort(ABORTED))));
+      this.offs.push(onAiConfigChange(() => this.aborted?.(new AnalysisAbort(t(ABORTED)))));
+      this.offs.push(subscribe("filterRouteChanged", () => this.aborted?.(new AnalysisAbort(t(ABORTED)))));
       this.renderSelector();
       this.applyDraft(draft);
       this.renderBusy();
@@ -8398,7 +9107,7 @@ ${RESPONSE_FORMAT}` }
     }
     renderSelector() {
       const sources = this.sources();
-      const labels = { body: "回复正文", displayName: "显示名", handle: "@handle" };
+      const labels = { body: t("回复正文"), displayName: t("显示名"), handle: "@handle" };
       this.selectorTabs.hidden = sources.length <= 1;
       this.selectorTabs.replaceChildren(...sources.map((f) => h("button", {
         type: "button",
@@ -8415,7 +9124,7 @@ ${RESPONSE_FORMAT}` }
       if (!sources.length) {
         this.selectorArea.replaceChildren();
       } else {
-        const area = h("textarea", { class: "xc-textarea", rows: 3, readOnly: true, "aria-label": `${labels[this.source]}，划选后可加入词语` });
+        const area = h("textarea", { class: "xc-textarea", rows: 3, readOnly: true, "aria-label": t("{field}，划选后可加入词语", { field: labels[this.source] }) });
         area.value = this.values[this.source];
         const read = () => {
           const phrase = selectionPhrase(area.value.slice(area.selectionStart ?? 0, area.selectionEnd ?? 0));
@@ -8429,7 +9138,7 @@ ${RESPONSE_FORMAT}` }
       this.renderPreview();
       this.renderCandidates();
       const nonBody = sources.some((f) => f !== "body");
-      this.selectorHint.textContent = !sources.length ? "该回复没有可划选的正文、显示名或账号。" : nonBody ? "在回复正文、显示名或账号中划选词语并勾选，可加入黑名单，或据此分析规则。" : "在原文中划选词语并勾选，可加入黑名单，或据此分析规则。";
+      this.selectorHint.textContent = !sources.length ? t("该回复没有可划选的正文、显示名或账号。") : nonBody ? t("在回复正文、显示名或账号中划选词语并勾选，可加入黑名单，或据此分析规则。") : t("在原文中划选词语并勾选，可加入黑名单，或据此分析规则。");
     }
     renderPreview() {
       this.preview.hidden = !this.selection;
@@ -8444,14 +9153,14 @@ ${RESPONSE_FORMAT}` }
         this.selection = "";
         this.renderPreview();
         this.renderCandidates();
-      } }, "添加"), h("button", { class: "xc-btn xc-btn-sm", type: "button", onclick: () => {
+      } }, t("添加")), h("button", { class: "xc-btn xc-btn-sm", type: "button", onclick: () => {
         this.selection = "";
         this.renderPreview();
-      } }, "清除"));
+      } }, t("清除")));
     }
     renderCandidates() {
       const showSource = this.candidates.some((c) => c.field !== "body");
-      const labels = { body: "正文", displayName: "显示名", handle: "@handle" };
+      const labels = { body: t("正文"), displayName: t("显示名"), handle: "@handle" };
       this.candidateList.replaceChildren(...this.candidates.map((c) => h("button", {
         type: "button",
         class: "xc-rd-candidate",
@@ -8470,7 +9179,7 @@ ${RESPONSE_FORMAT}` }
     addPhrases() {
       const checked = this.candidates.filter((c) => c.checked);
       if (!checked.length)
-        return showToast("没有可加入的词语。", { type: "info" });
+        return showToast(t("没有可加入的词语。"), { type: "info" });
       const store = getConfigStore();
       const added = [];
       let full = false;
@@ -8487,15 +9196,15 @@ ${RESPONSE_FORMAT}` }
       this.candidates = this.candidates.filter((c) => !added.includes(c.phrase));
       this.renderCandidates();
       if (added.length === checked.length)
-        showToast(added.length === 1 ? `已加入词语「${added[0]}」。` : `已加入 ${added.length} 个词语。`, { type: "success" });
+        showToast(added.length === 1 ? t("已加入词语「{phrase}」。", { phrase: added[0] }) : t("已加入 {n} 个词语。", { n: added.length }), { type: "success" });
       else if (added.length)
-        showToast(`已加入 ${added.length} 个词语，其余已存在或无法加入。`, { type: "success" });
+        showToast(t("已加入 {n} 个词语，其余已存在或无法加入。", { n: added.length }), { type: "success" });
       else if (full)
-        showToast("词语黑名单已满（500）。", { type: "error" });
+        showToast(t("词语黑名单已满（{max}）。", { max: 500 }), { type: "error" });
       else if (exists === checked.length)
-        showToast(checked.length === 1 ? `词语「${checked[0].phrase}」已在黑名单中。` : "这些词语已在黑名单中。", { type: "info" });
+        showToast(checked.length === 1 ? t("词语「{phrase}」已在黑名单中。", { phrase: checked[0].phrase }) : t("这些词语已在黑名单中。"), { type: "info" });
       else
-        showToast("没有可加入的词语。", { type: "info" });
+        showToast(t("没有可加入的词语。"), { type: "info" });
     }
     applyDraft(draft) {
       this.draft = draft;
@@ -8507,7 +9216,7 @@ ${RESPONSE_FORMAT}` }
       this.reasonText.textContent = draft.reason;
       const showConfidence = draft.confidence != null && draft.origin !== "exact-fallback";
       this.confidenceText.hidden = !showConfidence;
-      this.confidenceText.textContent = showConfidence ? `置信度 ${Math.round(draft.confidence * 100)}%` : "";
+      this.confidenceText.textContent = showConfidence ? t("置信度 {pct}%", { pct: Math.round(draft.confidence * 100) }) : "";
     }
     currentRule() {
       return { name: this.nameInput.value.trim(), source: this.sourceInput.value, flags: this.flagsInput.value, fields: [this.fieldSelect.value] };
@@ -8523,7 +9232,7 @@ ${RESPONSE_FORMAT}` }
       const live = liveTarget(this.target);
       if (!live) {
         this.validating = false;
-        this.validation = { valid: false, code: null, message: CHANGED, targetMatch: false, canarySafe: false };
+        this.validation = { valid: false, code: null, message: t(CHANGED), targetMatch: false, canarySafe: false };
         this.renderValidation();
         return this.validation;
       }
@@ -8532,7 +9241,7 @@ ${RESPONSE_FORMAT}` }
       if (seq !== this.validationSeq)
         return null;
       this.validating = false;
-      this.validation = liveTarget(this.target) ? result : { valid: false, code: null, message: "校验期间回复内容或页面发生了变化。", targetMatch: false, canarySafe: false };
+      this.validation = liveTarget(this.target) ? result : { valid: false, code: null, message: t("校验期间回复内容或页面发生了变化。"), targetMatch: false, canarySafe: false };
       this.renderValidation();
       return this.validation;
     }
@@ -8542,9 +9251,9 @@ ${RESPONSE_FORMAT}` }
         el.dataset.state = ok === null ? "pending" : ok ? "ok" : "fail";
         el.replaceChildren(h("strong", null, title), h("span", null, ok === null ? pending : ok ? good : bad));
       };
-      card(this.targetCard, "当前回复", this.validating ? null : !!v?.targetMatch, "正在验证...", "已命中当前回复", "未命中当前回复");
-      card(this.canaryCard, "安全样本", this.validating ? null : !!v?.canarySafe, "正在检查...", "未命中安全样本", "安全样本检查未通过");
-      this.validationMsg.textContent = this.validating ? "" : v && !v.valid ? v.message : v?.valid ? "规则已通过安全校验。" : "";
+      card(this.targetCard, t("当前回复"), this.validating ? null : !!v?.targetMatch, t("正在验证..."), t("已命中当前回复"), t("未命中当前回复"));
+      card(this.canaryCard, t("安全样本"), this.validating ? null : !!v?.canarySafe, t("正在检查..."), t("未命中安全样本"), t("安全样本检查未通过"));
+      this.validationMsg.textContent = this.validating ? "" : v && !v.valid ? v.message : v?.valid ? t("规则已通过安全校验。") : "";
       this.validationMsg.dataset.kind = v?.valid ? "success" : "error";
       this.renderBusy();
     }
@@ -8560,15 +9269,15 @@ ${RESPONSE_FORMAT}` }
         el.disabled = lockForm;
       this.regenBtn.disabled = lockForm;
       this.followupBtn.disabled = lockForm || !this.followup.value.trim();
-      this.regenBtn.textContent = busy === "regen" ? "生成中..." : "重新生成";
-      this.followupBtn.textContent = busy === "regen" ? "生成中..." : "发送追问";
-      this.saveBtn.textContent = busy === "save" ? "保存中..." : busy ? "分析中..." : "保存并启用";
+      this.regenBtn.textContent = busy === "regen" ? t("生成中...") : t("重新生成");
+      this.followupBtn.textContent = busy === "regen" ? t("生成中...") : t("发送追问");
+      this.saveBtn.textContent = busy === "save" ? t("保存中...") : busy ? t("分析中...") : t("保存并启用");
       this.saveBtn.disabled = !this.canSave();
       const locked = busy === "save" || busy === "regen";
       this.cancelBtn.disabled = locked;
       this.closeBtn.disabled = locked;
-      this.eyebrow.textContent = busy === "analyze" || busy === "regen" ? "回复分析" : "屏蔽规则";
-      this.title.textContent = busy === "analyze" || busy === "regen" ? "正在分析回复" : "检查并启用规则";
+      this.eyebrow.textContent = busy === "analyze" || busy === "regen" ? t("回复分析") : t("屏蔽规则");
+      this.title.textContent = busy === "analyze" || busy === "regen" ? t("正在分析回复") : t("检查并启用规则");
       this.backdrop?.querySelector(".xc-rd-dialog")?.setAttribute("aria-busy", String(!!busy));
       this.renderCandidatesState();
     }
@@ -8592,21 +9301,21 @@ ${RESPONSE_FORMAT}` }
           values: this.values,
           negatives: this.negatives,
           protectedContexts: protectedValues(),
-          aiUnavailable: config.enabled ? aiUnavailableReason(config.ai) : "AI 未启用或尚未确认数据发送范围",
+          aiUnavailable: config.enabled ? aiUnavailableReason(config.ai) : t("AI 未启用或尚未确认数据发送范围"),
           targetIntact: () => !!liveTarget(this.target),
           runAi: (input) => this.runAi(input)
         });
         if (token !== this.flowToken)
-          throw new AnalysisAbort("已选择另一条回复，这次 AI 结果已丢弃。");
+          throw new AnalysisAbort(t("已选择另一条回复，这次 AI 结果已丢弃。"));
         if (seq !== this.requestSeq)
-          throw new AnalysisAbort("已有更新的草稿请求，这次 AI 结果已丢弃。");
+          throw new AnalysisAbort(t("已有更新的草稿请求，这次 AI 结果已丢弃。"));
         this.negatives = [...new Set([...this.negatives, ...result.aiNegatives])].slice(0, 16);
         this.applyDraft(result.draft);
       } catch (e) {
         if (token !== this.flowToken || seq !== this.requestSeq)
           return;
         const msg = e instanceof Error ? e.message : String(e);
-        this.reasonText.textContent = `分析未完成：${msg.replace(/[。.]$/, "")}。已保留本地可复用草稿。`;
+        this.reasonText.textContent = t("分析未完成：{error}。已保留本地可复用草稿。", { error: msg.replace(/[。.]$/, "") });
       } finally {
         if (token === this.flowToken && seq === this.requestSeq) {
           this.busy = null;
@@ -8619,12 +9328,12 @@ ${RESPONSE_FORMAT}` }
       const queue = getAiQueue();
       const budget = getConfigStore().config.ai.maxReviewsPerConversation;
       if (!queue.canEnqueue())
-        return Promise.reject(new AnalysisAbort(`已达到本对话 ${budget} 次 AI 调用上限。`));
+        return Promise.reject(new AnalysisAbort(t("已达到本对话 {budget} 次 AI 调用上限。", { budget })));
       const store = getConfigStore();
       return new Promise((resolve, reject) => {
         this.aborted = reject;
         queue.enqueue(`rule:${this.target.tweetId}:${this.requestSeq}`, () => generateRule(input, store.config.ai, store.apiKey)).then(resolve, (e) => {
-          reject(e instanceof AiQueueError ? new AnalysisAbort(e.message === "budget" ? `已达到本对话 ${budget} 次 AI 调用上限。` : ABORTED) : e);
+          reject(e instanceof AiQueueError ? new AnalysisAbort(e.message === "budget" ? t("已达到本对话 {budget} 次 AI 调用上限。", { budget }) : t(ABORTED)) : e);
         }).finally(() => {
           this.aborted = null;
         });
@@ -8638,17 +9347,17 @@ ${RESPONSE_FORMAT}` }
       try {
         const result = await this.validateForSave();
         if (!result.valid || !result.targetMatch || !result.canarySafe)
-          throw new Error(result.message || "规则未通过最终安全校验。");
+          throw new Error(result.message || t("规则未通过最终安全校验。"));
         if (!liveTarget(this.target))
-          throw new Error(CHANGED);
+          throw new Error(t(CHANGED));
         const rule = this.currentRule();
         if (rule.fields.length !== 1)
-          throw new Error("AI 规则必须且只能选择一个字段。");
+          throw new Error(t("AI 规则必须且只能选择一个字段。"));
         const store = getConfigStore();
         const flags = rule.flags.split("").filter((f, i, a) => "imsu".includes(f) && a.indexOf(f) === i).sort((a, b) => "imsu".indexOf(a) - "imsu".indexOf(b)).join("");
         const existing = store.config.blacklists.regexRules.find((r) => r.source === rule.source && r.flags === flags && r.fields.length === 1 && r.fields[0] === rule.fields[0]);
         if (!existing && store.config.blacklists.regexRules.length >= MAX_REGEX_RULES)
-          throw new Error(`正则规则已达到 ${MAX_REGEX_RULES} 条上限。`);
+          throw new Error(t("正则规则已达到 {max} 条上限。", { max: MAX_REGEX_RULES }));
         store.update((c) => {
           const same = c.blacklists.regexRules.find((r) => existing && r.id === existing.id);
           if (same) {
@@ -8663,17 +9372,17 @@ ${RESPONSE_FORMAT}` }
           const next = { id: newRegexId("ai-regex", 6), name: rule.name.slice(0, 100), source: rule.source, flags, enabled: true, valid: true, fields: rule.fields, error: null, errorCode: null };
           c.blacklists.regexRules.push(next);
         });
-        showToast("屏蔽规则已保存并启用。", { type: "success" });
+        showToast(t("屏蔽规则已保存并启用。"), { type: "success" });
         this.finish({ saved: true, reason: "saved" });
       } catch (e) {
-        showToast(e instanceof Error && e.message ? e.message : "规则保存失败，草稿已保留。", { type: "error" });
+        showToast(e instanceof Error && e.message ? e.message : t("规则保存失败，草稿已保留。"), { type: "error" });
         this.busy = null;
         this.renderBusy();
       }
     }
     async validateForSave() {
       const result = await this.validate();
-      return result ?? { valid: false, code: null, message: "规则未通过最终安全校验。", targetMatch: false, canarySafe: false };
+      return result ?? { valid: false, code: null, message: t("规则未通过最终安全校验。"), targetMatch: false, canarySafe: false };
     }
     cancel() {
       if (this.busy === "save" || this.busy === "regen")
@@ -8747,29 +9456,29 @@ ${RESPONSE_FORMAT}` }
 `;
 
   // src/plugins/ruleDraft/index.ts
-  var INITIAL_REASON = "正在分析回复；如果没有可复用模式，将保留这条本地精确规则。";
+  var INITIAL_REASON = N_("正在分析回复；如果没有可复用模式，将保留这条本地精确规则。");
   function draftFor(target) {
-    return openRuleDraft(target, (ctx) => synthesizeLocalRule(ctx) ?? exactFallback(fieldValues(ctx), undefined, INITIAL_REASON));
+    return openRuleDraft(target, (ctx) => synthesizeLocalRule(ctx) ?? exactFallback(fieldValues(ctx), undefined, t(INITIAL_REASON)));
   }
   var ruleDraftMenuItem = {
     id: "rule-draft",
     order: 30,
     icon: Icons.regex,
-    label: () => "用这条回复生成屏蔽规则",
+    label: () => t("用这条回复生成屏蔽规则"),
     visible: (ctx) => !!eligibleReplyContext(ctx.article),
     run(ctx) {
       const reply = eligibleReplyContext(ctx.article);
       if (!reply) {
-        showToast("这条回复已不在可处理范围内。", { type: "error" });
+        showToast(t("这条回复已不在可处理范围内。"), { type: "error" });
         return;
       }
       const target = { routeKey: getController().route.routeKey, tweetId: reply.tweetId, handle: reply.authorHandle, signature: contextSignature(reply) };
-      draftFor(target)?.catch((err) => showToast(err instanceof Error ? err.message : "无法生成屏蔽规则。", { type: "error" }));
+      draftFor(target)?.catch((err) => showToast(err instanceof Error ? err.message : t("无法生成屏蔽规则。"), { type: "error" }));
     }
   };
   var ruleDraft_default = definePlugin({
     name: "RuleDraft",
-    description: "规则草稿弹窗：从一条回复生成正则规则，支持划词、本地模板、AI 生成与追问，保存前在 Worker 中做安全校验。",
+    description: N_("规则草稿弹窗：从一条回复生成正则规则，支持划词、本地模板、AI 生成与追问，保存前在 Worker 中做安全校验。"),
     icon: Icons.regex,
     tags: ["filters", "ai"],
     enabledByDefault: true,
@@ -8787,8 +9496,8 @@ ${RESPONSE_FORMAT}` }
   var BUTTON_ATTR = "data-xrb-inline-rule";
   var STRIP2 = ["id", "data-testid", "aria-controls", "aria-describedby", "aria-labelledby", "aria-haspopup", "aria-expanded", "href"];
   var SHIELD_SVG = '<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/>';
-  var IDLE_LABEL = "分析这条回复";
-  var BUSY_LABEL = "正在分析这条回复";
+  var IDLE_LABEL = N_("分析这条回复");
+  var BUSY_LABEL = N_("正在分析这条回复");
   var REPEAT_MS = 500;
   var ROUTE_POLL_MS2 = 400;
   var bindings = new Map;
@@ -8871,7 +9580,7 @@ ${RESPONSE_FORMAT}` }
     b.busy = busy;
     b.button.disabled = busy;
     b.button.setAttribute("aria-busy", String(busy));
-    b.button.setAttribute("aria-label", busy ? BUSY_LABEL : IDLE_LABEL);
+    b.button.setAttribute("aria-label", t(busy ? BUSY_LABEL : IDLE_LABEL));
     b.tip.refresh();
   }
   function unbind(article) {
@@ -8906,7 +9615,7 @@ ${RESPONSE_FORMAT}` }
     try {
       pending = draftFor(b.target);
     } catch (err) {
-      showToast(err instanceof Error && err.message ? err.message : "无法生成屏蔽规则。", { type: "error" });
+      showToast(err instanceof Error && err.message ? err.message : t("无法生成屏蔽规则。"), { type: "error" });
     }
     queueMicrotask(() => {
       setBusy(b, false);
@@ -8926,8 +9635,8 @@ ${RESPONSE_FORMAT}` }
       busy: false,
       lastActivation: 0
     };
-    binding.tip = attachTooltip(button, () => binding.busy ? BUSY_LABEL : IDLE_LABEL, "bottom");
-    button.setAttribute("aria-label", IDLE_LABEL);
+    binding.tip = attachTooltip(button, () => t(binding.busy ? BUSY_LABEL : IDLE_LABEL), "bottom");
+    button.setAttribute("aria-label", t(IDLE_LABEL));
     button.addEventListener("click", (e) => activate(binding, e), true);
     button.addEventListener("keydown", (e) => activate(binding, e), true);
     for (const ev of ["pointerdown", "mousedown", "pointerup", "mouseup"])
@@ -8990,7 +9699,7 @@ ${RESPONSE_FORMAT}` }
   }
   var replyShield_default = definePlugin({
     name: "ReplyShield",
-    description: "回复旁的盾牌按钮：在每条可处理回复的 Grok 按钮左侧放一个盾牌，点击后打开规则草稿弹窗。",
+    description: N_("回复旁的盾牌按钮：在每条可处理回复的 Grok 按钮左侧放一个盾牌，点击后打开规则草稿弹窗。"),
     icon: Icons.shield,
     tags: ["replies", "filters"],
     enabledByDefault: true,
@@ -9039,9 +9748,9 @@ ${RESPONSE_FORMAT}` }
   var SIDE2 = '[data-testid="sidebarColumn"]';
   var opt2 = (label, description) => ({ type: "boolean" /* BOOLEAN */, label, description, default: true });
   var settings5 = definePluginSettings({
-    hideTrends: opt2("有什么新鲜事", "「What's happening」趋势卡片。"),
-    hideWhoToFollow: opt2("推荐关注", "「Who to follow」卡片，帖子页的「相关用户」也算。"),
-    hideFooter: opt2("页脚链接", "服务条款、隐私政策、Cookie、© X Corp. 那一排链接。")
+    hideTrends: opt2(N_("有什么新鲜事"), N_("「What's happening」趋势卡片。")),
+    hideWhoToFollow: opt2(N_("推荐关注"), N_("「Who to follow」卡片，帖子页的「相关用户」也算。")),
+    hideFooter: opt2(N_("页脚链接"), N_("服务条款、隐私政策、Cookie、© X Corp. 那一排链接。"))
   });
   var RULES2 = {
     hideTrends: `${SIDE2} div:has(> section [data-testid="trend"])`,
@@ -9066,7 +9775,7 @@ ${RESPONSE_FORMAT}` }
   var rightSidebarCleaner_default = definePlugin({
     name: "RightSidebarCleaner",
     oldNames: ["SidebarWidgets"],
-    description: "隐藏右侧栏三大件：「有什么新鲜事」趋势、「推荐关注」和底部页脚链接，可分别开关。",
+    description: N_("隐藏右侧栏三大件：「有什么新鲜事」趋势、「推荐关注」和底部页脚链接，可分别开关。"),
     icon: Icons.eyeOff,
     tags: ["appearance", "declutter"],
     enabledByDefault: true,
@@ -9105,7 +9814,7 @@ ${RESPONSE_FORMAT}` }
     const el = h("div", { class: "xc-notice", role: type === "error" ? "alert" : "status", dataset: { type, id } }, svgIcon(type === "info" || type === "success" ? Icons.info : Icons.alert, 16), h("span", { class: "xc-notice-message" }, options.message), options.action && h("button", { class: "xc-btn xc-btn-sm", type: "button", onclick: () => {
       options.action.onClick();
       close();
-    } }, options.action.label), h("button", { class: "xc-notice-close", type: "button", "aria-label": "关闭", onclick: close }, svgIcon(Icons.close, 14)));
+    } }, options.action.label), h("button", { class: "xc-notice-close", type: "button", "aria-label": t("关闭"), onclick: close }, svgIcon(Icons.close, 14)));
     open.set(id, el);
     container2().appendChild(el);
     return close;
@@ -9190,8 +9899,8 @@ ${RESPONSE_FORMAT}` }
     showNotice({
       id: `health:${key}`,
       type: "warning",
-      message: `X 的页面结构可能更新了：${plugin} 找不到「${check.label}」，相关功能可能暂时失灵。`,
-      action: { label: "查看插件", onClick: () => openSettingsPanel({ tab: "plugins" }) }
+      message: t("X 的页面结构可能更新了：{plugin} 找不到「{label}」，相关功能可能暂时失灵。", { plugin, label: t(check.label) }),
+      action: { label: t("查看插件"), onClick: () => openSettingsPanel({ tab: "plugins" }) }
     });
   }
   function schedule2(delay = SETTLE_MS) {
@@ -9209,7 +9918,7 @@ ${RESPONSE_FORMAT}` }
   }
   var selectorHealth_default = definePlugin({
     name: "SelectorHealth",
-    description: "页面结构检查：X 改版后，如果插件依赖的按钮、菜单、侧栏找不到了，主动提示哪个插件受影响，而不是悄悄失灵。",
+    description: N_("页面结构检查：X 改版后，如果插件依赖的按钮、菜单、侧栏找不到了，主动提示哪个插件受影响，而不是悄悄失灵。"),
     icon: Icons.heartPulse,
     tags: ["core", "developer"],
     enabledByDefault: true,
@@ -9231,24 +9940,24 @@ ${RESPONSE_FORMAT}` }
   var NAV2 = 'header[role="banner"] nav[role="navigation"]';
   var PIN_ATTR = "data-xc-pin";
   var LABELS = {
-    "tid:AppTabBar_Home_Link": "主页",
-    "tid:AppTabBar_Explore_Link": "探索",
-    "tid:AppTabBar_Notifications_Link": "通知",
-    "tid:AppTabBar_Follow_Link": "关注",
-    "tid:AppTabBar_DirectMessage_Link": "私信",
-    "tid:AppTabBar_Calls_Link": "通话",
+    "tid:AppTabBar_Home_Link": N_("主页"),
+    "tid:AppTabBar_Explore_Link": N_("探索"),
+    "tid:AppTabBar_Notifications_Link": N_("通知"),
+    "tid:AppTabBar_Follow_Link": N_("关注"),
+    "tid:AppTabBar_DirectMessage_Link": N_("私信"),
+    "tid:AppTabBar_Calls_Link": N_("通话"),
     "href:/i/grok": "Grok",
-    "href:/i/bookmarks": "书签",
-    "href:/~/lists": "列表",
-    "href:/~/communities": "社群",
-    "href:/i/history": "历史记录",
-    "href:/jobs": "工作",
-    "tid:premium-hub-tab": "订阅",
-    "tid:AppTabBar_Profile_Link": "个人资料",
-    "tid:AppTabBar_More_Menu": "更多"
+    "href:/i/bookmarks": N_("书签"),
+    "href:/~/lists": N_("列表"),
+    "href:/~/communities": N_("社群"),
+    "href:/i/history": N_("历史记录"),
+    "href:/jobs": N_("工作"),
+    "tid:premium-hub-tab": N_("订阅"),
+    "tid:AppTabBar_Profile_Link": N_("个人资料"),
+    "tid:AppTabBar_More_Menu": N_("更多")
   };
   var HIDE_HINTS = {
-    "tid:AppTabBar_More_Menu": "隐藏后侧栏里就没有 X 的「设置和隐私」入口了。"
+    "tid:AppTabBar_More_Menu": N_("隐藏后侧栏里就没有 X 的「设置和隐私」入口了。")
   };
   var quote2 = (v) => JSON.stringify(v);
   function describeEntry(el) {
@@ -9278,8 +9987,8 @@ ${RESPONSE_FORMAT}` }
     }
     const text = (el.getAttribute("aria-label") || el.innerText || el.textContent || "").trim().split(`
 `)[0];
-    const label = LABELS[key] ?? (text || key.replace(/^\w+:/, ""));
-    return { key, selector, label: pin ? `${label}（来自「更多」）` : label };
+    const label = LABELS[key] ? t(LABELS[key]) : text || key.replace(/^\w+:/, "");
+    return { key, selector, label: pin ? t("{label}（来自「更多」）", { label }) : label };
   }
   function readEntries(nav) {
     const seen = new Set;
@@ -9335,7 +10044,7 @@ ${RESPONSE_FORMAT}` }
     return !!(nav && entry && nav.querySelector(`:scope > ${entry.selector}`));
   };
   function renderEditor(ctx, getEntries) {
-    const list = h("div", { class: "xc-sbe-list", role: "list", "aria-label": "侧栏入口" });
+    const list = h("div", { class: "xc-sbe-list", role: "list", "aria-label": t("侧栏入口") });
     let dragKey = null;
     const current = () => {
       const v = ctx.get();
@@ -9359,7 +10068,7 @@ ${RESPONSE_FORMAT}` }
     const render = () => {
       const entries = getEntries();
       if (!entries.length) {
-        list.replaceChildren(h("div", { class: "xc-empty" }, "还没有读到侧栏入口。在 x.com 的桌面版页面打开此设置即可。"));
+        list.replaceChildren(h("div", { class: "xc-empty" }, t("还没有读到侧栏入口。在 x.com 的桌面版页面打开此设置即可。")));
         return;
       }
       const { order: saved, hidden } = current();
@@ -9371,8 +10080,8 @@ ${RESPONSE_FORMAT}` }
         const handle = h("button", {
           type: "button",
           class: "xc-sbe-handle",
-          title: "拖动排序，或按 ↑ ↓ 移动",
-          "aria-label": `移动 ${entry.label}`,
+          title: t("拖动排序，或按 ↑ ↓ 移动"),
+          "aria-label": t("移动 {label}", { label: entry.label }),
           onkeydown: (e) => {
             if (e.key === "ArrowUp" || e.key === "ArrowDown") {
               e.preventDefault();
@@ -9380,12 +10089,12 @@ ${RESPONSE_FORMAT}` }
             }
           }
         }, "⋮⋮");
-        const hint = !visible && HIDE_HINTS[key] ? h("span", { class: "xc-sbe-hint" }, HIDE_HINTS[key]) : null;
-        const absent = !isLive(key, entries) ? h("span", { class: "xc-sbe-hint" }, "当前页面没有这个入口") : null;
-        const row = h("div", { class: `xc-sbe-row${visible ? "" : " is-hidden"}`, role: "listitem", draggable: "true", dataset: { key } }, handle, h("div", { class: "xc-sbe-main" }, h("strong", null, entry.label), hint, absent), h("div", { class: "xc-sbe-actions" }, h("button", { type: "button", class: "xc-btn xc-btn-sm xc-btn-icon", "aria-label": `上移 ${entry.label}`, disabled: i === 0, onclick: () => move(key, i - 1) }, "↑"), h("button", { type: "button", class: "xc-btn xc-btn-sm xc-btn-icon", "aria-label": `下移 ${entry.label}`, disabled: i === order.length - 1, onclick: () => move(key, i + 1) }, "↓"), switchEl(visible, (on) => {
+        const hint = !visible && HIDE_HINTS[key] ? h("span", { class: "xc-sbe-hint" }, t(HIDE_HINTS[key])) : null;
+        const absent = !isLive(key, entries) ? h("span", { class: "xc-sbe-hint" }, t("当前页面没有这个入口")) : null;
+        const row = h("div", { class: `xc-sbe-row${visible ? "" : " is-hidden"}`, role: "listitem", draggable: "true", dataset: { key } }, handle, h("div", { class: "xc-sbe-main" }, h("strong", null, entry.label), hint, absent), h("div", { class: "xc-sbe-actions" }, h("button", { type: "button", class: "xc-btn xc-btn-sm xc-btn-icon", "aria-label": t("上移 {label}", { label: entry.label }), disabled: i === 0, onclick: () => move(key, i - 1) }, "↑"), h("button", { type: "button", class: "xc-btn xc-btn-sm xc-btn-icon", "aria-label": t("下移 {label}", { label: entry.label }), disabled: i === order.length - 1, onclick: () => move(key, i + 1) }, "↓"), switchEl(visible, (on) => {
           const next = current().hidden.filter((k) => k !== key);
           save(current().order, on ? next : [...next, key]);
-        }, `显示 ${entry.label}`)));
+        }, t("显示 {label}", { label: entry.label }))));
         row.addEventListener("dragstart", (e) => {
           dragKey = key;
           row.classList.add("is-dragging");
@@ -9416,26 +10125,26 @@ ${RESPONSE_FORMAT}` }
     return { el: h("div", { class: "xc-sbe" }, list), refresh: render };
   }
   function renderPinEditor(ctx) {
-    const list = h("div", { class: "xc-sbe-list", role: "list", "aria-label": "「更多」菜单里的项目" });
+    const list = h("div", { class: "xc-sbe-list", role: "list", "aria-label": t("「更多」菜单里的项目") });
     const status = h("span", { class: "xc-sbe-hint" });
     let scanning = false;
     const rescan = async () => {
       if (scanning)
         return;
       scanning = true;
-      status.textContent = "正在读取「更多」菜单…";
+      status.textContent = t("正在读取「更多」菜单…");
       const ok = await ctx.rescan();
       scanning = false;
       if (!list.isConnected)
         return;
-      status.textContent = ok ? "" : "没能打开「更多」菜单。在 x.com 的桌面版页面上点一下侧栏的「更多」，再回来这里。";
+      status.textContent = ok ? "" : t("没能打开「更多」菜单。在 x.com 的桌面版页面上点一下侧栏的「更多」，再回来这里。");
       render();
     };
     const render = () => {
       const items = ctx.items();
       const pinned = ctx.pinned();
       if (!items.length) {
-        list.replaceChildren(h("div", { class: "xc-empty" }, "还没有读到「更多」菜单的项目。点「读取」，或在侧栏点一下「更多」。"));
+        list.replaceChildren(h("div", { class: "xc-empty" }, t("还没有读到「更多」菜单的项目。点「读取」，或在侧栏点一下「更多」。")));
         return;
       }
       list.replaceChildren(...items.map((item) => {
@@ -9443,13 +10152,13 @@ ${RESPONSE_FORMAT}` }
         return h("div", { class: "xc-sbe-row", role: "listitem", dataset: { key: item.key } }, item.icon ? h("span", { class: "xc-sbe-icon" }, svgIcon(item.icon, 18)) : null, h("div", { class: "xc-sbe-main" }, h("strong", null, item.label)), h("div", { class: "xc-sbe-actions" }, switchEl(on, (next) => {
           const rest = ctx.pinned().filter((k) => k !== item.key);
           ctx.setPinned(next ? [...rest, item.key] : rest);
-        }, `固定 ${item.label} 到侧栏`)));
+        }, t("固定 {label} 到侧栏", { label: item.label }))));
       }));
     };
     render();
     if (!ctx.items().length)
       rescan();
-    return h("div", { class: "xc-sbe xc-sbe-pins" }, h("div", { class: "xc-sbe-head" }, h("div", { class: "xc-sbe-main" }, h("strong", null, "固定「更多」菜单里的项目"), h("span", { class: "xc-sbe-hint" }, "打开的项目会出现在侧栏「更多」的正上方，侧栏收起成图标时也一样。固定后可以在上面的列表里调整位置。")), h("button", { type: "button", class: "xc-btn xc-btn-sm", onclick: () => void rescan() }, "读取")), status, list);
+    return h("div", { class: "xc-sbe xc-sbe-pins" }, h("div", { class: "xc-sbe-head" }, h("div", { class: "xc-sbe-main" }, h("strong", null, t("固定「更多」菜单里的项目")), h("span", { class: "xc-sbe-hint" }, t("打开的项目会出现在侧栏「更多」的正上方，侧栏收起成图标时也一样。固定后可以在上面的列表里调整位置。"))), h("button", { type: "button", class: "xc-btn xc-btn-sm", onclick: () => void rescan() }, t("读取"))), status, list);
   }
 
   // src/plugins/sidebarEntries/pins.ts
@@ -9716,8 +10425,8 @@ ${RESPONSE_FORMAT}` }
   var settings6 = definePluginSettings({
     layout: {
       type: "custom" /* CUSTOM */,
-      label: "侧栏入口",
-      description: "拖动或用箭头调整顺序，开关控制是否显示。没出现在当前页面的入口会保留你的设置。",
+      label: N_("侧栏入口"),
+      description: N_("拖动或用箭头调整顺序，开关控制是否显示。没出现在当前页面的入口会保留你的设置。"),
       default: { order: [], hidden: [] },
       render: (ctx) => {
         const editor = renderEditor(ctx, entriesForEditor);
@@ -9803,7 +10512,7 @@ ${RESPONSE_FORMAT}` }
   }
   var sidebarEntries_default = definePlugin({
     name: "SidebarEntries",
-    description: "管理 X 左侧栏的入口：选择显示哪些、按什么顺序排列，还能把「更多」菜单里的项目固定到侧栏。",
+    description: N_("管理 X 左侧栏的入口：选择显示哪些、按什么顺序排列，还能把「更多」菜单里的项目固定到侧栏。"),
     icon: Icons.list,
     tags: ["appearance", "declutter"],
     enabledByDefault: true,
@@ -9845,13 +10554,13 @@ ${RESPONSE_FORMAT}` }
   // src/plugins/streamerMode/index.ts
   var STYLE5 = "streamerMode:rules";
   var settings7 = definePluginSettings({
-    accountAvatar: { type: "boolean" /* BOOLEAN */, label: "账号菜单头像", description: "左下角账号菜单里的头像。", default: true },
-    accountName: { type: "boolean" /* BOOLEAN */, label: "账号菜单名字", description: "左下角账号菜单里的昵称和 @handle。", default: true },
-    ownAvatars: { type: "boolean" /* BOOLEAN */, label: "自己的头像", description: "页面其他位置（发帖框、自己的帖子）出现的你的头像。", default: true },
-    dmNames: { type: "boolean" /* BOOLEAN */, label: "私信列表", description: "私信页里对话的头像和名字。", default: false },
-    revealOnHover: { type: "boolean" /* BOOLEAN */, label: "悬停时显示", description: "鼠标移上去时暂时取消模糊。", default: true },
-    blur: { type: "slider" /* SLIDER */, label: "模糊程度", description: "", min: 2, max: 16, step: 1, default: 8, unit: "px" },
-    alias: { type: "string" /* STRING */, label: "显示别名", description: "填写后，左下角账号菜单里的昵称换成这段文字，认证徽标和 @handle 隐藏，不再模糊。留空则按上面的设置模糊。", default: "", placeholder: "例如：观众朋友们好" }
+    accountAvatar: { type: "boolean" /* BOOLEAN */, label: N_("账号菜单头像"), description: N_("左下角账号菜单里的头像。"), default: true },
+    accountName: { type: "boolean" /* BOOLEAN */, label: N_("账号菜单名字"), description: N_("左下角账号菜单里的昵称和 @handle。"), default: true },
+    ownAvatars: { type: "boolean" /* BOOLEAN */, label: N_("自己的头像"), description: N_("页面其他位置（发帖框、自己的帖子）出现的你的头像。"), default: true },
+    dmNames: { type: "boolean" /* BOOLEAN */, label: N_("私信列表"), description: N_("私信页里对话的头像和名字。"), default: false },
+    revealOnHover: { type: "boolean" /* BOOLEAN */, label: N_("悬停时显示"), description: N_("鼠标移上去时暂时取消模糊。"), default: true },
+    blur: { type: "slider" /* SLIDER */, label: N_("模糊程度"), description: "", min: 2, max: 16, step: 1, default: 8, unit: "px" },
+    alias: { type: "string" /* STRING */, label: N_("显示别名"), description: N_("填写后，左下角账号菜单里的昵称换成这段文字，认证徽标和 @handle 隐藏，不再模糊。留空则按上面的设置模糊。"), default: "", placeholder: N_("例如：观众朋友们好") }
   });
   var ALIAS_ATTR = "data-xc-alias";
   var ALIAS_HIDE_ATTR = "data-xc-alias-hide";
@@ -9927,7 +10636,7 @@ ${RESPONSE_FORMAT}` }
   }
   var streamerMode_default = definePlugin({
     name: "StreamerMode",
-    description: "主播模式：模糊你自己的头像、昵称和 @handle，可选模糊私信列表，也可以把账号菜单里的名字换成别名，截图和录屏时不暴露账号。",
+    description: N_("主播模式：模糊你自己的头像、昵称和 @handle，可选模糊私信列表，也可以把账号菜单里的名字换成别名，截图和录屏时不暴露账号。"),
     icon: Icons.eyeOff,
     tags: ["privacy"],
     settings: settings7,
@@ -9961,7 +10670,7 @@ ${RESPONSE_FORMAT}` }
   }
   var tombstoneFilter_default = definePlugin({
     name: "TombstoneFilter",
-    description: "隐藏对话里 X 官方的「此帖子不可用」占位条；根帖本身被删除时保留它的提示。",
+    description: N_("隐藏对话里 X 官方的「此帖子不可用」占位条；根帖本身被删除时保留它的提示。"),
     icon: Icons.eyeOff,
     tags: ["replies", "declutter"],
     enabledByDefault: true,
@@ -10001,8 +10710,8 @@ ${RESPONSE_FORMAT}` }
   var STYLE6 = "widerTimeline:rules";
   var SIDEBAR_SPACE = 390;
   var settings8 = definePluginSettings({
-    width: { type: "slider" /* SLIDER */, label: "主栏宽度", description: "X 默认是 600px。屏幕不够宽时会自动收窄。", min: 600, max: 1200, step: 20, default: 800, unit: "px" },
-    hideSidebar: { type: "boolean" /* BOOLEAN */, label: "隐藏右侧栏", description: "去掉搜索、趋势所在的右侧栏，把空间都给主栏。", default: false }
+    width: { type: "slider" /* SLIDER */, label: N_("主栏宽度"), description: N_("X 默认是 600px。屏幕不够宽时会自动收窄。"), min: 600, max: 1200, step: 20, default: 800, unit: "px" },
+    hideSidebar: { type: "boolean" /* BOOLEAN */, label: N_("隐藏右侧栏"), description: N_("去掉搜索、趋势所在的右侧栏，把空间都给主栏。"), default: false }
   });
   function buildCss6(width, hideSidebar) {
     const row = hideSidebar ? width : width + SIDEBAR_SPACE;
@@ -10020,7 +10729,7 @@ ${RESPONSE_FORMAT}` }
   }
   var widerTimeline_default = definePlugin({
     name: "WiderTimeline",
-    description: "加宽主栏：大屏幕上把 600px 的时间线和帖子页加宽，宽度可调，可选隐藏右侧栏。",
+    description: N_("加宽主栏：大屏幕上把 600px 的时间线和帖子页加宽，宽度可调，可选隐藏右侧栏。"),
     icon: Icons.widen,
     tags: ["appearance"],
     settings: settings8,
@@ -10053,7 +10762,7 @@ ${RESPONSE_FORMAT}` }
     else
       onReady();
     addEventListener("pagehide", () => settingsStore.flush());
-    logger17.info(`${"0.1.0.202610240655"} started with ${Object.keys(plugins_default).length} plugins`);
+    logger17.info(`${"0.1.0.202610240710"} started with ${Object.keys(plugins_default).length} plugins`);
   }
 
   // src/index.ts

@@ -13,6 +13,7 @@ import { closeMenu, cloneMenuRow, MENU_SEL } from "@plugins/_api/postMenu";
 import { openPanel } from "@plugins/_core/settings";
 import { Icons } from "@ui/icons";
 import { showToast } from "@ui/toast";
+import { N_, t } from "@utils/i18n";
 import definePlugin, { OptionType } from "@utils/types";
 import { CHECKS } from "@x/health";
 
@@ -21,7 +22,7 @@ export const ENTRY_ATTR = "data-xc-more-entry";
 const WAIT_MS = 1500;
 
 export const settings = definePluginSettings({
-    showStarred: { type: OptionType.BOOLEAN, label: "显示收藏的插件", description: "在入口下面列出你收藏的插件，点一下就能开关。", default: true },
+    showStarred: { type: OptionType.BOOLEAN, label: N_("显示收藏的插件"), description: N_("在入口下面列出你收藏的插件，点一下就能开关。"), default: true },
 });
 
 /** The last row of X's 「更多」 menu (「设置和隐私」), whose wrapper we copy. */
@@ -57,13 +58,13 @@ export function fillMoreMenu(menu: Element): HTMLElement[] {
         host.appendChild(row);
         rows.push(row);
     };
-    add("manager", "X Cleaner 插件管理", Icons.broom, openPanel);
+    add("manager", t("X Cleaner 插件管理"), Icons.broom, openPanel);
     if (settings.store.showStarred) {
         for (const name of starredPlugins()) {
             const on = isPluginEnabled(name);
-            add(`plugin:${name}`, `${on ? "停用" : "启用"} ${name}`, on ? Icons.check : Icons.plug, () => {
-                if (setPluginEnabled(name, !on)) showToast(`${name} 已${on ? "停用" : "启用"}。`, { type: "success" });
-                else showToast(`${name} ${on ? "停用" : "启用"}失败，详见控制台。`, { type: "error" });
+            add(`plugin:${name}`, on ? t("停用 {name}", { name }) : t("启用 {name}", { name }), on ? Icons.check : Icons.plug, () => {
+                if (setPluginEnabled(name, !on)) showToast(on ? t("{name} 已停用。", { name }) : t("{name} 已启用。", { name }), { type: "success" });
+                else showToast(on ? t("{name} 停用失败，详见控制台。", { name }) : t("{name} 启用失败，详见控制台。", { name }), { type: "error" });
             });
         }
     }
@@ -90,7 +91,7 @@ function onClick(e: MouseEvent) {
 
 export default definePlugin({
     name: "MoreMenuEntry",
-    description: "在 X 左侧栏的「更多」菜单里加一个「X Cleaner 插件管理」入口，并列出收藏的插件供快速开关。",
+    description: N_("在 X 左侧栏的「更多」菜单里加一个「X Cleaner 插件管理」入口，并列出收藏的插件供快速开关。"),
     icon: Icons.menu,
     tags: ["core", "appearance"],
     enabledByDefault: true,

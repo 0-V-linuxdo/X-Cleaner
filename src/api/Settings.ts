@@ -31,6 +31,8 @@ export interface CoreData {
     themesEnabled: boolean;
     quickCss: string;
     quickCssEnabled: boolean;
+    /** UI language: "auto" follows X's own language setting. */
+    language: "auto" | "zh" | "en";
     [key: string]: unknown;
 }
 
@@ -41,7 +43,7 @@ export interface SettingsShape {
 
 const defaults = (): SettingsShape => ({
     plugins: {},
-    core: { pinnedPlugins: [], starredPlugins: [], knownPlugins: {}, themes: [], themesEnabled: true, quickCss: "", quickCssEnabled: true },
+    core: { pinnedPlugins: [], starredPlugins: [], knownPlugins: {}, themes: [], themesEnabled: true, quickCss: "", quickCssEnabled: true, language: "auto" },
 });
 
 let backend: StorageBackend = gmStorage;

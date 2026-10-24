@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 import { markReloadNeeded } from "@api/PluginManager";
+import { t } from "@utils/i18n";
 import { type DefinedSettings, OptionType, type SettingDef } from "@utils/types";
 
 import { h, svgIcon } from "./h";
@@ -24,11 +25,11 @@ export function listEditor(values: string[], onChange: (v: string[]) => void, op
     let list = [...values];
     const items = h("div", { class: "xc-list-items" });
     const error = h("div", { class: "xc-field-error", hidden: true });
-    const input = h("input", { class: "xc-input", placeholder: opts.placeholder ?? "Add an item and press Enter" });
+    const input = h("input", { class: "xc-input", placeholder: opts.placeholder ? t(opts.placeholder) : t("输入后按回车添加") });
     const render = () => {
         items.replaceChildren(...list.map((v, i) => h("span", { class: "xc-chip", title: v },
             h("span", null, v),
-            h("button", { type: "button", "aria-label": `Remove ${v}`, onclick: () => { list = list.filter((_, j) => j !== i); onChange(list); render(); } }, svgIcon(Icons.close, 14)),
+            h("button", { type: "button", "aria-label": t("移除 {value}", { value: v }), onclick: () => { list = list.filter((_, j) => j !== i); onChange(list); render(); } }, svgIcon(Icons.close, 14)),
         )));
     };
     const add = () => {
@@ -36,7 +37,7 @@ export function listEditor(values: string[], onChange: (v: string[]) => void, op
         for (const value of parts) {
             const valid = opts.isValid?.(value) ?? true;
             if (valid !== true) {
-                error.textContent = valid;
+                error.textContent = t(valid);
                 error.hidden = false;
                 return;
             }
@@ -51,7 +52,7 @@ export function listEditor(values: string[], onChange: (v: string[]) => void, op
     };
     input.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); add(); } });
     render();
-    return h("div", { class: "xc-list-editor" }, items, h("div", { class: "xc-field-row" }, input, h("button", { class: "xc-btn xc-btn-sm", type: "button", onclick: add }, "Add")), error);
+    return h("div", { class: "xc-list-editor" }, items, h("div", { class: "xc-field-row" }, input, h("button", { class: "xc-btn xc-btn-sm", type: "button", onclick: add }, t("添加"))), error);
 }
 
 function control(key: string, def: SettingDef, settings: DefinedSettings, onError: (msg: string | null) => void): HTMLElement {
@@ -64,15 +65,15 @@ function control(key: string, def: SettingDef, settings: DefinedSettings, onErro
     const disabled = def.disabled?.() ?? false;
     switch (def.type) {
         case OptionType.BOOLEAN:
-            return switchEl(!!store[key], set, def.label ?? key, disabled);
+            return switchEl(!!store[key], set, def.label ? t(def.label) : key, disabled);
         case OptionType.STRING: {
             const input = def.multiline
-                ? h("textarea", { class: "xc-textarea", placeholder: def.placeholder, disabled })
-                : h("input", { class: "xc-input", type: def.secret ? "password" : "text", placeholder: def.placeholder, disabled, autocomplete: "off" });
+                ? h("textarea", { class: "xc-textarea", placeholder: def.placeholder && t(def.placeholder), disabled })
+                : h("input", { class: "xc-input", type: def.secret ? "password" : "text", placeholder: def.placeholder && t(def.placeholder), disabled, autocomplete: "off" });
             input.value = store[key] ?? "";
             input.addEventListener("change", () => {
                 const valid = def.isValid?.(input.value) ?? true;
-                onError(valid === true ? null : valid);
+                onError(valid === true ? null : t(valid));
                 if (valid === true) set(input.value);
             });
             return input;
@@ -83,7 +84,7 @@ function control(key: string, def: SettingDef, settings: DefinedSettings, onErro
             input.addEventListener("change", () => {
                 const n = Number(input.value);
                 const ok = input.value !== "" && Number.isFinite(n) && (def.min == null || n >= def.min) && (def.max == null || n <= def.max);
-                onError(ok ? null : "Invalid number");
+                onError(ok ? null : t("数字无效"));
                 if (ok) set(n);
             });
             return input;
@@ -100,7 +101,7 @@ function control(key: string, def: SettingDef, settings: DefinedSettings, onErro
         }
         case OptionType.SELECT: {
             const select = h("select", { class: "xc-select", disabled, style: "max-width:240px" },
-                def.options.map(o => h("option", { value: String(o.value) }, o.label)));
+                def.options.map(o => h("option", { value: String(o.value) }, t(o.label))));
             select.value = String(store[key]);
             select.addEventListener("change", () => set(def.options.find(o => String(o.value) === select.value)?.value));
             return select;
@@ -117,8 +118,8 @@ export function renderSettingField(key: string, def: SettingDef, settings: Defin
     const ctrl = control(key, def, settings, msg => { error.textContent = msg ?? ""; error.hidden = !msg; });
     const inline = def.type === OptionType.BOOLEAN || def.type === OptionType.SELECT || def.type === OptionType.NUMBER;
     const label = h("div", null,
-        h("div", { class: "xc-field-label" }, def.label ?? key, def.restartNeeded ? h("span", { class: "xc-badge", style: "margin-left:6px" }, "需刷新") : null),
-        def.description ? h("div", { class: "xc-field-desc" }, def.description) : null,
+        h("div", { class: "xc-field-label" }, def.label ? t(def.label) : key, def.restartNeeded ? h("span", { class: "xc-badge", style: "margin-left:6px" }, t("需刷新")) : null),
+        def.description ? h("div", { class: "xc-field-desc" }, t(def.description)) : null,
     );
     return h("div", { class: "xc-field", dataset: { key } },
         inline ? h("div", { class: "xc-field-row" }, label, ctrl) : [label, ctrl],

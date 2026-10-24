@@ -6,6 +6,7 @@
 
 import { createGmBackend, type KeyValueBackend } from "@config/backend";
 import { ConfigStore } from "@config/store";
+import { N_, t } from "@utils/i18n";
 import definePlugin from "@utils/types";
 
 let store: ConfigStore | null = null;
@@ -27,7 +28,7 @@ export function useBackend(next: KeyValueBackend) {
 
 export default definePlugin({
     name: "BlockerConfig",
-    description: "屏蔽配置存储：默认值、规范化、导入导出、跨标签同步，API key 单独保存。",
+    description: N_("屏蔽配置存储：默认值、规范化、导入导出、跨标签同步，API key 单独保存。"),
     tags: ["core"],
     required: true,
     hidden: true,

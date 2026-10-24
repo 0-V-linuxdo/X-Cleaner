@@ -5,6 +5,7 @@
  */
 
 import { Icons } from "@ui/icons";
+import { N_, t } from "@utils/i18n";
 import definePlugin from "@utils/types";
 
 import { getBackend } from "../_api/blockerConfig";
@@ -18,7 +19,7 @@ export function getRuleStats(): RuleStatsStore | null {
 
 export default definePlugin({
     name: "RuleStats",
-    description: "规则命中统计：记录每条词语、域名、正则和账号规则累计隐藏了多少条不重复回复。统计单独保存，不进入配置导出。",
+    description: N_("规则命中统计：记录每条词语、域名、正则和账号规则累计隐藏了多少条不重复回复。统计单独保存，不进入配置导出。"),
     icon: Icons.chart,
     tags: ["filters"],
     enabledByDefault: true,

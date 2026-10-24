@@ -7,6 +7,7 @@
 import { showToast } from "@ui/toast";
 import { attachTooltip, type TooltipHandle } from "@ui/tooltip";
 import { Icons } from "@ui/icons";
+import { N_, t } from "@utils/i18n";
 import { Logger } from "@utils/Logger";
 import definePlugin, { StartAt } from "@utils/types";
 import { contextSignature, findPrimaryColumn, isInNestedStatusCard, listTopLevelTweets, OWNED_ATTR, type ReplyContext, SEL } from "@x/dom";
@@ -21,8 +22,8 @@ const SLOT_ATTR = "data-xrb-inline-rule-slot";
 const BUTTON_ATTR = "data-xrb-inline-rule";
 const STRIP = ["id", "data-testid", "aria-controls", "aria-describedby", "aria-labelledby", "aria-haspopup", "aria-expanded", "href"];
 const SHIELD_SVG = '<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/>';
-const IDLE_LABEL = "分析这条回复";
-const BUSY_LABEL = "正在分析这条回复";
+const IDLE_LABEL = N_("分析这条回复");
+const BUSY_LABEL = N_("正在分析这条回复");
 const REPEAT_MS = 500;
 const ROUTE_POLL_MS = 400;
 
@@ -116,7 +117,7 @@ function setBusy(b: Binding, busy: boolean) {
     b.busy = busy;
     b.button.disabled = busy;
     b.button.setAttribute("aria-busy", String(busy));
-    b.button.setAttribute("aria-label", busy ? BUSY_LABEL : IDLE_LABEL);
+    b.button.setAttribute("aria-label", t(busy ? BUSY_LABEL : IDLE_LABEL));
     b.tip.refresh();
 }
 
@@ -148,7 +149,7 @@ function activate(b: Binding, e: Event) {
     try {
         pending = draftFor(b.target);
     } catch (err) {
-        showToast(err instanceof Error && err.message ? err.message : "无法生成屏蔽规则。", { type: "error" });
+        showToast(err instanceof Error && err.message ? err.message : t("无法生成屏蔽规则。"), { type: "error" });
     }
     // The button is busy while the dialog is being opened, not while it stays open.
     queueMicrotask(() => {
@@ -168,8 +169,8 @@ function bind(article: HTMLElement, ctx: ReplyContext, anchor: NonNullable<Retur
         busy: false,
         lastActivation: 0,
     };
-    binding.tip = attachTooltip(button, () => (binding.busy ? BUSY_LABEL : IDLE_LABEL), "bottom");
-    button.setAttribute("aria-label", IDLE_LABEL);
+    binding.tip = attachTooltip(button, () => t(binding.busy ? BUSY_LABEL : IDLE_LABEL), "bottom");
+    button.setAttribute("aria-label", t(IDLE_LABEL));
     button.addEventListener("click", e => activate(binding, e), true);
     button.addEventListener("keydown", e => activate(binding, e), true);
     for (const ev of ["pointerdown", "mousedown", "pointerup", "mouseup"]) button.addEventListener(ev, e => e.stopPropagation());
@@ -226,7 +227,7 @@ function removeAll() {
 
 export default definePlugin({
     name: "ReplyShield",
-    description: "回复旁的盾牌按钮：在每条可处理回复的 Grok 按钮左侧放一个盾牌，点击后打开规则草稿弹窗。",
+    description: N_("回复旁的盾牌按钮：在每条可处理回复的 Grok 按钮左侧放一个盾牌，点击后打开规则草稿弹窗。"),
     icon: Icons.shield,
     tags: ["replies", "filters"],
     enabledByDefault: true,

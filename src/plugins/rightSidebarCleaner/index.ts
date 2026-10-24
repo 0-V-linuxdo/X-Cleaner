@@ -10,6 +10,7 @@
 import { definePluginSettings } from "@api/Settings";
 import { Icons } from "@ui/icons";
 import { registerStyle, unregisterStyle } from "@utils/css";
+import { N_ } from "@utils/i18n";
 import definePlugin, { OptionType } from "@utils/types";
 
 const STYLE = "rightSidebarCleaner:rules";
@@ -18,9 +19,9 @@ const SIDE = '[data-testid="sidebarColumn"]';
 const opt = (label: string, description: string) => ({ type: OptionType.BOOLEAN as const, label, description, default: true });
 
 export const settings = definePluginSettings({
-    hideTrends: opt("有什么新鲜事", "「What's happening」趋势卡片。"),
-    hideWhoToFollow: opt("推荐关注", "「Who to follow」卡片，帖子页的「相关用户」也算。"),
-    hideFooter: opt("页脚链接", "服务条款、隐私政策、Cookie、© X Corp. 那一排链接。"),
+    hideTrends: opt(N_("有什么新鲜事"), N_("「What's happening」趋势卡片。")),
+    hideWhoToFollow: opt(N_("推荐关注"), N_("「Who to follow」卡片，帖子页的「相关用户」也算。")),
+    hideFooter: opt(N_("页脚链接"), N_("服务条款、隐私政策、Cookie、© X Corp. 那一排链接。")),
 });
 
 type Key = keyof typeof settings.def;
@@ -51,7 +52,7 @@ function apply() {
 export default definePlugin({
     name: "RightSidebarCleaner",
     oldNames: ["SidebarWidgets"],
-    description: "隐藏右侧栏三大件：「有什么新鲜事」趋势、「推荐关注」和底部页脚链接，可分别开关。",
+    description: N_("隐藏右侧栏三大件：「有什么新鲜事」趋势、「推荐关注」和底部页脚链接，可分别开关。"),
     icon: Icons.eyeOff,
     tags: ["appearance", "declutter"],
     enabledByDefault: true,

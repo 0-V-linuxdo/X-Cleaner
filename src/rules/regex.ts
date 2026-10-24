@@ -3,14 +3,23 @@
  * Copyright (c) 2026 X Cleaner Contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
+
+import { N_, t } from "@utils/i18n";
+
 export type RegexField = "body" | "displayName" | "handle" | "links";
 export const REGEX_FIELDS: readonly RegexField[] = ["body", "displayName", "handle", "links"];
-export const FIELD_LABELS: Record<RegexField, string> = { body: "回复正文", displayName: "显示名", handle: "@handle", links: "链接" };
+/** Getters, so each read is in the current UI language. */
+export const FIELD_LABELS: Record<RegexField, string> = {
+    get body() { return t("回复正文"); },
+    get displayName() { return t("显示名"); },
+    handle: "@handle",
+    get links() { return t("链接"); },
+};
 
 export const MAX_SOURCE = 200;
 export const MAX_FIELD_TEXT = 4000;
 export const MAX_REGEX_RULES = 200;
-export const TIMEOUT_MESSAGE = "正则执行超过 30ms，已自动禁用。";
+export const TIMEOUT_MESSAGE = N_("正则执行超过 30ms，已自动禁用。");
 
 export type RegexErrorCode = "empty-source" | "source-too-long" | "stateful-flags" | "invalid-flags" | "missing-fields" | "invalid-fields" | "invalid-expression" | "timeout";
 
@@ -49,14 +58,14 @@ export function orderFlags(flags: string): string {
 
 export function validateRegex(source: string, flags: string, fields: readonly string[]): RegexValidation {
     const fail = (errorCode: RegexErrorCode, error: string): RegexValidation => ({ valid: false, error, errorCode });
-    if (!source) return fail("empty-source", "正则表达式不能为空。");
-    if (source.length > MAX_SOURCE) return fail("source-too-long", "正则表达式不能超过 200 个字符。");
-    if (/[gy]/.test(flags)) return fail("stateful-flags", "不支持有状态的 g 或 y flags。");
+    if (!source) return fail("empty-source", t("正则表达式不能为空。"));
+    if (source.length > MAX_SOURCE) return fail("source-too-long", t("正则表达式不能超过 200 个字符。"));
+    if (/[gy]/.test(flags)) return fail("stateful-flags", t("不支持有状态的 g 或 y flags。"));
     const badFlags = [...new Set(flags.replace(/[imsu]/g, ""))].join("");
-    if (badFlags) return fail("invalid-flags", `不支持的 flags：${badFlags}`);
-    if (!fields.length) return fail("missing-fields", "请至少选择一个匹配字段。");
+    if (badFlags) return fail("invalid-flags", t("不支持的 flags：{badFlags}", { badFlags }));
+    if (!fields.length) return fail("missing-fields", t("请至少选择一个匹配字段。"));
     const badField = fields.find(f => !REGEX_FIELDS.includes(f as RegexField));
-    if (badField) return fail("invalid-fields", `不支持的字段：${badField}`);
+    if (badField) return fail("invalid-fields", t("不支持的字段：{badField}", { badField }));
     try { new RegExp(source, flags); } catch (e) { return fail("invalid-expression", e instanceof Error ? e.message : String(e)); }
     return { valid: true, error: null, errorCode: null };
 }
@@ -79,7 +88,7 @@ export function normalizeRegexRule(input: unknown, index: number): RegexRule {
     const flagsRaw = typeof raw.flags === "string" ? raw.flags : "";
     const fields = rawFields(raw);
     const id = typeof raw.id === "string" && raw.id.trim() ? raw.id.trim().slice(0, 120) : `regex-${index + 1}`;
-    const name = typeof raw.name === "string" && raw.name.trim() ? raw.name.trim().slice(0, 100) : `正则规则 ${index + 1}`;
+    const name = typeof raw.name === "string" && raw.name.trim() ? raw.name.trim().slice(0, 100) : t("正则规则 {n}", { n: index + 1 });
     const check = validateRegex(source, flagsRaw, fields);
     const rule: RegexRule = {
         id,
@@ -95,7 +104,7 @@ export function normalizeRegexRule(input: unknown, index: number): RegexRule {
     if (rule.valid && raw.valid === false && typeof raw.errorCode === "string" && raw.errorCode !== "timeout") {
         rule.valid = false;
         rule.errorCode = raw.errorCode as RegexErrorCode;
-        rule.error = typeof raw.error === "string" ? raw.error : "规则无效。";
+        rule.error = typeof raw.error === "string" ? raw.error : t("规则无效。");
     }
     if (!rule.valid) rule.enabled = false;
     if (rule.valid && raw.enabled === false && raw.errorCode === "timeout") {

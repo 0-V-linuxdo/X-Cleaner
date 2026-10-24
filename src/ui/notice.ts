@@ -6,6 +6,7 @@
 
 // Persistent notice bar, after Void++'s Notices API: stays until closed, at most one per id.
 
+import { t } from "@utils/i18n";
 import { OWNED_ATTR } from "@x/dom";
 
 import { h, svgIcon } from "./h";
@@ -48,7 +49,7 @@ export function showNotice(options: NoticeOptions): () => void {
         svgIcon(type === "info" || type === "success" ? Icons.info : Icons.alert, 16),
         h("span", { class: "xc-notice-message" }, options.message),
         options.action && h("button", { class: "xc-btn xc-btn-sm", type: "button", onclick: () => { options.action!.onClick(); close(); } }, options.action.label),
-        h("button", { class: "xc-notice-close", type: "button", "aria-label": "关闭", onclick: close }, svgIcon(Icons.close, 14)),
+        h("button", { class: "xc-notice-close", type: "button", "aria-label": t("关闭"), onclick: close }, svgIcon(Icons.close, 14)),
     );
     open.set(id, el);
     container().appendChild(el);

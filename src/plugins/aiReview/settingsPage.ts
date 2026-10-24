@@ -11,30 +11,31 @@ import { errorLine } from "@plugins/panel/kit";
 import type { PageInstance, PanelContext } from "@plugins/panel/types";
 import { h } from "@ui/h";
 import { showToast } from "@ui/toast";
+import { t } from "@utils/i18n";
 
 export function createAiSettingsPage(ctx: PanelContext): PageInstance {
     const store = ctx.store;
     const enable = h("input", { type: "checkbox" });
     const endpoint = h("input", { class: "xc-input", type: "url", "aria-label": "Endpoint", autocomplete: "off" });
     const model = h("input", { class: "xc-input", type: "text", "aria-label": "Model", autocomplete: "off" });
-    const save = h("button", { class: "xc-btn xc-btn-primary", type: "submit" }, "保存 AI 设置");
+    const save = h("button", { class: "xc-btn xc-btn-primary", type: "submit" }, t("保存 AI 设置"));
     const msg = errorLine();
     const settingsForm = h("form", { class: "xc-form" }, h("label", null, "Endpoint", endpoint), h("label", null, "Model", model), h("div", { class: "xc-row" }, save), msg);
     const key = h("input", { class: "xc-input", type: "password", "aria-label": "API key", autocomplete: "off" });
-    const clearKey = button("清除密钥", () => {
-        if (!confirm("清除已保存的 API key？")) return;
+    const clearKey = button(t("清除密钥"), () => {
+        if (!confirm(t("清除已保存的 API key？"))) return;
         try {
             store.setApiKey("");
-            showToast("API key 已清除。", { type: "success" });
+            showToast(t("API key 已清除。"), { type: "success" });
         } catch {
-            showToast("保存设置失败。", { type: "error" });
+            showToast(t("保存设置失败。"), { type: "error" });
         }
         sync();
     }, { kind: "danger" });
-    const keyForm = h("form", { class: "xc-form" }, h("label", null, "API key", key), h("div", { class: "xc-row" }, h("button", { class: "xc-btn", type: "submit" }, "保存密钥"), clearKey));
+    const keyForm = h("form", { class: "xc-form" }, h("label", null, "API key", key), h("div", { class: "xc-row" }, h("button", { class: "xc-btn", type: "submit" }, t("保存密钥")), clearKey));
     const el = h("div", { class: "xc-page" },
-        h("label", { class: "xc-toggle-row" }, h("strong", null, "启用 AI"), enable),
-        h("p", { class: "xc-muted" }, "启用后，临界回复可能发送作者显示名、@handle、正文、链接及最多两张图片 URL 到你配置的服务。API key 单独保存，不随配置导出。"),
+        h("label", { class: "xc-toggle-row" }, h("strong", null, t("启用 AI")), enable),
+        h("p", { class: "xc-muted" }, t("启用后，临界回复可能发送作者显示名、@handle、正文、链接及最多两张图片 URL 到你配置的服务。API key 单独保存，不随配置导出。")),
         settingsForm,
         keyForm,
     );
@@ -50,7 +51,7 @@ export function createAiSettingsPage(ctx: PanelContext): PageInstance {
         if (endpoint.value === seen.endpoint) endpoint.value = ai.endpoint;
         if (model.value === seen.model) model.value = ai.model;
         seen = { endpoint: ai.endpoint, model: ai.model };
-        key.placeholder = store.apiKey ? "已保存；留空不更改" : "未保存";
+        key.placeholder = store.apiKey ? t("已保存；留空不更改") : t("未保存");
         clearKey.disabled = !store.apiKey;
     };
 
@@ -75,7 +76,7 @@ export function createAiSettingsPage(ctx: PanelContext): PageInstance {
             return;
         }
         const target = endpoint.value.trim();
-        if (!confirm(`启用 AI 复核会把作者显示名、@handle、回复正文、链接及最多两张图片 URL 发送到：\n\n${target}\n\n是否继续？`)) {
+        if (!confirm(t("启用 AI 复核会把作者显示名、@handle、回复正文、链接及最多两张图片 URL 发送到：\n\n{target}\n\n是否继续？", { target }))) {
             enable.checked = false;
             return;
         }
@@ -97,7 +98,7 @@ export function createAiSettingsPage(ctx: PanelContext): PageInstance {
         const error = validateAiSettings(endpoint.value, model.value);
         if (error) return msg.show(error);
         msg.show("");
-        save.textContent = "保存中…";
+        save.textContent = t("保存中…");
         settingsForm.setAttribute("aria-busy", "true");
         for (const c of [endpoint, model, save]) c.disabled = true;
         const nextEndpoint = endpoint.value.trim();
@@ -114,10 +115,10 @@ export function createAiSettingsPage(ctx: PanelContext): PageInstance {
             if (ok) {
                 endpoint.value = store.config.ai.endpoint;
                 model.value = store.config.ai.model;
-                showToast(changed ? "Endpoint 已保存；请重新启用 AI 并确认发送范围。" : "AI 设置已保存。", { type: "success" });
+                showToast(changed ? t("Endpoint 已保存；请重新启用 AI 并确认发送范围。") : t("AI 设置已保存。"), { type: "success" });
             }
         } finally {
-            save.textContent = "保存 AI 设置";
+            save.textContent = t("保存 AI 设置");
             settingsForm.removeAttribute("aria-busy");
             for (const c of [endpoint, model, save]) c.disabled = false;
             sync();
@@ -128,15 +129,15 @@ export function createAiSettingsPage(ctx: PanelContext): PageInstance {
         e.preventDefault();
         const value = key.value.trim();
         if (!value) {
-            showToast(store.apiKey ? "留空时不会更改已保存密钥。" : "请输入 API key。", { type: "info" });
+            showToast(store.apiKey ? t("留空时不会更改已保存密钥。") : t("请输入 API key。"), { type: "info" });
             return;
         }
         try {
             store.setApiKey(value);
             key.value = "";
-            showToast("API key 已单独保存。", { type: "success" });
+            showToast(t("API key 已单独保存。"), { type: "success" });
         } catch {
-            showToast("保存设置失败。", { type: "error" });
+            showToast(t("保存设置失败。"), { type: "error" });
         }
         sync();
     });

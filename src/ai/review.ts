@@ -5,6 +5,7 @@
  */
 
 import type { AiConfig } from "@config/config";
+import { aiLanguageName } from "@utils/i18n";
 import { sanitizeField, truncate } from "@x/text";
 
 import { AiError, extractJsonObject, messageContent, postJson } from "./transport";
@@ -50,7 +51,7 @@ export function buildReviewRequest(input: ReviewInput, ai: Pick<AiConfig, "model
         messages: [
             { role: "system", content: REVIEW_SYSTEM_PROMPT },
             { role: "user", content: [
-                { type: "text", text: `Classify this reply data:\n${JSON.stringify(data)}` },
+                { type: "text", text: `Classify this reply data:\n${JSON.stringify(data)}\nWrite reason in ${aiLanguageName()}.` },
                 ...images.map(url => ({ type: "image_url", image_url: { url, detail: "low" } })),
             ] },
         ],

@@ -8,6 +8,7 @@ X Cleaner 是 x.com 的用户脚本，在帖子详情页隐藏成人引流、加
 
 - 安装：打开 <https://raw.githubusercontent.com/0-V-linuxdo/X-Cleaner/main/dist/X%20Cleaner.user.js>，在 Tampermonkey / Violentmonkey 里确认安装（Helium 同样适用）。
 - 更新：脚本头带 `@updateURL` / `@downloadURL`，脚本管理器会从仓库 `main` 分支自动检查新版本；插件管理左下角的「检查更新」可以立即检查。每次改动都要把 `dist/` 下的构建产物一起提交。
+- 语言：界面默认跟随 X 自己的语言设置（`<html lang>`），目前支持简体中文和英文；插件管理左下角的「界面语言」可以手动指定。
 - 构建：`bun install && bun run build`，产物在 `dist/`。
 - 测试：`bun test`（happy-dom 单元与集成测试），`bunx tsc --noEmit`（类型检查）。
 - 浏览器冒烟：`URL=https://x.com/op/status/100 ACTIONS=$PWD/scripts/smoke-extra.mjs node scripts/smoke.mjs test/fixtures/x-status.html`。
@@ -17,7 +18,8 @@ X Cleaner 是 x.com 的用户脚本，在帖子详情页隐藏成人引流、加
 | 路径 | 内容 |
 |---|---|
 | `src/api` | 插件内核：`PluginManager`（依赖、钩子、可选钩子）、`Settings`、`Events` |
-| `src/utils` | 类型、`definePlugin`、样式注册、存储、日志 |
+| `src/utils` | 类型、`definePlugin`、样式注册、存储、日志、`i18n`（`t()` / `N_()`） |
+| `src/locales` | 界面翻译：源码里的文案是中文，`en.ts` 以中文原文为键给出英文；`test/i18n.test.ts` 检查有没有漏翻 |
 | `src/config` | 屏蔽配置的默认值、规范化、导入导出、GM 存储与跨标签同步（§5） |
 | `src/x` | X 页面解析：路由、ReplyContext、作用域与推荐分界线（§6、§7） |
 | `src/rules` | 账号 / 词语 / 域名匹配、正则引擎与 Worker、内置分类器、本地规则合成、安全校验（§9–§11、§18、§19） |

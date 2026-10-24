@@ -8,6 +8,7 @@ import type { AccountEntry } from "@config/config";
 import type { ReplyEvent } from "@filter/types";
 import { isAllowed } from "@rules/lists";
 import { Icons } from "@ui/icons";
+import { N_, t } from "@utils/i18n";
 import definePlugin from "@utils/types";
 
 import { getConfigStore } from "../_api/blockerConfig";
@@ -61,7 +62,7 @@ function onOutOfScope({ tweetId }: { tweetId: string }) {
 
 export default definePlugin({
     name: "AutoBlacklist",
-    description: "自动账号黑名单：词语、域名、正则命中或分类器高分时，把作者加入账号黑名单（本地自动）；AI 高置信恶意时加入（AI 自动）。",
+    description: N_("自动账号黑名单：词语、域名、正则命中或分类器高分时，把作者加入账号黑名单（本地自动）；AI 高置信恶意时加入（AI 自动）。"),
     icon: Icons.ban,
     tags: ["filters", "moderation"],
     enabledByDefault: true,

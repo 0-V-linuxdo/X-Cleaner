@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 import { dispatch } from "@api/Events";
+import { N_ } from "@utils/i18n";
 import { pageWindow } from "@utils/misc";
 import definePlugin from "@utils/types";
 
@@ -21,7 +22,7 @@ export const currentPath = () => location.pathname;
 
 export default definePlugin({
     name: "NavigationAPI",
-    description: "Emits a navigate event whenever X changes the page without reloading.",
+    description: N_("X 不刷新页面就切换页面时，发出 navigate 事件。"),
     tags: ["core"],
     required: true,
     hidden: true,

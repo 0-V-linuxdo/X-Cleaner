@@ -7,11 +7,13 @@
 import type { BlockerConfig } from "@config/config";
 import { h } from "@ui/h";
 import { showToast } from "@ui/toast";
+import { t } from "@utils/i18n";
 
 import { button } from "./components";
 import { bulkSelection, errorLine, hitPill, matches, type MsgKind, pageHeader } from "./kit";
 import type { PageInstance, PanelContext } from "./types";
 
+/** Text options are N_() strings, translated when the page is built; `fullMessage` gets `{max}`. */
 export interface StringListOptions {
     label: string;
     placeholder: string;
@@ -32,17 +34,19 @@ export interface StringListOptions {
 export function stringListPage(opts: StringListOptions) {
     return (ctx: PanelContext): PageInstance => {
         let editing: string | null = null;
-        const input = h("input", { class: "xc-input", type: "text", placeholder: opts.placeholder, "aria-label": opts.placeholder });
+        const label = t(opts.label);
+        const placeholder = t(opts.placeholder);
+        const input = h("input", { class: "xc-input", type: "text", placeholder, "aria-label": placeholder });
         const msg = errorLine();
-        const submit = h("button", { class: "xc-btn xc-btn-primary", type: "submit" }, "添加");
-        const cancel = button("取消编辑", () => stopEditing());
-        const form = h("form", { class: "xc-form" }, opts.description ? h("p", { class: "xc-muted" }, opts.description) : null, h("div", { class: "xc-row" }, input, submit, cancel), msg);
-        const list = h("div", { class: "xc-items", role: "list", "aria-label": opts.label });
-        const header = pageHeader(opts.label, () => opts.get(ctx.store.config).map(v => `${opts.statsPrefix}:${v}`), () => renderList());
-        const bulk = bulkSelection("条目", [{
-            label: "移除所选",
+        const submit = h("button", { class: "xc-btn xc-btn-primary", type: "submit" }, t("添加"));
+        const cancel = button(t("取消编辑"), () => stopEditing());
+        const form = h("form", { class: "xc-form" }, opts.description ? h("p", { class: "xc-muted" }, t(opts.description)) : null, h("div", { class: "xc-row" }, input, submit, cancel), msg);
+        const list = h("div", { class: "xc-items", role: "list", "aria-label": label });
+        const header = pageHeader(label, () => opts.get(ctx.store.config).map(v => `${opts.statsPrefix}:${v}`), () => renderList());
+        const bulk = bulkSelection(t("条目"), [{
+            label: t("移除所选"),
             kind: "danger",
-            confirm: n => `从${opts.label}中移除 ${n} 个条目？`,
+            confirm: n => t("从{label}中移除 {n} 个条目？", { label, n }),
             run: keys => {
                 const drop = new Set(keys);
                 const ok = ctx.commit(c => opts.set(c, opts.get(c).filter(x => !drop.has(x))));
@@ -60,7 +64,7 @@ export function stringListPage(opts: StringListOptions) {
         };
 
         const renderForm = () => {
-            submit.textContent = editing === null ? "添加" : "保存";
+            submit.textContent = editing === null ? t("添加") : t("保存");
             cancel.hidden = editing === null;
         };
 
@@ -78,11 +82,11 @@ export function stringListPage(opts: StringListOptions) {
                 return;
             }
             const warn = opts.hint?.(input.value);
-            if (warn?.level === "warning" && !confirm(`${warn.message}\n\n仍要保存吗？`)) return;
+            if (warn?.level === "warning" && !confirm(t("{message}\n\n仍要保存吗？", { message: warn.message }))) return;
             const current = opts.get(ctx.store.config);
             const value = result.value;
             if (editing === null && !current.includes(value) && current.length >= opts.limit) {
-                msg.show(opts.fullMessage);
+                msg.show(t(opts.fullMessage, { max: opts.limit }));
                 return;
             }
             const ok = ctx.commit(c => {
@@ -91,7 +95,7 @@ export function stringListPage(opts: StringListOptions) {
                 opts.set(c, [...new Set(next)]);
             });
             if (!ok) return;
-            showToast(opts.savedToast, { type: "success" });
+            showToast(t(opts.savedToast), { type: "success" });
             stopEditing();
         });
 
@@ -102,21 +106,21 @@ export function stringListPage(opts: StringListOptions) {
             header.update();
             bulk.sync(all, items);
             if (!items.length) {
-                list.replaceChildren(h("div", { class: "xc-empty" }, q ? "没有匹配的条目。" : `暂无${opts.label}。`));
+                list.replaceChildren(h("div", { class: "xc-empty" }, q ? t("没有匹配的条目。") : t("暂无{label}。", { label })));
                 return;
             }
             list.replaceChildren(...items.map(v => h("div", { class: "xc-item", role: "listitem" },
                 bulk.box(v, v),
                 h("div", { class: "xc-item-main" }, h("div", { class: "xc-item-head" }, h("span", null, v), hitPill(`${opts.statsPrefix}:${v}`))),
                 h("div", { class: "xc-item-actions" },
-                    button("编辑", () => {
+                    button(t("编辑"), () => {
                         editing = v;
                         input.value = v;
                         renderForm();
                         hint();
                         input.focus();
                     }, { small: true }),
-                    button("移除", () => {
+                    button(t("移除"), () => {
                         if (ctx.commit(c => opts.set(c, opts.get(c).filter(x => x !== v))) && editing === v) stopEditing();
                     }, { small: true, kind: "danger" }),
                 ),

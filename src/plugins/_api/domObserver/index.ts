@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 import { defineHook } from "@api/PluginManager";
+import { N_ } from "@utils/i18n";
 import { Logger } from "@utils/Logger";
 import definePlugin from "@utils/types";
 
@@ -111,7 +112,7 @@ export function reprocess(el: Element) {
 
 export default definePlugin({
     name: "DomObserverAPI",
-    description: "Shared MutationObserver that lets plugins react to elements as X renders them.",
+    description: N_("共享的 MutationObserver：X 渲染出元素时通知各插件。"),
     tags: ["core"],
     required: true,
     hidden: true,

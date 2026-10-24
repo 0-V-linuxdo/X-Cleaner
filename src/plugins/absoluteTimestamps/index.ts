@@ -9,6 +9,7 @@
 
 import { definePluginSettings } from "@api/Settings";
 import { Icons } from "@ui/icons";
+import { N_, t } from "@utils/i18n";
 import definePlugin, { OptionType } from "@utils/types";
 import { SEL } from "@x/dom";
 import { CHECKS } from "@x/health";
@@ -21,12 +22,12 @@ export type TimeFormat = "smart" | "full" | "seconds";
 export const settings = definePluginSettings({
     format: {
         type: OptionType.SELECT,
-        label: "显示格式",
-        description: "「智能」：今天只显示时间，今年显示月日，更早的显示完整日期。",
+        label: N_("显示格式"),
+        description: N_("「智能」：今天只显示时间，今年显示月日，更早的显示完整日期。"),
         options: [
-            { label: "智能（14:05 / 10-23 14:05 / 2025-10-23 14:05）", value: "smart", default: true },
-            { label: "完整日期（2026-10-23 14:05）", value: "full" },
-            { label: "精确到秒（2026-10-23 14:05:09）", value: "seconds" },
+            { label: N_("智能（14:05 / 10-23 14:05 / 2025-10-23 14:05）"), value: "smart", default: true },
+            { label: N_("完整日期（2026-10-23 14:05）"), value: "full" },
+            { label: N_("精确到秒（2026-10-23 14:05:09）"), value: "seconds" },
         ],
     },
 });
@@ -57,7 +58,7 @@ let minuteTimer: ReturnType<typeof setInterval> | undefined;
 
 export default definePlugin({
     name: "AbsoluteTimestamps",
-    description: "绝对时间：帖子时间从「3 小时」改成「10-23 14:05」这样的具体时间，格式可选。",
+    description: N_("绝对时间：帖子时间从「3 小时」改成「10-23 14:05」这样的具体时间，格式可选。"),
     icon: Icons.clock,
     tags: ["timeline", "appearance"],
     settings,

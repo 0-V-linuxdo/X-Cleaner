@@ -11,6 +11,7 @@ import { Icons } from "@ui/icons";
 import { syncTheme } from "@ui/theme";
 import { showToast } from "@ui/toast";
 import { attachTooltip, type TooltipHandle } from "@ui/tooltip";
+import { t } from "@utils/i18n";
 import { Logger } from "@utils/Logger";
 import { isRendered, OWNED_ATTR, SEL } from "@x/dom";
 import { parseRoute } from "@x/route";
@@ -60,7 +61,7 @@ export class Panel {
                     return true;
                 } catch (e) {
                     logger.error("Commit failed", e);
-                    showToast("保存设置失败。", { type: "error" });
+                    showToast(t("保存设置失败。"), { type: "error" });
                     return false;
                 }
             },
@@ -69,7 +70,7 @@ export class Panel {
         };
         this.badge = h("span", { class: "xc-fab-badge", hidden: true });
         this.fab = h("button", { class: "xc-fab", type: "button", onclick: () => this.show() }, svgIcon(shield, 28), this.badge);
-        this.fabTip = attachTooltip(this.fab, () => `X Cleaner · ${this.count} 条待复查`, "left");
+        this.fabTip = attachTooltip(this.fab, () => t("X Cleaner · {count} 条待复查", { count: this.count }), "left");
         this.tabArea = h("div", { class: "xc-drawer-tabs" });
         this.subTabArea = h("div", { class: "xc-drawer-subtabs" });
         this.content = h("div", { class: "xc-drawer-content", role: "tabpanel" });
@@ -77,7 +78,7 @@ export class Panel {
         this.drawer = h("section", { class: "xc-drawer", role: "dialog", "aria-modal": "true", "aria-label": "X Cleaner" },
             h("header", { class: "xc-drawer-head" },
                 h("h2", { class: "xc-drawer-title" }, "X Cleaner"),
-                h("button", { class: "xc-btn xc-btn-icon", type: "button", "aria-label": "关闭", onclick: () => this.close() }, svgIcon(Icons.close, 20)),
+                h("button", { class: "xc-btn xc-btn-icon xc-drawer-close", type: "button", "aria-label": t("关闭"), onclick: () => this.close() }, svgIcon(Icons.close, 20)),
             ),
             this.tabArea, this.subTabArea, this.content, this.footer,
         );
@@ -121,7 +122,7 @@ export class Panel {
     private updateFab() {
         this.badge.hidden = this.count <= 0;
         this.badge.textContent = this.count > 99 ? "99+" : String(this.count);
-        this.fab.setAttribute("aria-label", `X Cleaner，${this.count} 条待复查`);
+        this.fab.setAttribute("aria-label", t("X Cleaner，{count} 条待复查", { count: this.count }));
         this.fabTip.refresh();
     }
 
@@ -208,7 +209,7 @@ export class Panel {
         (this.overlay as HTMLElement & { inert: boolean }).inert = false;
         document.documentElement.classList.add("xc-drawer-open");
         this.render(true);
-        queueMicrotask(() => this.drawer.querySelector<HTMLElement>('[aria-label="关闭"]')?.focus());
+        queueMicrotask(() => this.drawer.querySelector<HTMLElement>(".xc-drawer-close")?.focus());
     }
 
     close() {
@@ -257,12 +258,12 @@ export class Panel {
     render(showing = false) {
         const tabs = this.visibleTabs();
         const def = this.currentPage();
-        const bar = tabBar({ label: "主标签", items: tabs.map(t => ({ id: t.id, label: t.label, panelId: "xc-drawer-content" })), selected: this.currentTab, className: "xc-tabs xc-main-tabs", onSelect: id => { this.currentTab = id; this.render(true); this.tabArea.querySelector<HTMLElement>(`[data-id="${id}"]`)?.focus(); } });
+        const bar = tabBar({ label: t("主标签"), items: tabs.map(tab => ({ id: tab.id, label: t(tab.label), panelId: "xc-drawer-content" })), selected: this.currentTab, className: "xc-tabs xc-main-tabs", onSelect: id => { this.currentTab = id; this.render(true); this.tabArea.querySelector<HTMLElement>(`[data-id="${id}"]`)?.focus(); } });
         this.tabArea.replaceChildren(bar.el);
         const pages = this.pagesOf(this.currentTab);
         if (pages.length > 1 && def) {
-            const label = this.currentTab === "blacklist" ? "黑名单类型" : this.currentTab === "settings" ? "设置类型" : "子标签";
-            const sub = tabBar({ label, items: pages.map(p => ({ id: p.id, label: p.label })), selected: def.id, className: "xc-tabs xc-sub-tabs", onSelect: id => { this.subSelection.set(this.currentTab, id); this.render(true); this.subTabArea.querySelector<HTMLElement>(`[data-id="${id}"]`)?.focus(); } });
+            const label = this.currentTab === "blacklist" ? t("黑名单类型") : this.currentTab === "settings" ? t("设置类型") : t("子标签");
+            const sub = tabBar({ label, items: pages.map(p => ({ id: p.id, label: t(p.label) })), selected: def.id, className: "xc-tabs xc-sub-tabs", onSelect: id => { this.subSelection.set(this.currentTab, id); this.render(true); this.subTabArea.querySelector<HTMLElement>(`[data-id="${id}"]`)?.focus(); } });
             this.subTabArea.replaceChildren(sub.el);
             this.subTabArea.hidden = false;
         } else {
@@ -271,7 +272,7 @@ export class Panel {
         }
         this.content.id = "xc-drawer-content";
         if (!def) {
-            this.content.replaceChildren(h("div", { class: "xc-empty" }, "没有可用的页面。"));
+            this.content.replaceChildren(h("div", { class: "xc-empty" }, t("没有可用的页面。")));
             this.syncFooter({ el: this.content });
             return;
         }

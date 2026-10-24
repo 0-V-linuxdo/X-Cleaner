@@ -8,6 +8,7 @@ import { activeRules, FIELD_LABELS, regexContextOf, type RegexResult, runRulesSy
 import { runRegexRules, splitRules } from "@rules/regex-runner";
 import { showToast } from "@ui/toast";
 import { Icons } from "@ui/icons";
+import { N_, t } from "@utils/i18n";
 import definePlugin from "@utils/types";
 import type { Verdict } from "@filter/types";
 
@@ -21,8 +22,8 @@ function rules(config = getConfigStore().config) {
 }
 
 function verdictOf(result: RegexResult): Verdict {
-    const reason = `正则“${result.ruleName || result.ruleId}”命中 ${FIELD_LABELS[result.field]}`;
-    return { action: "hide", source: "regex", category: "正则黑名单", reason, regexMatch: result, match: { kind: "regex", value: result.ruleId, field: result.field }, statsKey: `regex:${result.ruleId.trim().slice(0, 120)}`, autoEntry: { source: "local-auto", category: "正则黑名单", reason } };
+    const reason = t("正则“{rule}”命中 {field}", { rule: result.ruleName || result.ruleId, field: FIELD_LABELS[result.field] });
+    return { action: "hide", source: "regex", category: N_("正则黑名单"), reason, regexMatch: result, match: { kind: "regex", value: result.ruleId, field: result.field }, statsKey: `regex:${result.ruleId.trim().slice(0, 120)}`, autoEntry: { source: "local-auto", category: N_("正则黑名单"), reason } };
 }
 
 function disableTimedOut(ids: string[]) {
@@ -36,20 +37,20 @@ function disableTimedOut(ids: string[]) {
             if (!targets.includes(r.id)) continue;
             r.enabled = false;
             r.errorCode = "timeout";
-            r.error = "正则执行超过 30ms，已自动禁用。";
+            r.error = t("正则执行超过 30ms，已自动禁用。");
         }
     });
-    showToast("有正则执行超过 30ms，已自动禁用。", { type: "error" });
+    showToast(t("有正则执行超过 30ms，已自动禁用。"), { type: "error" });
 }
 
 export default definePlugin({
     name: "RegexBlacklist",
-    description: "正则黑名单：安全模式在主线程同步执行，其余规则放进可终止的 Worker，超过 30ms 自动停用。",
+    description: N_("正则黑名单：安全模式在主线程同步执行，其余规则放进可终止的 Worker，超过 30ms 自动停用。"),
     icon: Icons.regex,
     tags: ["filters"],
     enabledByDefault: true,
     dependencies: ["BlockerConfig"],
-    panelPages: [{ tab: "blacklist", id: "regex", label: "正则", order: 30, create: createRegexPage }],
+    panelPages: [{ tab: "blacklist", id: "regex", label: N_("正则"), order: 30, create: createRegexPage }],
 
     events: {
         configurationChanged() { runtimeDisabled.clear(); },

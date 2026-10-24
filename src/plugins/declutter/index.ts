@@ -12,6 +12,7 @@
 import { definePluginSettings } from "@api/Settings";
 import { Icons } from "@ui/icons";
 import { registerStyle, unregisterStyle } from "@utils/css";
+import { N_ } from "@utils/i18n";
 import definePlugin, { OptionType } from "@utils/types";
 import { cellOf, isPromotedTweet, SEL } from "@x/dom";
 import { collapseWhitespace } from "@x/text";
@@ -23,13 +24,13 @@ const SIDE = '[data-testid="sidebarColumn"]';
 const opt = (label: string, description: string, def: boolean) => ({ type: OptionType.BOOLEAN as const, label, description, default: def });
 
 export const settings = definePluginSettings({
-    hidePremiumUpsell: opt("Premium 推销", "侧栏的「订阅 Premium」卡片和各处的升级提示。", true),
-    hidePromoted: opt("推广帖", "时间线和回复里标着「广告 / Promoted」的帖子。", true),
-    hideGrokButtons: opt("帖子上的 Grok 按钮", "每条帖子右上角的 Grok 按钮。回复盾牌仍会正常显示。", false),
-    hideGrokDrawer: opt("Grok 浮窗", "右下角的 Grok 对话浮窗。", false),
-    hideMessagesDrawer: opt("私信浮窗", "右下角的私信浮窗。", false),
-    hideViewCounts: opt("浏览量", "帖子操作栏里的浏览量数字。", false),
-    hideTitleCount: opt("标题未读数", "去掉浏览器标签页标题前面的「(3)」未读数。", false),
+    hidePremiumUpsell: opt(N_("Premium 推销"), N_("侧栏的「订阅 Premium」卡片和各处的升级提示。"), true),
+    hidePromoted: opt(N_("推广帖"), N_("时间线和回复里标着「广告 / Promoted」的帖子。"), true),
+    hideGrokButtons: opt(N_("帖子上的 Grok 按钮"), N_("每条帖子右上角的 Grok 按钮。回复盾牌仍会正常显示。"), false),
+    hideGrokDrawer: opt(N_("Grok 浮窗"), N_("右下角的 Grok 对话浮窗。"), false),
+    hideMessagesDrawer: opt(N_("私信浮窗"), N_("右下角的私信浮窗。"), false),
+    hideViewCounts: opt(N_("浏览量"), N_("帖子操作栏里的浏览量数字。"), false),
+    hideTitleCount: opt(N_("标题未读数"), N_("去掉浏览器标签页标题前面的「(3)」未读数。"), false),
 });
 
 type Key = keyof typeof settings.def;
@@ -98,7 +99,7 @@ function apply() {
 
 export default definePlugin({
     name: "Declutter",
-    description: "精简 X 的页面：分别隐藏 Premium 推销、推广帖、Grok 按钮和浮窗、浏览量等干扰元素。右侧栏的趋势、推荐关注和页脚见 RightSidebarCleaner。",
+    description: N_("精简 X 的页面：分别隐藏 Premium 推销、推广帖、Grok 按钮和浮窗、浏览量等干扰元素。右侧栏的趋势、推荐关注和页脚见 RightSidebarCleaner。"),
     icon: Icons.broom,
     tags: ["declutter", "timeline"],
     settings,

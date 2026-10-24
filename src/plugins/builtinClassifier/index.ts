@@ -9,26 +9,27 @@ import { Icons } from "@ui/icons";
 import { checkRow } from "@plugins/panel/kit";
 import type { PanelContext } from "@plugins/panel/types";
 import { h } from "@ui/h";
+import { N_, t } from "@utils/i18n";
 import definePlugin from "@utils/types";
 
 function createCategoriesPage(ctx: PanelContext) {
     const c = () => ctx.store.config;
     const rows = [
-        checkRow("成人引流", () => c().categories.adult, v => ctx.commit(d => { d.categories.adult = v; })),
-        checkRow("加密货币引流", () => c().categories.crypto, v => ctx.commit(d => { d.categories.crypto = v; })),
-        checkRow("推广用户名", () => c().categories.promotionalName, v => ctx.commit(d => { d.categories.promotionalName = v; })),
-        checkRow("保护根帖作者回复", () => c().protections.op, v => ctx.commit(d => { d.protections.op = v; })),
+        checkRow(t("成人引流"), () => c().categories.adult, v => ctx.commit(d => { d.categories.adult = v; })),
+        checkRow(t("加密货币引流"), () => c().categories.crypto, v => ctx.commit(d => { d.categories.crypto = v; })),
+        checkRow(t("推广用户名"), () => c().categories.promotionalName, v => ctx.commit(d => { d.categories.promotionalName = v; })),
+        checkRow(t("保护根帖作者回复"), () => c().protections.op, v => ctx.commit(d => { d.protections.op = v; })),
     ];
     return { el: h("div", { class: "xc-page" }, rows), update: () => rows.forEach(r => r.sync()) };
 }
 
 export default definePlugin({
     name: "BuiltinClassifier",
-    description: "内置本地分类器：对成人引流、加密货币引流和推广用户名三类分别加权打分，有保守、均衡、激进三档灵敏度。",
+    description: N_("内置本地分类器：对成人引流、加密货币引流和推广用户名三类分别加权打分，有保守、均衡、激进三档灵敏度。"),
     icon: Icons.sparkles,
     tags: ["filters"],
     enabledByDefault: true,
-    panelPages: [{ tab: "settings", id: "categories", label: "类别", order: 20, create: createCategoriesPage }],
+    panelPages: [{ tab: "settings", id: "categories", label: N_("类别"), order: 20, create: createCategoriesPage }],
     replyJudges: [{
         id: "classifier",
         priority: 90,

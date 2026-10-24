@@ -3,6 +3,9 @@
  * Copyright (c) 2026 X Cleaner Contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
+
+import { t } from "@utils/i18n";
+
 export function normalizeDomain(raw: unknown): string {
     if (typeof raw !== "string") return "";
     let value = raw.trim().replace(/^\.+/, "");
@@ -31,10 +34,10 @@ export interface DomainWarning {
 
 export function domainWarning(raw: string): { domain: string; warning: DomainWarning | null } {
     const domain = normalizeDomain(raw);
-    if (!domain) return { domain, warning: { level: "error", message: "请输入有效域名。" } };
-    if (domain === "t.co") return { domain, warning: { level: "warning", message: "t.co 隐藏了最终目标；脚本不会访问短链，因此仅有 t.co 时会保持可见。" } };
-    if (!domain.includes(".") || BROAD_SUFFIXES.has(domain)) return { domain, warning: { level: "warning", message: "该规则范围过宽，可能匹配大量无关链接。" } };
-    if (BROAD_PLATFORMS.has(domain)) return { domain, warning: { level: "warning", message: `屏蔽 ${domain} 会命中该平台上的所有相关链接。` } };
-    if (SHORTENERS.has(domain)) return { domain, warning: { level: "warning", message: `屏蔽 ${domain} 会命中使用该短链服务的所有链接。` } };
+    if (!domain) return { domain, warning: { level: "error", message: t("请输入有效域名。") } };
+    if (domain === "t.co") return { domain, warning: { level: "warning", message: t("t.co 隐藏了最终目标；脚本不会访问短链，因此仅有 t.co 时会保持可见。") } };
+    if (!domain.includes(".") || BROAD_SUFFIXES.has(domain)) return { domain, warning: { level: "warning", message: t("该规则范围过宽，可能匹配大量无关链接。") } };
+    if (BROAD_PLATFORMS.has(domain)) return { domain, warning: { level: "warning", message: t("屏蔽 {domain} 会命中该平台上的所有相关链接。", { domain }) } };
+    if (SHORTENERS.has(domain)) return { domain, warning: { level: "warning", message: t("屏蔽 {domain} 会命中使用该短链服务的所有链接。", { domain }) } };
     return { domain, warning: null };
 }

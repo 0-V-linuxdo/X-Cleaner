@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { listJoin, N_, t } from "@utils/i18n";
 import { codePointLength, escapeRegexLiteral, normalizePhrase } from "@x/text";
 
 import { FIELD_LABELS, isSafeSource, MAX_SOURCE, type RegexField, validateRegex } from "./regex";
@@ -21,21 +22,21 @@ export interface SafetyResult {
 }
 
 export const CANARIES: { label: string; field: RegexField; value: string }[] = [
-    { label: "普通中文回复", field: "body", value: "谢谢分享，这个观点很有帮助。" },
-    { label: "正常联络语境", field: "body", value: "如需补充资料可以私信我，我们继续讨论。" },
-    { label: "正常福利语境", field: "body", value: "公司正在讨论员工福利和客户服务流程。" },
-    { label: "诈骗曝光语境", field: "body", value: "这是关于加密货币诈骗的新闻报道，请勿连接陌生钱包。" },
-    { label: "技术与客服讨论", field: "body", value: "我们正在讨论 Web3 安全和客服行业的技术问题。" },
-    { label: "English scam warning", field: "body", value: "This is a report about a crypto scam. Do not connect your wallet." },
-    { label: "普通显示名", field: "displayName", value: "张三" },
-    { label: "正常客服显示名", field: "displayName", value: "产品客服研究" },
-    { label: "安全研究显示名", field: "displayName", value: "Crypto Security Research" },
-    { label: "普通账号", field: "handle", value: "alice_dev" },
-    { label: "安全研究账号", field: "handle", value: "crypto_security" },
-    { label: "正常支持账号", field: "handle", value: "customer_support_news" },
-    { label: "普通 X 链接", field: "links", value: "https://x.com/openai/status/1234567890" },
-    { label: "普通项目链接", field: "links", value: "https://github.com/example/project" },
-    { label: "普通 Telegram 链接", field: "links", value: "https://t.me/legitimate_project" },
+    { label: N_("普通中文回复"), field: "body", value: "谢谢分享，这个观点很有帮助。" },
+    { label: N_("正常联络语境"), field: "body", value: "如需补充资料可以私信我，我们继续讨论。" },
+    { label: N_("正常福利语境"), field: "body", value: "公司正在讨论员工福利和客户服务流程。" },
+    { label: N_("诈骗曝光语境"), field: "body", value: "这是关于加密货币诈骗的新闻报道，请勿连接陌生钱包。" },
+    { label: N_("技术与客服讨论"), field: "body", value: "我们正在讨论 Web3 安全和客服行业的技术问题。" },
+    { label: N_("英文诈骗警示"), field: "body", value: "This is a report about a crypto scam. Do not connect your wallet." },
+    { label: N_("普通显示名"), field: "displayName", value: "张三" },
+    { label: N_("正常客服显示名"), field: "displayName", value: "产品客服研究" },
+    { label: N_("安全研究显示名"), field: "displayName", value: "Crypto Security Research" },
+    { label: N_("普通账号"), field: "handle", value: "alice_dev" },
+    { label: N_("安全研究账号"), field: "handle", value: "crypto_security" },
+    { label: N_("正常支持账号"), field: "handle", value: "customer_support_news" },
+    { label: N_("普通 X 链接"), field: "links", value: "https://x.com/openai/status/1234567890" },
+    { label: N_("普通项目链接"), field: "links", value: "https://github.com/example/project" },
+    { label: N_("普通 Telegram 链接"), field: "links", value: "https://t.me/legitimate_project" },
 ];
 
 const CATCH_ALL = /^\^?(?:\.\*|\.\+|\[\\s\\S\]\*)\$?$/;
@@ -84,25 +85,25 @@ export interface SafetyInput {
 }
 
 const MESSAGES: Record<SafetyCode, string> = {
-    "invalid-rule": "规则结构无效。",
-    "overbroad-rule": "规则范围过宽。",
-    "lazy-exact-copy": "规则只是整条回复的精确拷贝，无法复用。",
-    "target-not-matched": "规则没有命中当前回复。",
-    "empty-match": "规则会命中空内容。",
-    "canary-match": "规则命中了内置安全样本。",
-    "negative-match": "规则命中了负例。",
-    "protected-match": "规则命中了当前对话中受保护的内容。",
-    "worker-error": "正则 Worker 返回了无效结果。",
-    "worker-timeout": "规则执行超时，已按不安全处理。",
-    "worker-unavailable": "正则 Worker 不可用，无法完成安全校验。",
+    "invalid-rule": N_("规则结构无效。"),
+    "overbroad-rule": N_("规则范围过宽。"),
+    "lazy-exact-copy": N_("规则只是整条回复的精确拷贝，无法复用。"),
+    "target-not-matched": N_("规则没有命中当前回复。"),
+    "empty-match": N_("规则会命中空内容。"),
+    "canary-match": N_("规则命中了内置安全样本。"),
+    "negative-match": N_("规则命中了负例。"),
+    "protected-match": N_("规则命中了当前对话中受保护的内容。"),
+    "worker-error": N_("正则 Worker 返回了无效结果。"),
+    "worker-timeout": N_("规则执行超时，已按不安全处理。"),
+    "worker-unavailable": N_("正则 Worker 不可用，无法完成安全校验。"),
 };
 
-const result = (code: SafetyCode | null, targetMatch: boolean, canarySafe: boolean, message?: string): SafetyResult => ({ valid: code == null, code, message: message ?? (code ? MESSAGES[code] : ""), targetMatch, canarySafe });
+const result = (code: SafetyCode | null, targetMatch: boolean, canarySafe: boolean, message?: string): SafetyResult => ({ valid: code == null, code, message: message ?? (code ? t(MESSAGES[code]) : ""), targetMatch, canarySafe });
 
 export async function checkCandidate(input: SafetyInput, probe: typeof probeRegex = probeRegex): Promise<SafetyResult> {
     const { rule } = input;
     const check = validateRegex(rule.source, rule.flags, rule.fields);
-    if (!check.valid || rule.fields.length !== 1) return result("invalid-rule", false, false, check.error ?? "AI 规则必须且只能选择一个字段。");
+    if (!check.valid || rule.fields.length !== 1) return result("invalid-rule", false, false, check.error ?? t("AI 规则必须且只能选择一个字段。"));
     const field = rule.fields[0];
     if (!input.skipBreadth) {
         const broad = breadthCheck(rule);
@@ -130,22 +131,26 @@ export async function checkCandidate(input: SafetyInput, probe: typeof probeRege
     if (has("canary:")) {
         const idx = Number([...hit].find(k => k.startsWith("canary:"))!.split(":")[1]);
         const label = CANARIES.filter(c => c.field === field)[idx]?.label ?? "";
-        return result("canary-match", true, false, `${MESSAGES["canary-match"]}（${label}）`);
+        return result("canary-match", true, false, t("{message}（{sample}）", { message: t(MESSAGES["canary-match"]), sample: t(label) }));
     }
     if (has("negative:")) return result("negative-match", true, false);
     if (has("protected:")) return result("protected-match", true, false);
     return result(null, true, true);
 }
 
-const EXACT_NAMES: Record<"body" | "displayName" | "handle", string> = { body: "精确匹配回复正文", displayName: "精确匹配显示名", handle: "精确匹配账号 handle" };
-const EXACT_LABEL: Record<"body" | "displayName" | "handle", string> = { body: "回复正文", displayName: "显示名", handle: "账号 handle" };
+const EXACT_NAMES: Record<"body" | "displayName" | "handle", string> = { body: N_("精确匹配回复正文"), displayName: N_("精确匹配显示名"), handle: N_("精确匹配账号 handle") };
+const EXACT_REASONS: Record<"body" | "displayName" | "handle", string> = {
+    body: N_("未找到可安全复用的模板；仅精确匹配当前回复正文，保存前仍需用户确认。"),
+    displayName: N_("未找到可安全复用的模板；仅精确匹配当前显示名，保存前仍需用户确认。"),
+    handle: N_("未找到可安全复用的模板；仅精确匹配当前账号 handle，保存前仍需用户确认。"),
+};
 
 export function exactRule(values: FieldValues, field: "body" | "displayName" | "handle"): DraftRule | null {
     const value = values[field];
     if (!value) return null;
     const source = `^${escapeRegexLiteral(value)}$`;
     if (source.length > MAX_SOURCE) return null;
-    return { name: EXACT_NAMES[field], source, flags: "iu", fields: [field] };
+    return { name: t(EXACT_NAMES[field]), source, flags: "iu", fields: [field] };
 }
 
 export function exactFallback(values: FieldValues, only?: "body" | "displayName" | "handle", reason?: string): Draft | null {
@@ -153,7 +158,7 @@ export function exactFallback(values: FieldValues, only?: "body" | "displayName"
     for (const field of fields) {
         const rule = exactRule(values, field);
         if (!rule || !validateRegex(rule.source, rule.flags, rule.fields).valid || breadthCheck(rule)) continue;
-        return { rule, reason: reason ?? `未找到可安全复用的模板；仅精确匹配当前${EXACT_LABEL[field]}，保存前仍需用户确认。`, confidence: null, origin: "exact-fallback" };
+        return { rule, reason: reason ?? t(EXACT_REASONS[field]), confidence: null, origin: "exact-fallback" };
     }
     return null;
 }
@@ -175,12 +180,12 @@ export function phraseRule(selected: SelectedPhrase[]): Draft | null {
     const escaped = phrases.map(escapeRegexLiteral);
     return {
         rule: {
-            name: phrases.length === 1 ? `划词：${phrases[0]}` : `划词：${phrases.length} 个词语`,
+            name: phrases.length === 1 ? t("划词：{phrase}", { phrase: phrases[0] }) : t("划词：{n} 个词语", { n: phrases.length }),
             source: escaped.length === 1 ? escaped[0] : `(?:${escaped.join("|")})`,
             flags: "iu",
             fields: [field],
         },
-        reason: `根据勾选词语生成规则：${phrases.join("、")}`,
+        reason: t("根据勾选词语生成规则：{phrases}", { phrases: listJoin(phrases) }),
         confidence: 0.88,
         origin: "phrase-selection",
     };

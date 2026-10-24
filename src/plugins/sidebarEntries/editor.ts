@@ -6,6 +6,7 @@
 
 import { switchEl } from "@ui/fields";
 import { h, svgIcon } from "@ui/h";
+import { t } from "@utils/i18n";
 
 import { HIDE_HINTS, type Layout, mergeOrder, NAV, type SidebarEntry } from "./entries";
 import type { MoreItem } from "./pins";
@@ -22,7 +23,7 @@ const isLive = (key: string, entries: SidebarEntry[]) => {
 };
 
 export function renderEditor(ctx: EditorCtx, getEntries: () => SidebarEntry[]): { el: HTMLElement; refresh(): void } {
-    const list = h("div", { class: "xc-sbe-list", role: "list", "aria-label": "侧栏入口" });
+    const list = h("div", { class: "xc-sbe-list", role: "list", "aria-label": t("侧栏入口") });
     let dragKey: string | null = null;
 
     const current = () => {
@@ -49,7 +50,7 @@ export function renderEditor(ctx: EditorCtx, getEntries: () => SidebarEntry[]): 
     const render = () => {
         const entries = getEntries();
         if (!entries.length) {
-            list.replaceChildren(h("div", { class: "xc-empty" }, "还没有读到侧栏入口。在 x.com 的桌面版页面打开此设置即可。"));
+            list.replaceChildren(h("div", { class: "xc-empty" }, t("还没有读到侧栏入口。在 x.com 的桌面版页面打开此设置即可。")));
             return;
         }
         const { order: saved, hidden } = current();
@@ -59,7 +60,7 @@ export function renderEditor(ctx: EditorCtx, getEntries: () => SidebarEntry[]): 
             const entry = byKey.get(key)!;
             const visible = !hidden.includes(key);
             const handle = h("button", {
-                type: "button", class: "xc-sbe-handle", title: "拖动排序，或按 ↑ ↓ 移动", "aria-label": `移动 ${entry.label}`,
+                type: "button", class: "xc-sbe-handle", title: t("拖动排序，或按 ↑ ↓ 移动"), "aria-label": t("移动 {label}", { label: entry.label }),
                 onkeydown: (e: KeyboardEvent) => {
                     if (e.key === "ArrowUp" || e.key === "ArrowDown") {
                         e.preventDefault();
@@ -67,18 +68,18 @@ export function renderEditor(ctx: EditorCtx, getEntries: () => SidebarEntry[]): 
                     }
                 },
             }, "⋮⋮");
-            const hint = !visible && HIDE_HINTS[key] ? h("span", { class: "xc-sbe-hint" }, HIDE_HINTS[key]) : null;
-            const absent = !isLive(key, entries) ? h("span", { class: "xc-sbe-hint" }, "当前页面没有这个入口") : null;
+            const hint = !visible && HIDE_HINTS[key] ? h("span", { class: "xc-sbe-hint" }, t(HIDE_HINTS[key])) : null;
+            const absent = !isLive(key, entries) ? h("span", { class: "xc-sbe-hint" }, t("当前页面没有这个入口")) : null;
             const row = h("div", { class: `xc-sbe-row${visible ? "" : " is-hidden"}`, role: "listitem", draggable: "true", dataset: { key } },
                 handle,
                 h("div", { class: "xc-sbe-main" }, h("strong", null, entry.label), hint, absent),
                 h("div", { class: "xc-sbe-actions" },
-                    h("button", { type: "button", class: "xc-btn xc-btn-sm xc-btn-icon", "aria-label": `上移 ${entry.label}`, disabled: i === 0, onclick: () => move(key, i - 1) }, "↑"),
-                    h("button", { type: "button", class: "xc-btn xc-btn-sm xc-btn-icon", "aria-label": `下移 ${entry.label}`, disabled: i === order.length - 1, onclick: () => move(key, i + 1) }, "↓"),
+                    h("button", { type: "button", class: "xc-btn xc-btn-sm xc-btn-icon", "aria-label": t("上移 {label}", { label: entry.label }), disabled: i === 0, onclick: () => move(key, i - 1) }, "↑"),
+                    h("button", { type: "button", class: "xc-btn xc-btn-sm xc-btn-icon", "aria-label": t("下移 {label}", { label: entry.label }), disabled: i === order.length - 1, onclick: () => move(key, i + 1) }, "↓"),
                     switchEl(visible, on => {
                         const next = current().hidden.filter(k => k !== key);
                         save(current().order, on ? next : [...next, key]);
-                    }, `显示 ${entry.label}`),
+                    }, t("显示 {label}", { label: entry.label })),
                 ),
             );
             row.addEventListener("dragstart", e => {
@@ -114,18 +115,18 @@ interface PinEditorCtx {
 
 /** The rows of X's 「更多」 menu, each with a switch that pins it into the sidebar above 「更多」. */
 export function renderPinEditor(ctx: PinEditorCtx): HTMLElement {
-    const list = h("div", { class: "xc-sbe-list", role: "list", "aria-label": "「更多」菜单里的项目" });
+    const list = h("div", { class: "xc-sbe-list", role: "list", "aria-label": t("「更多」菜单里的项目") });
     const status = h("span", { class: "xc-sbe-hint" });
     let scanning = false;
 
     const rescan = async () => {
         if (scanning) return;
         scanning = true;
-        status.textContent = "正在读取「更多」菜单…";
+        status.textContent = t("正在读取「更多」菜单…");
         const ok = await ctx.rescan();
         scanning = false;
         if (!list.isConnected) return;
-        status.textContent = ok ? "" : "没能打开「更多」菜单。在 x.com 的桌面版页面上点一下侧栏的「更多」，再回来这里。";
+        status.textContent = ok ? "" : t("没能打开「更多」菜单。在 x.com 的桌面版页面上点一下侧栏的「更多」，再回来这里。");
         render();
     };
 
@@ -133,7 +134,7 @@ export function renderPinEditor(ctx: PinEditorCtx): HTMLElement {
         const items = ctx.items();
         const pinned = ctx.pinned();
         if (!items.length) {
-            list.replaceChildren(h("div", { class: "xc-empty" }, "还没有读到「更多」菜单的项目。点「读取」，或在侧栏点一下「更多」。"));
+            list.replaceChildren(h("div", { class: "xc-empty" }, t("还没有读到「更多」菜单的项目。点「读取」，或在侧栏点一下「更多」。")));
             return;
         }
         list.replaceChildren(...items.map(item => {
@@ -145,7 +146,7 @@ export function renderPinEditor(ctx: PinEditorCtx): HTMLElement {
                     switchEl(on, next => {
                         const rest = ctx.pinned().filter(k => k !== item.key);
                         ctx.setPinned(next ? [...rest, item.key] : rest);
-                    }, `固定 ${item.label} 到侧栏`),
+                    }, t("固定 {label} 到侧栏", { label: item.label })),
                 ),
             );
         }));
@@ -156,10 +157,10 @@ export function renderPinEditor(ctx: PinEditorCtx): HTMLElement {
     return h("div", { class: "xc-sbe xc-sbe-pins" },
         h("div", { class: "xc-sbe-head" },
             h("div", { class: "xc-sbe-main" },
-                h("strong", null, "固定「更多」菜单里的项目"),
-                h("span", { class: "xc-sbe-hint" }, "打开的项目会出现在侧栏「更多」的正上方，侧栏收起成图标时也一样。固定后可以在上面的列表里调整位置。"),
+                h("strong", null, t("固定「更多」菜单里的项目")),
+                h("span", { class: "xc-sbe-hint" }, t("打开的项目会出现在侧栏「更多」的正上方，侧栏收起成图标时也一样。固定后可以在上面的列表里调整位置。")),
             ),
-            h("button", { type: "button", class: "xc-btn xc-btn-sm", onclick: () => void rescan() }, "读取"),
+            h("button", { type: "button", class: "xc-btn xc-btn-sm", onclick: () => void rescan() }, t("读取")),
         ),
         status,
         list,

@@ -5,17 +5,18 @@
  */
 
 import type { AiConfig } from "@config/config";
+import { t } from "@utils/i18n";
 
 export function validateEndpoint(raw: string): string | null {
     let url: URL;
-    try { url = new URL(raw.trim()); } catch { return "远程 Endpoint 必须使用 HTTPS；HTTP 仅允许 localhost。"; }
+    try { url = new URL(raw.trim()); } catch { return t("远程 Endpoint 必须使用 HTTPS；HTTP 仅允许 localhost。"); }
     if (url.protocol === "https:") return null;
     if (url.protocol === "http:" && ["localhost", "127.0.0.1", "[::1]"].includes(url.hostname)) return null;
-    return "远程 Endpoint 必须使用 HTTPS；HTTP 仅允许 localhost。";
+    return t("远程 Endpoint 必须使用 HTTPS；HTTP 仅允许 localhost。");
 }
 
 export function validateAiSettings(endpoint: string, model: string): string | null {
-    return validateEndpoint(endpoint) ?? (model.trim() ? null : "Model 不能为空。");
+    return validateEndpoint(endpoint) ?? (model.trim() ? null : t("Model 不能为空。"));
 }
 
 export function aiReady(ai: AiConfig): boolean {
@@ -23,8 +24,8 @@ export function aiReady(ai: AiConfig): boolean {
 }
 
 export function aiUnavailableReason(ai: AiConfig): string | null {
-    if (!ai.enabled || !ai.consented) return "AI 未启用或尚未确认数据发送范围";
-    if (validateAiSettings(ai.endpoint, ai.model)) return "AI Endpoint 或 Model 尚未正确配置";
+    if (!ai.enabled || !ai.consented) return t("AI 未启用或尚未确认数据发送范围");
+    if (validateAiSettings(ai.endpoint, ai.model)) return t("AI Endpoint 或 Model 尚未正确配置");
     return null;
 }
 

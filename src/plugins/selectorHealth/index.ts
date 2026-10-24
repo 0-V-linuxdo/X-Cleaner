@@ -13,6 +13,7 @@ import { plugins } from "@api/PluginManager";
 import { openSettingsPanel } from "@plugins/_core/settings/panel";
 import { Icons } from "@ui/icons";
 import { showNotice } from "@ui/notice";
+import { N_, t } from "@utils/i18n";
 import { Logger } from "@utils/Logger";
 import definePlugin, { type HealthCheck, StartAt } from "@utils/types";
 
@@ -95,8 +96,8 @@ function report({ plugin, check }: HealthIssue) {
     showNotice({
         id: `health:${key}`,
         type: "warning",
-        message: `X 的页面结构可能更新了：${plugin} 找不到「${check.label}」，相关功能可能暂时失灵。`,
-        action: { label: "查看插件", onClick: () => openSettingsPanel({ tab: "plugins" }) },
+        message: t("X 的页面结构可能更新了：{plugin} 找不到「{label}」，相关功能可能暂时失灵。", { plugin, label: t(check.label) }),
+        action: { label: t("查看插件"), onClick: () => openSettingsPanel({ tab: "plugins" }) },
     });
 }
 
@@ -116,7 +117,7 @@ export function resetHealth() {
 
 export default definePlugin({
     name: "SelectorHealth",
-    description: "页面结构检查：X 改版后，如果插件依赖的按钮、菜单、侧栏找不到了，主动提示哪个插件受影响，而不是悄悄失灵。",
+    description: N_("页面结构检查：X 改版后，如果插件依赖的按钮、菜单、侧栏找不到了，主动提示哪个插件受影响，而不是悄悄失灵。"),
     icon: Icons.heartPulse,
     tags: ["core", "developer"],
     enabledByDefault: true,

@@ -7,6 +7,7 @@
 import { AiQueue } from "@ai/queue";
 import { aiReady } from "@ai/transport";
 import type { AiConfig } from "@config/config";
+import { N_, t } from "@utils/i18n";
 import definePlugin from "@utils/types";
 
 import { getConfigStore } from "../blockerConfig";
@@ -38,7 +39,7 @@ const aiKey = (ai: AiConfig) => JSON.stringify([ai.enabled, ai.consented, ai.end
 
 export default definePlugin({
     name: "AiClient",
-    description: "AI 客户端：OpenAI 兼容接口的请求、解析，以及按对话计数的预算队列。",
+    description: N_("AI 客户端：OpenAI 兼容接口的请求、解析，以及按对话计数的预算队列。"),
     tags: ["core", "ai"],
     required: true,
     hidden: true,

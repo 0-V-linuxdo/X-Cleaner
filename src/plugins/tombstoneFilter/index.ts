@@ -6,6 +6,7 @@
 
 import { HIDDEN_ATTR, showCell, TOMBSTONE_ATTR, TWEET_ID_ATTR } from "@filter/controller";
 import { Icons } from "@ui/icons";
+import { N_, t } from "@utils/i18n";
 import { isTombstoneCell, SEL } from "@x/dom";
 import definePlugin from "@utils/types";
 
@@ -15,7 +16,7 @@ function restoreAll() {
 
 export default definePlugin({
     name: "TombstoneFilter",
-    description: "隐藏对话里 X 官方的「此帖子不可用」占位条；根帖本身被删除时保留它的提示。",
+    description: N_("隐藏对话里 X 官方的「此帖子不可用」占位条；根帖本身被删除时保留它的提示。"),
     icon: Icons.eyeOff,
     tags: ["replies", "declutter"],
     enabledByDefault: true,

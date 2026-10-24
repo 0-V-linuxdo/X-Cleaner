@@ -11,6 +11,7 @@
 import { definePluginSettings } from "@api/Settings";
 import { Icons } from "@ui/icons";
 import { registerStyle, unregisterStyle } from "@utils/css";
+import { N_, t } from "@utils/i18n";
 import definePlugin, { OptionType } from "@utils/types";
 import { detectSelfHandle, SEL } from "@x/dom";
 import { CHECKS } from "@x/health";
@@ -18,13 +19,13 @@ import { CHECKS } from "@x/health";
 const STYLE = "streamerMode:rules";
 
 export const settings = definePluginSettings({
-    accountAvatar: { type: OptionType.BOOLEAN, label: "账号菜单头像", description: "左下角账号菜单里的头像。", default: true },
-    accountName: { type: OptionType.BOOLEAN, label: "账号菜单名字", description: "左下角账号菜单里的昵称和 @handle。", default: true },
-    ownAvatars: { type: OptionType.BOOLEAN, label: "自己的头像", description: "页面其他位置（发帖框、自己的帖子）出现的你的头像。", default: true },
-    dmNames: { type: OptionType.BOOLEAN, label: "私信列表", description: "私信页里对话的头像和名字。", default: false },
-    revealOnHover: { type: OptionType.BOOLEAN, label: "悬停时显示", description: "鼠标移上去时暂时取消模糊。", default: true },
-    blur: { type: OptionType.SLIDER, label: "模糊程度", description: "", min: 2, max: 16, step: 1, default: 8, unit: "px" },
-    alias: { type: OptionType.STRING, label: "显示别名", description: "填写后，左下角账号菜单里的昵称换成这段文字，认证徽标和 @handle 隐藏，不再模糊。留空则按上面的设置模糊。", default: "", placeholder: "例如：观众朋友们好" },
+    accountAvatar: { type: OptionType.BOOLEAN, label: N_("账号菜单头像"), description: N_("左下角账号菜单里的头像。"), default: true },
+    accountName: { type: OptionType.BOOLEAN, label: N_("账号菜单名字"), description: N_("左下角账号菜单里的昵称和 @handle。"), default: true },
+    ownAvatars: { type: OptionType.BOOLEAN, label: N_("自己的头像"), description: N_("页面其他位置（发帖框、自己的帖子）出现的你的头像。"), default: true },
+    dmNames: { type: OptionType.BOOLEAN, label: N_("私信列表"), description: N_("私信页里对话的头像和名字。"), default: false },
+    revealOnHover: { type: OptionType.BOOLEAN, label: N_("悬停时显示"), description: N_("鼠标移上去时暂时取消模糊。"), default: true },
+    blur: { type: OptionType.SLIDER, label: N_("模糊程度"), description: "", min: 2, max: 16, step: 1, default: 8, unit: "px" },
+    alias: { type: OptionType.STRING, label: N_("显示别名"), description: N_("填写后，左下角账号菜单里的昵称换成这段文字，认证徽标和 @handle 隐藏，不再模糊。留空则按上面的设置模糊。"), default: "", placeholder: N_("例如：观众朋友们好") },
 });
 
 export const ALIAS_ATTR = "data-xc-alias";
@@ -95,7 +96,7 @@ function apply() {
 
 export default definePlugin({
     name: "StreamerMode",
-    description: "主播模式：模糊你自己的头像、昵称和 @handle，可选模糊私信列表，也可以把账号菜单里的名字换成别名，截图和录屏时不暴露账号。",
+    description: N_("主播模式：模糊你自己的头像、昵称和 @handle，可选模糊私信列表，也可以把账号菜单里的名字换成别名，截图和录屏时不暴露账号。"),
     icon: Icons.eyeOff,
     tags: ["privacy"],
     settings,

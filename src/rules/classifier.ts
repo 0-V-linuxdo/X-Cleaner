@@ -5,6 +5,7 @@
  */
 
 import { type BlockerConfig, SENSITIVITY_THRESHOLDS } from "@config/config";
+import { listJoin, t } from "@utils/i18n";
 import { compactText, normalizeText } from "@x/text";
 
 import { normalizeDomain } from "./domains";
@@ -50,7 +51,12 @@ export interface ClassifierInput {
     mediaUrls?: string[];
 }
 
-export const CATEGORY_LABELS: Record<CategoryId, string> = { adult: "成人引流", crypto: "加密货币引流", "promotional-name": "推广用户名" };
+/** Getters, so each read is in the current UI language. */
+export const CATEGORY_LABELS: Record<CategoryId, string> = {
+    get adult() { return t("成人引流"); },
+    get crypto() { return t("加密货币引流"); },
+    get "promotional-name"() { return t("推广用户名"); },
+};
 
 const R = (s: string) => new RegExp(s, "iu");
 
@@ -122,17 +128,17 @@ export function scoreAdult(input: ClassifierInput, hosts = linkHosts(input)): Ca
     const compact = compactText(input.bodyText);
     const s: Signal[] = [];
     const template = ADULT_TEMPLATE.some(r => r.test(body));
-    if (template) s.push({ id: "adult-funnel-template", family: "adult-semantic", weight: 8, label: "高置信黄推引流模板", strong: true });
+    if (template) s.push({ id: "adult-funnel-template", family: "adult-semantic", weight: 8, label: t("高置信黄推引流模板"), strong: true });
     const strong = ADULT_STRONG.some(r => r.test(body)) || ADULT_CONTACT_COMBO.test(compact);
-    if (strong) s.push({ id: "adult-strong-service", family: "adult-semantic", weight: 8, label: "成人服务复合语义", strong: true });
-    if (!template && !strong && ADULT_EXPLICIT.test(body)) s.push({ id: "adult-explicit-language", family: "adult-semantic", weight: 5, label: "露骨成人语义" });
-    if (ADULT_PRIVATE.test(body)) s.push({ id: "adult-private-content", family: "adult-content", weight: 4, label: "成人或私密内容" });
-    if (ADULT_CONTACT.test(compact)) s.push({ id: "adult-contact-channel", family: "adult-contact", weight: 4, label: "站外联系方式" });
-    if (ADULT_CTA.test(body)) s.push({ id: "adult-call-to-action", family: "adult-action", weight: 3, label: "引流行动号召" });
-    if (ADULT_COMMERCE.test(body)) s.push({ id: "adult-commercial-context", family: "adult-commerce", weight: 3, label: "交易或同城语境" });
-    if (hostMatches(hosts, ADULT_DOMAINS)) s.push({ id: "adult-domain", family: "adult-domain", weight: 5, label: "成人内容域名" });
-    if (countAny(body, ["🔞", "💦", "🍑", "👄", "💋"]) >= 2) s.push({ id: "adult-emoji-cluster", family: "adult-emoji", weight: 1, label: "成人导向表情组合" });
-    if (s.length && GENERIC_NEGATIVE.test(body)) s.push({ id: "adult-negative-context", family: "adult-negative", weight: -3, label: "新闻、研究或反诈语境" });
+    if (strong) s.push({ id: "adult-strong-service", family: "adult-semantic", weight: 8, label: t("成人服务复合语义"), strong: true });
+    if (!template && !strong && ADULT_EXPLICIT.test(body)) s.push({ id: "adult-explicit-language", family: "adult-semantic", weight: 5, label: t("露骨成人语义") });
+    if (ADULT_PRIVATE.test(body)) s.push({ id: "adult-private-content", family: "adult-content", weight: 4, label: t("成人或私密内容") });
+    if (ADULT_CONTACT.test(compact)) s.push({ id: "adult-contact-channel", family: "adult-contact", weight: 4, label: t("站外联系方式") });
+    if (ADULT_CTA.test(body)) s.push({ id: "adult-call-to-action", family: "adult-action", weight: 3, label: t("引流行动号召") });
+    if (ADULT_COMMERCE.test(body)) s.push({ id: "adult-commercial-context", family: "adult-commerce", weight: 3, label: t("交易或同城语境") });
+    if (hostMatches(hosts, ADULT_DOMAINS)) s.push({ id: "adult-domain", family: "adult-domain", weight: 5, label: t("成人内容域名") });
+    if (countAny(body, ["🔞", "💦", "🍑", "👄", "💋"]) >= 2) s.push({ id: "adult-emoji-cluster", family: "adult-emoji", weight: 1, label: t("成人导向表情组合") });
+    if (s.length && GENERIC_NEGATIVE.test(body)) s.push({ id: "adult-negative-context", family: "adult-negative", weight: -3, label: t("新闻、研究或反诈语境") });
     return score("adult", s);
 }
 
@@ -143,18 +149,18 @@ export function scoreCrypto(input: ClassifierInput, hosts = linkHosts(input)): C
     const promoDomain = hostMatches(hosts, CRYPTO_DOMAINS);
     const s: Signal[] = [];
     const strong = CRYPTO_STRONG.test(body);
-    if (strong) s.push({ id: "crypto-strong-promotion", family: "crypto-semantic", weight: 8, label: "币圈推广复合语义", strong: true });
+    if (strong) s.push({ id: "crypto-strong-promotion", family: "crypto-semantic", weight: 8, label: t("币圈推广复合语义"), strong: true });
     const language = !strong && CRYPTO_LANGUAGE.test(body);
-    if (language) s.push({ id: "crypto-promotion-language", family: "crypto-semantic", weight: 5, label: "空投、预售或发币语义" });
+    if (language) s.push({ id: "crypto-promotion-language", family: "crypto-semantic", weight: 5, label: t("空投、预售或发币语义") });
     const promoSemantic = strong || language;
-    if (CRYPTO_CTA.test(body) && (promoSemantic || promoDomain) && !negative) s.push({ id: "crypto-call-to-action", family: "crypto-action", weight: 4, label: "买入、领取或进群号召" });
-    if (CRYPTO_CONTRACT.some(r => r.test(body)) && (promoSemantic || promoDomain || CRYPTO_PROMO_CONTEXT.test(body)) && !negative) s.push({ id: "crypto-contract-address", family: "crypto-contract", weight: 4, label: "带推广语境的合约地址" });
-    if (promoDomain) s.push({ id: "crypto-promotion-domain", family: "crypto-domain", weight: 4, label: "加密资产推广域名" });
-    if ((promoSemantic || promoDomain) && CRYPTO_CONTACT.test(`${body} ${linksText}`) && !negative) s.push({ id: "crypto-contact-channel", family: "crypto-contact", weight: 3, label: "币圈群组或联系渠道" });
-    if (CRYPTO_PROFIT.test(body)) s.push({ id: "crypto-profit-promise", family: "crypto-profit", weight: 3, label: "夸张收益或保证性话术" });
-    if (CRYPTO_CASHTAG.test(body)) s.push({ id: "crypto-cashtag", family: "crypto-weak", weight: 1, label: "Cashtag 弱信号" });
-    if (countAny(body, ["🚀", "💎", "🤑", "🌙"]) >= 2) s.push({ id: "crypto-emoji-cluster", family: "crypto-emoji", weight: 1, label: "币圈推广表情组合" });
-    if (s.length && negative) s.push({ id: "crypto-negative-context", family: "crypto-negative", weight: -3, label: "新闻、技术或反诈语境" });
+    if (CRYPTO_CTA.test(body) && (promoSemantic || promoDomain) && !negative) s.push({ id: "crypto-call-to-action", family: "crypto-action", weight: 4, label: t("买入、领取或进群号召") });
+    if (CRYPTO_CONTRACT.some(r => r.test(body)) && (promoSemantic || promoDomain || CRYPTO_PROMO_CONTEXT.test(body)) && !negative) s.push({ id: "crypto-contract-address", family: "crypto-contract", weight: 4, label: t("带推广语境的合约地址") });
+    if (promoDomain) s.push({ id: "crypto-promotion-domain", family: "crypto-domain", weight: 4, label: t("加密资产推广域名") });
+    if ((promoSemantic || promoDomain) && CRYPTO_CONTACT.test(`${body} ${linksText}`) && !negative) s.push({ id: "crypto-contact-channel", family: "crypto-contact", weight: 3, label: t("币圈群组或联系渠道") });
+    if (CRYPTO_PROFIT.test(body)) s.push({ id: "crypto-profit-promise", family: "crypto-profit", weight: 3, label: t("夸张收益或保证性话术") });
+    if (CRYPTO_CASHTAG.test(body)) s.push({ id: "crypto-cashtag", family: "crypto-weak", weight: 1, label: t("Cashtag 弱信号") });
+    if (countAny(body, ["🚀", "💎", "🤑", "🌙"]) >= 2) s.push({ id: "crypto-emoji-cluster", family: "crypto-emoji", weight: 1, label: t("币圈推广表情组合") });
+    if (s.length && negative) s.push({ id: "crypto-negative-context", family: "crypto-negative", weight: -3, label: t("新闻、技术或反诈语境") });
     return score("crypto", s);
 }
 
@@ -163,13 +169,13 @@ export function scoreName(input: ClassifierInput): CategoryScore {
     const name = compactText(raw);
     const handle = (input.authorHandle ?? "").replace(/^@/, "");
     const s: Signal[] = [];
-    if (NAME_STRONG.test(name)) s.push({ id: "name-strong-compound", family: "name-semantic", weight: 8, label: "推广用户名复合语义", strong: true });
-    else if (NAME_SUSPICIOUS.test(name)) s.push({ id: "name-suspicious-semantic", family: "name-semantic", weight: 5, label: "成人或币圈推广语义" });
-    else if (NAME_WEAK.test(name)) s.push({ id: "name-weak-role", family: "name-semantic", weight: 2, label: "弱推广角色词" });
-    if (NAME_CONTACT.test(name)) s.push({ id: "name-contact-channel", family: "name-contact", weight: 4, label: "用户名含站外联系方式" });
-    if (NAME_EMOJI.test(raw)) s.push({ id: "name-promotion-emoji", family: "name-emoji", weight: 1, label: "用户名含推广导向表情" });
-    if (handle.length >= 8 && /[a-z]/i.test(handle) && (handle.match(/\d/g)?.length ?? 0) >= 3) s.push({ id: "name-random-handle", family: "name-handle", weight: 1, label: "英文数字混合 handle 弱信号" });
-    if (s.length && NAME_LEGIT.test(normalizeText(raw))) s.push({ id: "name-legitimate-context", family: "name-negative", weight: -3, label: "职业或研究语境" });
+    if (NAME_STRONG.test(name)) s.push({ id: "name-strong-compound", family: "name-semantic", weight: 8, label: t("推广用户名复合语义"), strong: true });
+    else if (NAME_SUSPICIOUS.test(name)) s.push({ id: "name-suspicious-semantic", family: "name-semantic", weight: 5, label: t("成人或币圈推广语义") });
+    else if (NAME_WEAK.test(name)) s.push({ id: "name-weak-role", family: "name-semantic", weight: 2, label: t("弱推广角色词") });
+    if (NAME_CONTACT.test(name)) s.push({ id: "name-contact-channel", family: "name-contact", weight: 4, label: t("用户名含站外联系方式") });
+    if (NAME_EMOJI.test(raw)) s.push({ id: "name-promotion-emoji", family: "name-emoji", weight: 1, label: t("用户名含推广导向表情") });
+    if (handle.length >= 8 && /[a-z]/i.test(handle) && (handle.match(/\d/g)?.length ?? 0) >= 3) s.push({ id: "name-random-handle", family: "name-handle", weight: 1, label: t("英文数字混合 handle 弱信号") });
+    if (s.length && NAME_LEGIT.test(normalizeText(raw))) s.push({ id: "name-legitimate-context", family: "name-negative", weight: -3, label: t("职业或研究语境") });
     return score("promotional-name", s);
 }
 
@@ -179,27 +185,27 @@ export function classify(input: ClassifierInput, config: Pick<BlockerConfig, "ca
     const threshold = SENSITIVITY_THRESHOLDS[config.sensitivity] ?? 8;
     const empty = (reason: string): Classification => ({ action: "allow", category: null, score: 0, threshold, reason, signals: [], positiveFamilyCount: 0, hasSemanticSignal: false, autoBlacklistEligible: false, categories: [] });
     const { adult, crypto, promotionalName } = config.categories;
-    if (!adult && !crypto && !promotionalName) return empty("所有内置识别类别均已关闭");
+    if (!adult && !crypto && !promotionalName) return empty(t("所有内置识别类别均已关闭"));
     const hosts = linkHosts(input);
     const categories: CategoryScore[] = [];
     if (adult) categories.push(scoreAdult(input, hosts));
     if (crypto) categories.push(scoreCrypto(input, hosts));
     if (promotionalName) categories.push(scoreName(input));
     categories.sort((a, b) => b.score - a.score || b.positiveFamilyCount - a.positiveFamilyCount || ORDER.indexOf(a.category) - ORDER.indexOf(b.category));
-    const labels = (c: CategoryScore) => c.signals.filter(s => s.weight > 0).slice(0, 3).map(s => s.label).join("、");
+    const labels = (c: CategoryScore) => listJoin(c.signals.filter(s => s.weight > 0).slice(0, 3).map(s => s.label));
     const build = (action: Classification["action"], c: CategoryScore, reason: string): Classification => ({
         action, category: c.category, score: c.score, threshold, reason, signals: c.signals,
         positiveFamilyCount: c.positiveFamilyCount, hasSemanticSignal: c.hasSemanticSignal,
         autoBlacklistEligible: action === "hide" && c.score >= threshold + 2, categories,
     });
     const hideable = categories.find(c => c.score >= threshold && (c.positiveFamilyCount >= 2 || c.hasStrongSignal));
-    if (hideable) return build("hide", hideable, `${CATEGORY_LABELS[hideable.category]}：${labels(hideable)}`);
+    if (hideable) return build("hide", hideable, t("{category}：{signals}", { category: CATEGORY_LABELS[hideable.category], signals: labels(hideable) }));
     const top = categories.find(c => c.positiveFamilyCount > 0);
-    if (!top) return { ...empty("未发现可疑的内置规则信号"), categories };
+    if (!top) return { ...empty(t("未发现可疑的内置规则信号")), categories };
     if (aiEnabled) {
         const hasMedia = (input.mediaUrls ?? []).length > 0;
         const candidate = categories.find(c => (c.score >= threshold - 3 && c.score < threshold && c.positiveFamilyCount >= 2) || (hasMedia && c.hasSemanticSignal && c.score > 0));
-        if (candidate) return build("ai-review", candidate, `建议 AI 复核：${labels(candidate)}`);
+        if (candidate) return build("ai-review", candidate, t("建议 AI 复核：{signals}", { signals: labels(candidate) }));
     }
-    return build("allow", top, `低于屏蔽阈值：${labels(top)}`);
+    return build("allow", top, t("低于屏蔽阈值：{signals}", { signals: labels(top) }));
 }

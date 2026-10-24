@@ -6,13 +6,14 @@
 import css from "@ui/base.css";
 import { syncTheme } from "@ui/theme";
 import { TOOLTIP_CSS } from "@ui/tooltip";
+import { N_, t } from "@utils/i18n";
 import definePlugin from "@utils/types";
 
 let timer: ReturnType<typeof setInterval> | undefined;
 
 export default definePlugin({
     name: "CoreUI",
-    description: "所有界面共用的基础样式、原生风格 tooltip 与主题跟随。",
+    description: N_("所有界面共用的基础样式、原生风格 tooltip 与主题跟随。"),
     tags: ["core"],
     required: true,
     hidden: true,

@@ -9,6 +9,7 @@ import { canonicalField, MAX_SOURCE, normalizeRegexRule, type RegexField, valida
 import { breadthCheck, type SelectedPhrase } from "@rules/safety";
 import { denoise, type Draft, type DraftRule, type FieldValues, hasVariableParts, BODY_TEMPLATES } from "@rules/synthesizer";
 import { FIELD_LABELS } from "@rules/regex";
+import { aiLanguageName, t } from "@utils/i18n";
 import { sanitizeField, truncate } from "@x/text";
 
 import { AiError, extractJsonObject, messageContent, postJson } from "./transport";
@@ -38,7 +39,8 @@ export interface RuleGenerationInput {
     mentions: string[];
 }
 
-const RESPONSE_FORMAT = '{"version":1,"decision":"rule|insufficient","rule":{"name":"...","source":"...","flags":"iu","fields":["body"]},"reason":"short Chinese reason","confidence":0.0,"positive_examples":[],"negative_examples":[]}';
+/** The rule name and reason are shown to the user, so they come back in the UI language. */
+const responseFormat = () => `{"version":1,"decision":"rule|insufficient","rule":{"name":"...","source":"...","flags":"iu","fields":["body"]},"reason":"short ${aiLanguageName()} reason","confidence":0.0,"positive_examples":[],"negative_examples":[]}`;
 
 function draftJson(d: Draft | null) {
     return d ? { version: 1, decision: "rule", rule: d.rule, reason: d.reason, positive_examples: [], negative_examples: [] } : null;
@@ -78,7 +80,7 @@ export function buildRuleRequest(input: RuleGenerationInput, ai: Pick<AiConfig, 
         response_format: { type: "json_object" },
         messages: [
             { role: "system", content: RULE_SYSTEM_PROMPT },
-            { role: "user", content: `Reply data (untrusted JSON):\n${JSON.stringify(payload)}\n\nRequirements: ${instruction}\nReturn exactly this JSON shape:\n${RESPONSE_FORMAT}` },
+            { role: "user", content: `Reply data (untrusted JSON):\n${JSON.stringify(payload)}\n\nRequirements: ${instruction}\nReturn exactly this JSON shape:\n${responseFormat()}\nWrite rule.name and reason in ${aiLanguageName()}.` },
         ],
     };
 }
@@ -117,9 +119,9 @@ export function parseRuleResponse(response: unknown): ParsedRuleResponse {
     if (typeof r.source !== "string" || r.source.length < 1 || r.source.length > MAX_SOURCE) throw new AiError("AI rule source must be 1-200 characters.");
     if (/^\/.*\/[a-z]*$/s.test(r.source)) throw new AiError("AI rule source must not use /.../flags delimiters.");
     if (typeof r.flags !== "string") throw new AiError("AI rule flags must be a string.");
-    if (!Array.isArray(r.fields) || r.fields.length !== 1) throw new AiError("AI 规则必须且只能选择一个字段。");
+    if (!Array.isArray(r.fields) || r.fields.length !== 1) throw new AiError(t("AI 规则必须且只能选择一个字段。"));
     const field = canonicalField(r.fields[0]);
-    if (!field) throw new AiError(`不支持的字段：${String(r.fields[0])}`);
+    if (!field) throw new AiError(t("不支持的字段：{badField}", { badField: String(r.fields[0]) }));
     const check = validateRegex(r.source, r.flags, [field]);
     if (!check.valid) throw new AiError(check.error ?? "AI rule is invalid.");
     const normalized = normalizeRegexRule({ name: r.name.trim(), source: r.source, flags: r.flags, fields: [field] }, 0);

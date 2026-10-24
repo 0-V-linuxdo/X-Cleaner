@@ -9,6 +9,7 @@
 // so nothing is fetched on page load; 「更新」 re-fetches a remote theme on demand.
 
 import { registerStyle, unregisterStyle } from "@utils/css";
+import { t } from "@utils/i18n";
 import { errorMessage, uid } from "@utils/misc";
 
 import { PlainSettings, Settings, settingsStore, type ThemeData } from "./Settings";
@@ -33,8 +34,8 @@ function setThemes(themes: ThemeData[]) {
 
 export function validateThemeUrl(raw: string): string | null {
     let url: URL;
-    try { url = new URL(raw.trim()); } catch { return "请输入完整的网址，例如 https://example.com/theme.css。"; }
-    if (url.protocol !== "https:") return "只支持 https:// 开头的主题地址。";
+    try { url = new URL(raw.trim()); } catch { return t("请输入完整的网址，例如 https://example.com/theme.css。"); }
+    if (url.protocol !== "https:") return t("只支持 https:// 开头的主题地址。");
     return null;
 }
 
@@ -52,8 +53,8 @@ export function fetchText(url: string): Promise<string> {
             url,
             timeout: FETCH_TIMEOUT_MS,
             onload: r => (r.status >= 200 && r.status < 300 ? resolve(r.responseText) : reject(new Error(`HTTP ${r.status}`))),
-            onerror: () => reject(new Error("网络错误")),
-            ontimeout: () => reject(new Error("请求超时")),
+            onerror: () => reject(new Error(t("网络错误"))),
+            ontimeout: () => reject(new Error(t("请求超时"))),
         });
     });
 }
@@ -69,9 +70,9 @@ export async function addThemeFromUrl(raw: string): Promise<ThemeData> {
     const invalid = validateThemeUrl(raw);
     if (invalid) throw new Error(invalid);
     const url = new URL(raw.trim()).href;
-    if (getThemes().some(t => t.url === url)) throw new Error("这个主题已经添加过了。");
+    if (getThemes().some(t => t.url === url)) throw new Error(t("这个主题已经添加过了。"));
     let css: string;
-    try { css = await fetchText(url); } catch (e) { throw new Error(`下载主题失败：${errorMessage(e)}`); }
+    try { css = await fetchText(url); } catch (e) { throw new Error(t("下载主题失败：{error}", { error: errorMessage(e) })); }
     const theme = makeTheme(css, url, url);
     setThemes([...getThemes(), theme]);
     return theme;
@@ -87,7 +88,7 @@ export async function refreshTheme(id: string): Promise<void> {
     const theme = getThemes().find(t => t.id === id);
     if (!theme?.url) return;
     let css: string;
-    try { css = await fetchText(theme.url); } catch (e) { throw new Error(`更新主题失败：${errorMessage(e)}`); }
+    try { css = await fetchText(theme.url); } catch (e) { throw new Error(t("更新主题失败：{error}", { error: errorMessage(e) })); }
     const meta = parseThemeMeta(css);
     setThemes(getThemes().map(t => (t.id === id ? { ...t, css, name: meta.name || t.name, author: meta.author || t.author, description: meta.description || t.description, updatedAt: Date.now() } : t)));
 }

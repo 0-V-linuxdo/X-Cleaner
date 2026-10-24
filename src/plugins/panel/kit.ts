@@ -6,13 +6,14 @@
 
 import { h } from "@ui/h";
 import { showToast } from "@ui/toast";
+import { t } from "@utils/i18n";
 
 import { getRuleStats } from "../ruleStats";
 import { button, pill, searchBox } from "./components";
 
 export function hitPill(key: string): HTMLElement {
     const n = getRuleStats()?.count(key) ?? 0;
-    return pill(`${n} 次`, n ? "accent" : "muted", `累计隐藏 ${n} 条不重复回复`);
+    return pill(t("{n} 次", { n }), n ? "accent" : "muted", t("累计隐藏 {n} 条不重复回复", { n }));
 }
 
 export interface PageHeader {
@@ -25,7 +26,7 @@ export interface PageHeader {
 /** Search box, "清除统计" button and the per-page hit summary shared by the blacklist subpages. */
 export function pageHeader(label: string, keys: () => string[], onSearch: () => void): PageHeader {
     let q = "";
-    const input = searchBox(`搜索${label}`, "", v => {
+    const input = searchBox(t("搜索{label}", { label }), "", v => {
         q = v;
         const { selectionStart, selectionEnd } = input;
         onSearch();
@@ -35,14 +36,14 @@ export function pageHeader(label: string, keys: () => string[], onSearch: () => 
         }
     });
     const summary = h("p", { class: "xc-page-summary xc-muted" });
-    const clear = button("清除统计", () => {
-        if (!confirm("清除全部规则命中统计？隐藏记录不会被删除。")) return;
+    const clear = button(t("清除统计"), () => {
+        if (!confirm(t("清除全部规则命中统计？隐藏记录不会被删除。"))) return;
         getRuleStats()?.clear();
-        showToast("规则命中统计已清除。", { type: "success" });
+        showToast(t("规则命中统计已清除。"), { type: "success" });
     }, { small: true });
     const update = () => {
         const total = getRuleStats()?.total(keys()) ?? 0;
-        summary.textContent = `本页规则累计隐藏 ${total} 条不重复回复。`;
+        summary.textContent = t("本页规则累计隐藏 {total} 条不重复回复。", { total });
         clear.disabled = total === 0;
     };
     update();
@@ -114,13 +115,13 @@ export function bulkSelection(noun: string, actions: BulkAction[]): BulkSelectio
     const count = h("span", { class: "xc-bulk-count" });
     const refresh = () => {
         bar.hidden = selected.size === 0;
-        count.textContent = `已选 ${selected.size} 个${noun}`;
+        count.textContent = t("已选 {n} 个{noun}", { n: selected.size, noun });
         for (const [key, box] of boxes) box.checked = selected.has(key);
     };
-    const bar: HTMLElement = h("div", { class: "xc-bulk-bar", role: "toolbar", "aria-label": `批量操作${noun}` }, count,
+    const bar: HTMLElement = h("div", { class: "xc-bulk-bar", role: "toolbar", "aria-label": t("批量操作{noun}", { noun }) }, count,
         h("div", { class: "xc-bulk-actions" },
-            button("全选", () => { for (const k of visible) selected.add(k); refresh(); }, { small: true }),
-            button("取消选择", () => { selected.clear(); refresh(); }, { small: true }),
+            button(t("全选"), () => { for (const k of visible) selected.add(k); refresh(); }, { small: true }),
+            button(t("取消选择"), () => { selected.clear(); refresh(); }, { small: true }),
             ...actions.map(a => button(a.label, () => {
                 const keys = [...selected];
                 if (!keys.length || (a.confirm && !confirm(a.confirm(keys.length)))) return;
@@ -132,7 +133,7 @@ export function bulkSelection(noun: string, actions: BulkAction[]): BulkSelectio
     return {
         bar,
         box(key, label) {
-            const box = h("input", { type: "checkbox", class: "xc-bulk-box", "aria-label": `选择 ${label}` });
+            const box = h("input", { type: "checkbox", class: "xc-bulk-box", "aria-label": t("选择 {label}", { label }) });
             box.checked = selected.has(key);
             box.addEventListener("click", e => e.stopPropagation());
             box.addEventListener("keydown", e => e.stopPropagation());

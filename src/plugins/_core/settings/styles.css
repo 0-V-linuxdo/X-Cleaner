@@ -10,7 +10,10 @@
 .xc-pm-nav-item { display: flex; align-items: center; gap: 0.625rem; width: 100%; padding: 0.5rem 0.625rem; border: 0; border-radius: 0.5rem; background: transparent; color: var(--xc-fg-2); font: inherit; font-weight: 500; text-align: left; cursor: pointer; }
 .xc-pm-nav-item:hover { background: var(--xc-bg-3); color: var(--xc-fg); }
 .xc-pm-nav-item.is-active { background: var(--xc-bg-3); color: var(--xc-fg); }
-.xc-pm-version { position: absolute; left: 0; right: 0; bottom: 0; padding: 0.75rem; font-size: 0.625rem; line-height: 1rem; color: var(--xc-fg-2); opacity: 0.5; user-select: text; }
+.xc-pm-foot { position: absolute; left: 0; right: 0; bottom: 0; padding: 0.75rem; display: flex; flex-direction: column; gap: 0.625rem; }
+.xc-pm-lang { display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.75rem; color: var(--xc-fg-2); }
+.xc-pm-lang .xc-select { width: 100%; font-size: 0.8125rem; }
+.xc-pm-version { font-size: 0.625rem; line-height: 1rem; color: var(--xc-fg-2); opacity: 0.5; user-select: text; }
 .xc-pm-version a { color: inherit; text-decoration: underline; }
 .xc-pm-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .xc-pm-header { display: flex; align-items: center; gap: 0.375rem; padding: 1rem 1.25rem 0.75rem; }
@@ -97,6 +100,7 @@
     .xc-pm-sidebar { width: 100%; padding: 0.5rem; border-right: 0; border-bottom: 1px solid var(--xc-border); }
     .xc-pm-nav { flex-direction: row; }
     .xc-pm-nav-item { width: auto; }
+    .xc-pm-foot { position: static; padding: 0.5rem 0 0; }
     .xc-pm-version { display: none; }
     .xc-pm-grid { grid-template-columns: minmax(0, 1fr); }
 }

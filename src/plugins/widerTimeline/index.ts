@@ -10,6 +10,7 @@
 import { definePluginSettings } from "@api/Settings";
 import { Icons } from "@ui/icons";
 import { registerStyle, unregisterStyle } from "@utils/css";
+import { N_, t } from "@utils/i18n";
 import definePlugin, { OptionType } from "@utils/types";
 import { SEL } from "@x/dom";
 
@@ -18,8 +19,8 @@ const STYLE = "widerTimeline:rules";
 const SIDEBAR_SPACE = 390;
 
 export const settings = definePluginSettings({
-    width: { type: OptionType.SLIDER, label: "主栏宽度", description: "X 默认是 600px。屏幕不够宽时会自动收窄。", min: 600, max: 1200, step: 20, default: 800, unit: "px" },
-    hideSidebar: { type: OptionType.BOOLEAN, label: "隐藏右侧栏", description: "去掉搜索、趋势所在的右侧栏，把空间都给主栏。", default: false },
+    width: { type: OptionType.SLIDER, label: N_("主栏宽度"), description: N_("X 默认是 600px。屏幕不够宽时会自动收窄。"), min: 600, max: 1200, step: 20, default: 800, unit: "px" },
+    hideSidebar: { type: OptionType.BOOLEAN, label: N_("隐藏右侧栏"), description: N_("去掉搜索、趋势所在的右侧栏，把空间都给主栏。"), default: false },
 });
 
 export function buildCss(width: number, hideSidebar: boolean): string {
@@ -41,7 +42,7 @@ function apply() {
 
 export default definePlugin({
     name: "WiderTimeline",
-    description: "加宽主栏：大屏幕上把 600px 的时间线和帖子页加宽，宽度可调，可选隐藏右侧栏。",
+    description: N_("加宽主栏：大屏幕上把 600px 的时间线和帖子页加宽，宽度可调，可选隐藏右侧栏。"),
     icon: Icons.widen,
     tags: ["appearance"],
     settings,

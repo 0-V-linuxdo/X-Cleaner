@@ -8,6 +8,7 @@ import { definePluginSettings } from "@api/Settings";
 import { h } from "@ui/h";
 import { Icons } from "@ui/icons";
 import { registerStyle, unregisterStyle } from "@utils/css";
+import { N_ } from "@utils/i18n";
 import definePlugin, { OptionType } from "@utils/types";
 
 import { renderEditor, renderPinEditor } from "./editor";
@@ -21,8 +22,8 @@ const STYLE = "sidebarEntries:layout";
 export const settings = definePluginSettings({
     layout: {
         type: OptionType.CUSTOM,
-        label: "侧栏入口",
-        description: "拖动或用箭头调整顺序，开关控制是否显示。没出现在当前页面的入口会保留你的设置。",
+        label: N_("侧栏入口"),
+        description: N_("拖动或用箭头调整顺序，开关控制是否显示。没出现在当前页面的入口会保留你的设置。"),
         default: { order: [], hidden: [] } as Layout,
         render: ctx => {
             const editor = renderEditor(ctx, entriesForEditor);
@@ -111,7 +112,7 @@ function entriesForEditor(): SidebarEntry[] {
 
 export default definePlugin({
     name: "SidebarEntries",
-    description: "管理 X 左侧栏的入口：选择显示哪些、按什么顺序排列，还能把「更多」菜单里的项目固定到侧栏。",
+    description: N_("管理 X 左侧栏的入口：选择显示哪些、按什么顺序排列，还能把「更多」菜单里的项目固定到侧栏。"),
     icon: Icons.list,
     tags: ["appearance", "declutter"],
     enabledByDefault: true,

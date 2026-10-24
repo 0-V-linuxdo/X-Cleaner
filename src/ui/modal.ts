@@ -3,6 +3,9 @@
  * Copyright (c) 2026 X Cleaner Contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
+
+import { t } from "@utils/i18n";
+
 import { h, svgIcon } from "./h";
 import { Icons } from "./icons";
 import { syncTheme } from "./theme";
@@ -36,7 +39,7 @@ export function openModal(options: ModalOptions): ModalHandle {
         h("div", { class: "xc-modal-head" },
             h("h2", { class: "xc-modal-title" }, options.title),
             options.headerExtra ?? [],
-            h("button", { class: "xc-btn xc-btn-icon", "aria-label": "Close", title: "Close", onclick: close }, svgIcon(Icons.close)),
+            h("button", { class: "xc-btn xc-btn-icon", "aria-label": t("关闭"), title: t("关闭"), onclick: close }, svgIcon(Icons.close)),
         ),
         body,
         options.footer?.length ? h("div", { class: "xc-modal-foot" }, options.footer) : null,
@@ -51,14 +54,14 @@ export function openModal(options: ModalOptions): ModalHandle {
     return { root: modal, body, close };
 }
 
-export function confirmDialog(title: string, message: string, confirmText = "Confirm", danger = false): Promise<boolean> {
+export function confirmDialog(title: string, message: string, confirmText = t("确认"), danger = false): Promise<boolean> {
     return new Promise(resolve => {
         let result = false;
         const handle = openModal({
             title,
             body: h("p", { style: "margin:0;white-space:pre-wrap" }, message),
             footer: [
-                h("button", { class: "xc-btn", onclick: () => handle.close() }, "Cancel"),
+                h("button", { class: "xc-btn", onclick: () => handle.close() }, t("取消")),
                 h("button", { class: `xc-btn ${danger ? "xc-btn-danger" : "xc-btn-primary"}`, onclick: () => { result = true; handle.close(); } }, confirmText),
             ],
             onClose: () => resolve(result),
