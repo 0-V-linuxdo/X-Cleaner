@@ -156,7 +156,25 @@ function fillMenuWith<C>(menu: Element, items: MenuItem<C>[], ctx: C): HTMLEleme
         host.appendChild(row);
         added.push(row);
     }
+    if (added.length) keepAtEnd(menu, added);
     return added;
+}
+
+/**
+ * The profile menu first renders its rows straight inside the menu and then moves them into a
+ * wrapper, which would leave ours on top. Follow X's rows for a moment and stay after them.
+ */
+function keepAtEnd(menu: Element, rows: HTMLElement[]) {
+    const place = () => {
+        const host = template(menu)?.parentElement;
+        if (!host || rows.every(r => r.parentElement === host) && host.lastElementChild === rows.at(-1)) return;
+        observer.disconnect();
+        host.append(...rows);
+        observer.observe(menu, { childList: true, subtree: true });
+    };
+    const observer = new MutationObserver(place);
+    observer.observe(menu, { childList: true, subtree: true });
+    setTimeout(() => observer.disconnect(), WAIT_MS);
 }
 
 let pending: { fill(menu: Element): void; at: number } | null = null;

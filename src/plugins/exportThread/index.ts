@@ -101,5 +101,6 @@ export default definePlugin({
     description: "导出帖子：在帖子页的「…」菜单里，把主帖和已加载的回复导出为 Markdown 或 JSON，并标出 X Cleaner 隐藏了哪些回复、原因是什么。只导出页面上已有的内容。",
     icon: Icons.download,
     tags: ["replies", "moderation"],
+    enabledByDefault: true,
     postMenuItems: exportMenuItems,
 });
