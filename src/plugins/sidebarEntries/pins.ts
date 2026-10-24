@@ -15,6 +15,8 @@ import { NAV, PIN_ATTR } from "./entries";
 
 export const MORE_BUTTON = '[data-testid="AppTabBar_More_Menu"]';
 export const MENU_SEL = '#layers [role="menu"]';
+/** Marks X's 「更多」 menu rows the user hid; the plugin's stylesheet hides them. */
+export const MENU_HIDDEN_ATTR = "data-xc-menu-hidden";
 const HIDE_STYLE = "sidebarEntries:menuReplay";
 const WAIT_MS = 1500;
 const STRIP = ["id", "data-testid", "aria-current", "aria-describedby", "aria-labelledby", "aria-controls", "aria-haspopup", "aria-expanded", "aria-selected"];
@@ -85,6 +87,15 @@ export function readMoreMenu(menu: Element): MoreItem[] {
         out.push(item);
     }
     return out;
+}
+
+/** Hides the rows whose key is in `hidden` and shows the rest; hidden rows stay clickable for pins. */
+export function markHiddenRows(menu: Element, hidden: ReadonlySet<string>) {
+    for (const row of menuRows(menu)) {
+        const key = describeMoreRow(row)?.key;
+        const hide = !!key && hidden.has(key);
+        if (hide !== row.hasAttribute(MENU_HIDDEN_ATTR)) row.toggleAttribute(MENU_HIDDEN_ATTR, hide);
+    }
 }
 
 /** The 「更多」 menu is the one that holds X's settings link, or the one the 「更多」 button says it opened. */

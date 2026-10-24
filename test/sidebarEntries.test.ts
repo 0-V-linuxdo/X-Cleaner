@@ -4,7 +4,7 @@ import { loadSettings, Settings } from "@api/Settings";
 import { plugins, registerPlugin, setPluginEnabled, stopAllPlugins } from "@api/PluginManager";
 import { flushNow } from "@plugins/_api/domObserver";
 import { buildCss, describeEntry, mergeOrder, NAV, PIN_ATTR } from "@plugins/sidebarEntries/entries";
-import { readMoreMenu } from "@plugins/sidebarEntries/pins";
+import { MENU_HIDDEN_ATTR, readMoreMenu } from "@plugins/sidebarEntries/pins";
 import { openPluginSettings } from "@plugins/_core/settings/panel";
 import { memoryStorage } from "@utils/storage";
 import type { Plugin } from "@utils/types";
@@ -210,5 +210,27 @@ describe("SidebarEntries: pins from the 「更多」 menu", () => {
         await flush();
         expect(nav().querySelector(`[${PIN_ATTR}="href:/~/lists"]`)).not.toBeNull();
         expect([...document.querySelectorAll(".xc-sbe:not(.xc-sbe-pins) .xc-sbe-row strong")].map(e => e.textContent)).toContain("Lists（来自「更多」）");
+    });
+
+    test("rows switched off under 「菜单」 are hidden from the 「更多」 menu but still work for pins", async () => {
+        setPluginEnabled("SidebarEntries", true);
+        flushNow();
+        const s = Settings.plugins.SidebarEntries as any;
+        s.moreItems = readMoreMenu(openMoreMenu());
+        document.querySelector("#layers")!.innerHTML = "";
+        openPluginSettings(plugins.SidebarEntries);
+        const row = document.querySelector<HTMLElement>('.xc-sbe-pins [data-key="url:ads.x.com"]')!;
+        row.querySelector<HTMLButtonElement>('[aria-label^="在「更多」菜单里显示"]')!.click();
+        expect(s.menuHidden).toEqual(["url:ads.x.com"]);
+        expect(document.querySelector('.xc-sbe-pins [data-key="url:ads.x.com"]')!.classList.contains("is-hidden")).toBe(true);
+
+        const menu = openMoreMenu();
+        await flush();
+        const hidden = [...menu.querySelectorAll(`[${MENU_HIDDEN_ATTR}]`)].map(r => r.textContent!.trim());
+        expect(hidden).toEqual(["Ads"]);
+        expect(readMoreMenu(menu).map(i => i.key)).toContain("url:ads.x.com");
+
+        setPluginEnabled("SidebarEntries", false);
+        expect(menu.querySelectorAll(`[${MENU_HIDDEN_ATTR}]`).length).toBe(0);
     });
 });

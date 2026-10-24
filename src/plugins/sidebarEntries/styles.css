@@ -18,3 +18,5 @@
 .xc-sbe-head { display: flex; align-items: flex-start; gap: 10px; }
 .xc-sbe-icon { display: inline-flex; color: var(--xc-fg-2); flex: none; }
 .xc-sbe-icon svg { fill: currentColor; }
+.xc-sbe-switch { display: inline-flex; align-items: center; gap: 6px; color: var(--xc-fg-2); font-size: 12.5px; }
+[data-xc-menu-hidden] { display: none !important; }

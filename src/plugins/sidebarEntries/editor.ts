@@ -110,10 +110,12 @@ interface PinEditorCtx {
     items(): MoreItem[];
     pinned(): string[];
     setPinned(keys: string[]): void;
+    hidden(): string[];
+    setHidden(keys: string[]): void;
     rescan(): Promise<boolean>;
 }
 
-/** The rows of X's 「更多」 menu, each with a switch that pins it into the sidebar above 「更多」. */
+/** The rows of X's 「更多」 menu, each with switches that pin it into the sidebar above 「更多」 and hide it from the menu. */
 export function renderPinEditor(ctx: PinEditorCtx): HTMLElement {
     const list = h("div", { class: "xc-sbe-list", role: "list", "aria-label": t("「更多」菜单里的项目") });
     const status = h("span", { class: "xc-sbe-hint" });
@@ -133,20 +135,27 @@ export function renderPinEditor(ctx: PinEditorCtx): HTMLElement {
     const render = () => {
         const items = ctx.items();
         const pinned = ctx.pinned();
+        const hidden = ctx.hidden();
         if (!items.length) {
             list.replaceChildren(h("div", { class: "xc-empty" }, t("还没有读到「更多」菜单的项目。点「读取」，或在侧栏点一下「更多」。")));
             return;
         }
         list.replaceChildren(...items.map(item => {
             const on = pinned.includes(item.key);
-            return h("div", { class: "xc-sbe-row", role: "listitem", dataset: { key: item.key } },
+            const shown = !hidden.includes(item.key);
+            return h("div", { class: `xc-sbe-row${shown ? "" : " is-hidden"}`, role: "listitem", dataset: { key: item.key } },
                 item.icon ? h("span", { class: "xc-sbe-icon" }, svgIcon(item.icon, 18)) : null,
                 h("div", { class: "xc-sbe-main" }, h("strong", null, item.label)),
                 h("div", { class: "xc-sbe-actions" },
-                    switchEl(on, next => {
+                    h("span", { class: "xc-sbe-switch" }, t("侧栏"), switchEl(on, next => {
                         const rest = ctx.pinned().filter(k => k !== item.key);
                         ctx.setPinned(next ? [...rest, item.key] : rest);
-                    }, t("固定 {label} 到侧栏", { label: item.label })),
+                    }, t("固定 {label} 到侧栏", { label: item.label }))),
+                    h("span", { class: "xc-sbe-switch" }, t("菜单"), switchEl(shown, next => {
+                        const rest = ctx.hidden().filter(k => k !== item.key);
+                        ctx.setHidden(next ? rest : [...rest, item.key]);
+                        render();
+                    }, t("在「更多」菜单里显示 {label}", { label: item.label }))),
                 ),
             );
         }));
@@ -157,8 +166,8 @@ export function renderPinEditor(ctx: PinEditorCtx): HTMLElement {
     return h("div", { class: "xc-sbe xc-sbe-pins" },
         h("div", { class: "xc-sbe-head" },
             h("div", { class: "xc-sbe-main" },
-                h("strong", null, t("固定「更多」菜单里的项目")),
-                h("span", { class: "xc-sbe-hint" }, t("打开的项目会出现在侧栏「更多」的正上方，侧栏收起成图标时也一样。固定后可以在上面的列表里调整位置。")),
+                h("strong", null, t("「更多」菜单里的项目")),
+                h("span", { class: "xc-sbe-hint" }, t("「侧栏」打开的项目会出现在侧栏「更多」的正上方，侧栏收起成图标时也一样，固定后可以在上面的列表里调整位置。「菜单」关掉的项目会从「更多」菜单里隐藏。")),
             ),
             h("button", { type: "button", class: "xc-btn xc-btn-sm", onclick: () => void rescan() }, t("读取")),
         ),

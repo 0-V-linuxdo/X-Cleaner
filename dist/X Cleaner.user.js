@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         X Cleaner
 // @namespace    https://github.com/0-V-linuxdo/x-cleaner
-// @version      0.1.0.202610241136
+// @version      0.1.0.202610241140
 // @description  A plugin-based cleaner for x.com: hide adult promotion, crypto funnels and promotional reply accounts. Includes review, lists, safe regex rules and optional AI-assisted rule drafts.
 // @author       X Cleaner Contributors
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z'/%3E%3Cpath d='m4.5 4.5 15 15'/%3E%3C/svg%3E
@@ -1121,14 +1121,16 @@ Continue?`,
     "精简 X 的页面：分别隐藏 Premium 推销、推广帖、Grok 按钮和浮窗、浏览量等干扰元素。右侧栏的趋势、推荐关注和页脚见 RightSidebarCleaner。": "Declutters X: hides Premium upsells, promoted posts, Grok buttons and drawer, view counts and other distractions, each on its own switch. For the right sidebar's trends, Who to follow and footer, see RightSidebarCleaner.",
     "侧栏入口": "Sidebar entries",
     "拖动或用箭头调整顺序，开关控制是否显示。没出现在当前页面的入口会保留你的设置。": "Drag or use the arrows to reorder; the switches show or hide each entry. Entries not on the current page keep your settings.",
-    "管理 X 左侧栏的入口：选择显示哪些、按什么顺序排列，还能把「更多」菜单里的项目固定到侧栏。": "Manage the entries in X's left sidebar: choose which show and in what order, and pin items from the “More” menu into the sidebar.",
+    "管理 X 左侧栏的入口：选择显示哪些、按什么顺序排列，还能把「更多」菜单里的项目固定到侧栏或从菜单里隐藏。": "Manage the entries in X's left sidebar: choose which show and in what order, and pin items from the “More” menu into the sidebar or hide them from the menu.",
     "「更多」菜单里的项目": "Items in the “More” menu",
     "正在读取「更多」菜单…": "Reading the “More” menu…",
     "没能打开「更多」菜单。在 x.com 的桌面版页面上点一下侧栏的「更多」，再回来这里。": "Couldn't open the “More” menu. On the desktop version of x.com, click “More” in the sidebar once, then come back here.",
     "还没有读到「更多」菜单的项目。点「读取」，或在侧栏点一下「更多」。": "No “More” menu items read yet. Click “Read”, or click “More” in the sidebar once.",
     "固定 {label} 到侧栏": "Pin {label} to the sidebar",
-    "固定「更多」菜单里的项目": "Pin items from the “More” menu",
-    "打开的项目会出现在侧栏「更多」的正上方，侧栏收起成图标时也一样。固定后可以在上面的列表里调整位置。": "Items you switch on appear right above “More” in the sidebar, also when the sidebar is collapsed to icons. Once pinned, you can move them in the list above.",
+    "「侧栏」打开的项目会出现在侧栏「更多」的正上方，侧栏收起成图标时也一样，固定后可以在上面的列表里调整位置。「菜单」关掉的项目会从「更多」菜单里隐藏。": "Items with “Sidebar” on appear right above “More” in the sidebar, also when the sidebar is collapsed to icons; once pinned, you can move them in the list above. Items with “Menu” off are hidden from the “More” menu.",
+    "侧栏": "Sidebar",
+    "菜单": "Menu",
+    "在「更多」菜单里显示 {label}": "Show {label} in the “More” menu",
     "读取": "Read",
     "{label}（来自「更多」）": "{label} (from “More”)",
     "还没有读到侧栏入口。在 x.com 的桌面版页面打开此设置即可。": "No sidebar entries read yet. Open this setting on the desktop version of x.com.",
@@ -3032,7 +3034,7 @@ ${TOOLTIP_CSS}`,
     const hint = h("span", { class: "xc-pm-hint", tabindex: "0" }, svgIcon(Icons.info, 14));
     const hintTip = attachTooltip(hint, () => t(TABS.find((tab) => tab.id === activeId)?.description ?? ""), "bottom");
     const body = h("div", { class: "xc-pm-body" });
-    const version = h("div", { class: "xc-pm-version" }, h("div", null, "X Cleaner · ", "0.1.0.202610241136"), h("div", null, t("正式版"), " · ", t("用户脚本")), h("div", null, h("a", { href: "https://raw.githubusercontent.com/0-V-linuxdo/X-Cleaner/main/dist/X%20Cleaner.user.js", target: "_blank", rel: "noopener" }, t("检查更新")), " · ", h("a", { href: `${"https://github.com/0-V-linuxdo/X-Cleaner"}/commits/main`, target: "_blank", rel: "noopener" }, t("更新记录"))));
+    const version = h("div", { class: "xc-pm-version" }, h("div", null, "X Cleaner · ", "0.1.0.202610241140"), h("div", null, t("正式版"), " · ", t("用户脚本")), h("div", null, h("a", { href: "https://raw.githubusercontent.com/0-V-linuxdo/X-Cleaner/main/dist/X%20Cleaner.user.js", target: "_blank", rel: "noopener" }, t("检查更新")), " · ", h("a", { href: `${"https://github.com/0-V-linuxdo/X-Cleaner"}/commits/main`, target: "_blank", rel: "noopener" }, t("更新记录"))));
     const content = h("div", { class: "xc-pm-shell" }, h("aside", { class: "xc-pm-sidebar" }, nav, version), h("section", { class: "xc-pm-main" }, h("header", { class: "xc-pm-header" }, heading, hint, closeButton(() => close())), body));
     const show = (id, plugin) => {
       activeId = id;
@@ -10159,27 +10161,34 @@ Write rule.name and reason in ${aiLanguageName()}.` }
     const render = () => {
       const items = ctx.items();
       const pinned = ctx.pinned();
+      const hidden = ctx.hidden();
       if (!items.length) {
         list.replaceChildren(h("div", { class: "xc-empty" }, t("还没有读到「更多」菜单的项目。点「读取」，或在侧栏点一下「更多」。")));
         return;
       }
       list.replaceChildren(...items.map((item) => {
         const on = pinned.includes(item.key);
-        return h("div", { class: "xc-sbe-row", role: "listitem", dataset: { key: item.key } }, item.icon ? h("span", { class: "xc-sbe-icon" }, svgIcon(item.icon, 18)) : null, h("div", { class: "xc-sbe-main" }, h("strong", null, item.label)), h("div", { class: "xc-sbe-actions" }, switchEl(on, (next) => {
+        const shown = !hidden.includes(item.key);
+        return h("div", { class: `xc-sbe-row${shown ? "" : " is-hidden"}`, role: "listitem", dataset: { key: item.key } }, item.icon ? h("span", { class: "xc-sbe-icon" }, svgIcon(item.icon, 18)) : null, h("div", { class: "xc-sbe-main" }, h("strong", null, item.label)), h("div", { class: "xc-sbe-actions" }, h("span", { class: "xc-sbe-switch" }, t("侧栏"), switchEl(on, (next) => {
           const rest = ctx.pinned().filter((k) => k !== item.key);
           ctx.setPinned(next ? [...rest, item.key] : rest);
-        }, t("固定 {label} 到侧栏", { label: item.label }))));
+        }, t("固定 {label} 到侧栏", { label: item.label }))), h("span", { class: "xc-sbe-switch" }, t("菜单"), switchEl(shown, (next) => {
+          const rest = ctx.hidden().filter((k) => k !== item.key);
+          ctx.setHidden(next ? rest : [...rest, item.key]);
+          render();
+        }, t("在「更多」菜单里显示 {label}", { label: item.label })))));
       }));
     };
     render();
     if (!ctx.items().length)
       rescan();
-    return h("div", { class: "xc-sbe xc-sbe-pins" }, h("div", { class: "xc-sbe-head" }, h("div", { class: "xc-sbe-main" }, h("strong", null, t("固定「更多」菜单里的项目")), h("span", { class: "xc-sbe-hint" }, t("打开的项目会出现在侧栏「更多」的正上方，侧栏收起成图标时也一样。固定后可以在上面的列表里调整位置。"))), h("button", { type: "button", class: "xc-btn xc-btn-sm", onclick: () => void rescan() }, t("读取"))), status, list);
+    return h("div", { class: "xc-sbe xc-sbe-pins" }, h("div", { class: "xc-sbe-head" }, h("div", { class: "xc-sbe-main" }, h("strong", null, t("「更多」菜单里的项目")), h("span", { class: "xc-sbe-hint" }, t("「侧栏」打开的项目会出现在侧栏「更多」的正上方，侧栏收起成图标时也一样，固定后可以在上面的列表里调整位置。「菜单」关掉的项目会从「更多」菜单里隐藏。"))), h("button", { type: "button", class: "xc-btn xc-btn-sm", onclick: () => void rescan() }, t("读取"))), status, list);
   }
 
   // src/plugins/sidebarEntries/pins.ts
   var MORE_BUTTON2 = '[data-testid="AppTabBar_More_Menu"]';
   var MENU_SEL2 = '#layers [role="menu"]';
+  var MENU_HIDDEN_ATTR = "data-xc-menu-hidden";
   var HIDE_STYLE = "sidebarEntries:menuReplay";
   var WAIT_MS4 = 1500;
   var STRIP3 = ["id", "data-testid", "aria-current", "aria-describedby", "aria-labelledby", "aria-controls", "aria-haspopup", "aria-expanded", "aria-selected"];
@@ -10236,6 +10245,14 @@ Write rule.name and reason in ${aiLanguageName()}.` }
       out.push(item);
     }
     return out;
+  }
+  function markHiddenRows(menu, hidden) {
+    for (const row of menuRows(menu)) {
+      const key = describeMoreRow(row)?.key;
+      const hide = !!key && hidden.has(key);
+      if (hide !== row.hasAttribute(MENU_HIDDEN_ATTR))
+        row.toggleAttribute(MENU_HIDDEN_ATTR, hide);
+    }
   }
   function isMoreMenu(menu) {
     return !!menu.querySelector('a[href="/settings"]') || document.querySelector(MORE_BUTTON2)?.getAttribute("aria-expanded") === "true";
@@ -10434,6 +10451,8 @@ Write rule.name and reason in ${aiLanguageName()}.` }
 .xc-sbe-head { display: flex; align-items: flex-start; gap: 10px; }
 .xc-sbe-icon { display: inline-flex; color: var(--xc-fg-2); flex: none; }
 .xc-sbe-icon svg { fill: currentColor; }
+.xc-sbe-switch { display: inline-flex; align-items: center; gap: 6px; color: var(--xc-fg-2); font-size: 12.5px; }
+[data-xc-menu-hidden] { display: none !important; }
 `;
 
   // src/plugins/sidebarEntries/index.ts
@@ -10449,6 +10468,10 @@ Write rule.name and reason in ${aiLanguageName()}.` }
         const pins = renderPinEditor({
           items: () => settings6.plain.moreItems ?? [],
           pinned: pinnedKeys,
+          hidden: menuHiddenKeys,
+          setHidden(keys) {
+            settings6.store.menuHidden = keys;
+          },
           setPinned(keys) {
             settings6.store.pinned = keys;
             const nav = document.querySelector(NAV2);
@@ -10464,6 +10487,7 @@ Write rule.name and reason in ${aiLanguageName()}.` }
   }).withPrivateSettings();
   var known = () => settings6.plain.known ?? [];
   var pinnedKeys = () => Array.isArray(settings6.plain.pinned) ? settings6.plain.pinned : [];
+  var menuHiddenKeys = () => Array.isArray(settings6.plain?.menuHidden) ? settings6.plain.menuHidden : [];
   function pinnedItems() {
     const byKey = new Map((settings6.plain.moreItems ?? []).map((i) => [i.key, i]));
     return pinnedKeys().map((k) => byKey.get(k)).filter((i) => !!i);
@@ -10528,7 +10552,7 @@ Write rule.name and reason in ${aiLanguageName()}.` }
   }
   var sidebarEntries_default = definePlugin({
     name: "SidebarEntries",
-    description: N_("管理 X 左侧栏的入口：选择显示哪些、按什么顺序排列，还能把「更多」菜单里的项目固定到侧栏。"),
+    description: N_("管理 X 左侧栏的入口：选择显示哪些、按什么顺序排列，还能把「更多」菜单里的项目固定到侧栏或从菜单里隐藏。"),
     icon: Icons.list,
     tags: ["appearance", "declutter"],
     enabledByDefault: true,
@@ -10548,8 +10572,10 @@ Write rule.name and reason in ${aiLanguageName()}.` }
       },
       [MENU_SEL2](menu) {
         const read = () => {
-          if (isMoreMenu(menu))
-            recordMoreItems(readMoreMenu(menu));
+          if (!isMoreMenu(menu))
+            return;
+          recordMoreItems(readMoreMenu(menu));
+          markHiddenRows(menu, new Set(menuHiddenKeys()));
         };
         read();
         const observer = new MutationObserver(read);
@@ -10563,6 +10589,8 @@ Write rule.name and reason in ${aiLanguageName()}.` }
       const nav = document.querySelector(NAV2);
       if (nav)
         syncPins(nav, [], onPinActivate);
+      for (const row of document.querySelectorAll(`[${MENU_HIDDEN_ATTR}]`))
+        row.removeAttribute(MENU_HIDDEN_ATTR);
     },
     onSettingsChange: apply4
   });
@@ -10778,7 +10806,7 @@ Write rule.name and reason in ${aiLanguageName()}.` }
     else
       onReady();
     addEventListener("pagehide", () => settingsStore.flush());
-    logger17.info(`${"0.1.0.202610241136"} started with ${Object.keys(plugins_default).length} plugins`);
+    logger17.info(`${"0.1.0.202610241140"} started with ${Object.keys(plugins_default).length} plugins`);
   }
 
   // src/index.ts

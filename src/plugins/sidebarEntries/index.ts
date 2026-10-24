@@ -13,7 +13,7 @@ import definePlugin, { OptionType } from "@utils/types";
 
 import { renderEditor, renderPinEditor } from "./editor";
 import { buildCss, type Layout, mergeOrder, NAV, readEntries, type SidebarEntry } from "./entries";
-import { activatePin, isMoreMenu, MENU_SEL, type MoreItem, readMoreMenu, syncPins, withHiddenMoreMenu } from "./pins";
+import { activatePin, isMoreMenu, markHiddenRows, MENU_HIDDEN_ATTR, MENU_SEL, type MoreItem, readMoreMenu, syncPins, withHiddenMoreMenu } from "./pins";
 import css from "./styles.css";
 import { CHECKS } from "@x/health";
 
@@ -30,6 +30,8 @@ export const settings = definePluginSettings({
             const pins = renderPinEditor({
                 items: () => settings.plain.moreItems ?? [],
                 pinned: pinnedKeys,
+                hidden: menuHiddenKeys,
+                setHidden(keys) { settings.store.menuHidden = keys; },
                 setPinned(keys) {
                     settings.store.pinned = keys;
                     const nav = document.querySelector(NAV);
@@ -41,10 +43,11 @@ export const settings = definePluginSettings({
             return h("div", { class: "xc-sbe-wrap" }, editor.el, pins);
         },
     },
-}).withPrivateSettings<{ known?: SidebarEntry[]; moreItems?: MoreItem[]; pinned?: string[] }>();
+}).withPrivateSettings<{ known?: SidebarEntry[]; moreItems?: MoreItem[]; pinned?: string[]; menuHidden?: string[] }>();
 
 const known = (): SidebarEntry[] => settings.plain.known ?? [];
 const pinnedKeys = (): string[] => Array.isArray(settings.plain.pinned) ? settings.plain.pinned : [];
+const menuHiddenKeys = (): string[] => Array.isArray(settings.plain?.menuHidden) ? settings.plain.menuHidden : [];
 
 /** The 「更多」 rows to show in the sidebar, in the order they were pinned. */
 function pinnedItems(): MoreItem[] {
@@ -112,7 +115,7 @@ function entriesForEditor(): SidebarEntry[] {
 
 export default definePlugin({
     name: "SidebarEntries",
-    description: N_("管理 X 左侧栏的入口：选择显示哪些、按什么顺序排列，还能把「更多」菜单里的项目固定到侧栏。"),
+    description: N_("管理 X 左侧栏的入口：选择显示哪些、按什么顺序排列，还能把「更多」菜单里的项目固定到侧栏或从菜单里隐藏。"),
     icon: Icons.list,
     tags: ["appearance", "declutter"],
     enabledByDefault: true,
@@ -133,7 +136,11 @@ export default definePlugin({
             return () => observer.disconnect();
         },
         [MENU_SEL](menu) {
-            const read = () => { if (isMoreMenu(menu)) recordMoreItems(readMoreMenu(menu)); };
+            const read = () => {
+                if (!isMoreMenu(menu)) return;
+                recordMoreItems(readMoreMenu(menu));
+                markHiddenRows(menu, new Set(menuHiddenKeys()));
+            };
             read();
             const observer = new MutationObserver(read);
             observer.observe(menu, { childList: true, subtree: true });
@@ -146,6 +153,7 @@ export default definePlugin({
         unregisterStyle(STYLE);
         const nav = document.querySelector(NAV);
         if (nav) syncPins(nav, [], onPinActivate);
+        for (const row of document.querySelectorAll(`[${MENU_HIDDEN_ATTR}]`)) row.removeAttribute(MENU_HIDDEN_ATTR);
     },
     onSettingsChange: apply,
 });
