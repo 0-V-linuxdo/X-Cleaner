@@ -102,3 +102,18 @@ describe("COLOR setting", () => {
         expect((s.store as any).c).toBe("");
     });
 });
+
+describe("MoreMenuEntry settle", () => {
+    test("hides the menu until X stops moving it, then shows it again", async () => {
+        const { hideUntilSettled } = await import("@plugins/moreMenuEntry");
+        const menu = document.createElement("div");
+        document.body.appendChild(menu);
+        menu.style.top = "68px";
+        hideUntilSettled(menu);
+        expect(menu.style.visibility).toBe("hidden");
+        await new Promise(r => requestAnimationFrame(() => r(null)));
+        menu.style.top = "0px";
+        for (let i = 0; i < 6; i++) await new Promise(r => requestAnimationFrame(() => r(null)));
+        expect(menu.style.visibility).toBe("");
+    });
+});

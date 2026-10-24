@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         X Cleaner
 // @namespace    https://github.com/0-V-linuxdo/x-cleaner
-// @version      0.1.0.202610242342
+// @version      0.1.0.202610242355
 // @description  A plugin-based cleaner for x.com: hide adult promotion, crypto funnels and promotional reply accounts. Includes review, lists, safe regex rules and optional AI-assisted rule drafts.
 // @author       X Cleaner Contributors
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z'/%3E%3Cpath d='m4.5 4.5 15 15'/%3E%3C/svg%3E
@@ -3107,7 +3107,7 @@ ${TOOLTIP_CSS}`,
     const hint = h("span", { class: "xc-pm-hint", tabindex: "0" }, svgIcon(Icons.info, 14));
     const hintTip = attachTooltip(hint, () => t(TABS.find((tab) => tab.id === activeId)?.description ?? ""), "bottom");
     const body = h("div", { class: "xc-pm-body" });
-    const version = h("div", { class: "xc-pm-version" }, h("div", null, "X Cleaner · ", "0.1.0.202610242342"), h("div", null, t("正式版"), " · ", t("用户脚本")), h("div", null, h("a", { href: "https://cdn.jsdelivr.net/gh/0-V-linuxdo/X-Cleaner@heads/main/dist/X%20Cleaner.user.js", target: "_blank", rel: "noopener" }, t("检查更新")), " · ", h("a", { href: `${"https://github.com/0-V-linuxdo/X-Cleaner"}/commits/main`, target: "_blank", rel: "noopener" }, t("更新记录"))));
+    const version = h("div", { class: "xc-pm-version" }, h("div", null, "X Cleaner · ", "0.1.0.202610242355"), h("div", null, t("正式版"), " · ", t("用户脚本")), h("div", null, h("a", { href: "https://cdn.jsdelivr.net/gh/0-V-linuxdo/X-Cleaner@heads/main/dist/X%20Cleaner.user.js", target: "_blank", rel: "noopener" }, t("检查更新")), " · ", h("a", { href: `${"https://github.com/0-V-linuxdo/X-Cleaner"}/commits/main`, target: "_blank", rel: "noopener" }, t("更新记录"))));
     const content = h("div", { class: "xc-pm-shell" }, h("aside", { class: "xc-pm-sidebar" }, nav, version), h("section", { class: "xc-pm-main" }, h("header", { class: "xc-pm-header" }, heading, hint, closeButton(() => close())), body));
     const show = (id, plugin) => {
       activeId = id;
@@ -7793,6 +7793,23 @@ Write reason in ${aiLanguageName()}.` },
     }
     return rows;
   }
+  function hideUntilSettled(menu, maxFrames = 12) {
+    menu.style.visibility = "hidden";
+    let last = "";
+    let still = 0;
+    let frames = 0;
+    const step = () => {
+      const r = menu.getBoundingClientRect();
+      const pos = `${menu.style.top}|${menu.style.bottom}|${menu.style.right}|${menu.style.left}|${Math.round(r.top)}|${Math.round(r.height)}`;
+      still = pos === last ? still + 1 : 0;
+      last = pos;
+      if (still >= 2 || ++frames >= maxFrames || !menu.isConnected)
+        menu.style.visibility = "";
+      else
+        requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }
   var pendingAt = 0;
   var observer3 = null;
   function tryFill2() {
@@ -7806,7 +7823,8 @@ Write reason in ${aiLanguageName()}.` },
     if (!menu || !templateRow(menu))
       return;
     pendingAt = 0;
-    fillMoreMenu(menu);
+    if (fillMoreMenu(menu).length)
+      hideUntilSettled(menu);
   }
   function onClick2(e) {
     if (!e.target?.closest?.(MORE_BUTTON))
@@ -11468,7 +11486,7 @@ body[style*="255, 255, 255"] [data-xc-pin]:hover > div, body[style*="255, 255, 2
     if (booted)
       return;
     booted = true;
-    document.documentElement.dataset.xcVersion = "0.1.0.202610242342";
+    document.documentElement.dataset.xcVersion = "0.1.0.202610242355";
     loadSettings();
     for (const plugin of Object.values(plugins_default))
       registerPlugin(plugin);
@@ -11481,7 +11499,7 @@ body[style*="255, 255, 255"] [data-xc-pin]:hover > div, body[style*="255, 255, 2
     else
       onReady();
     addEventListener("pagehide", () => settingsStore.flush());
-    logger17.info(`${"0.1.0.202610242342"} started with ${Object.keys(plugins_default).length} plugins`);
+    logger17.info(`${"0.1.0.202610242355"} started with ${Object.keys(plugins_default).length} plugins`);
   }
 
   // src/index.ts

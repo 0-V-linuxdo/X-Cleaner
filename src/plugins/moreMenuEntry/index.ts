@@ -92,16 +92,36 @@ export function fillMoreMenu(menu: Element): HTMLElement[] {
     return rows;
 }
 
+/**
+ * X places the menu from its height when it mounts, before our rows exist, then moves it once it
+ * notices the menu grew: a visible jump. Keep the menu hidden until its position stops changing.
+ */
+export function hideUntilSettled(menu: HTMLElement, maxFrames = 12) {
+    menu.style.visibility = "hidden";
+    let last = "";
+    let still = 0;
+    let frames = 0;
+    const step = () => {
+        const r = menu.getBoundingClientRect();
+        const pos = `${menu.style.top}|${menu.style.bottom}|${menu.style.right}|${menu.style.left}|${Math.round(r.top)}|${Math.round(r.height)}`;
+        still = pos === last ? still + 1 : 0;
+        last = pos;
+        if (still >= 2 || ++frames >= maxFrames || !menu.isConnected) menu.style.visibility = "";
+        else requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+}
+
 let pendingAt = 0;
 let observer: MutationObserver | null = null;
 
 function tryFill() {
     if (!pendingAt) return;
     if (Date.now() - pendingAt > WAIT_MS) { pendingAt = 0; return; }
-    const menu = document.querySelector(MENU_SEL);
+    const menu = document.querySelector<HTMLElement>(MENU_SEL);
     if (!menu || !templateRow(menu)) return;
     pendingAt = 0;
-    fillMoreMenu(menu);
+    if (fillMoreMenu(menu).length) hideUntilSettled(menu);
 }
 
 function onClick(e: MouseEvent) {
