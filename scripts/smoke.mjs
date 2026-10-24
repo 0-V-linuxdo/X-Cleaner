@@ -1,0 +1,23 @@
+import { createRequire } from "module";
+import { readFileSync } from "fs";
+const require = createRequire("/opt/node22/lib/node_modules/");
+const { chromium } = require("playwright");
+
+const fixture = process.argv[2] ?? "test/fixtures/x-home.html";
+const shot = process.argv[3] ?? "/tmp/xc-smoke.png";
+const script = readFileSync("dist/X Cleaner.user.js", "utf8");
+const gm = `window.__gm={};window.GM_getValue=(k,d)=>k in __gm?__gm[k]:d;window.GM_setValue=(k,v)=>{__gm[k]=v};window.GM_deleteValue=k=>{delete __gm[k]};window.GM_registerMenuCommand=()=>{};`;
+const browser = await chromium.launch();
+const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+const errors = [];
+page.on("pageerror", e => errors.push(e.message));
+page.on("console", m => { if (m.type() === "error") errors.push(m.text()); });
+await page.route("https://x.com/**", r => r.fulfill({ contentType: "text/html", body: readFileSync(fixture, "utf8") }));
+await page.addInitScript(gm + script);
+await page.goto(process.env.URL ?? "https://x.com/home");
+await page.waitForTimeout(500);
+const actions = process.env.ACTIONS ? (await import(process.env.ACTIONS)).default : null;
+if (actions) await actions(page);
+await page.screenshot({ path: shot });
+console.log(JSON.stringify({ errors }, null, 1));
+await browser.close();

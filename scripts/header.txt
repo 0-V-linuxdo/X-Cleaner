@@ -1,0 +1,6 @@
+/*
+ * X Cleaner, a plugin-based cleaner for x.com
+ * Copyright (c) 2026 X Cleaner Contributors
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+

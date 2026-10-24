@@ -1,0 +1,26 @@
+{
+    "compilerOptions": {
+        "target": "ESNext",
+        "module": "ESNext",
+        "moduleResolution": "bundler",
+        "strict": true,
+        "isolatedModules": true,
+        "skipLibCheck": true,
+        "noEmit": true,
+        "lib": ["ESNext", "DOM", "DOM.Iterable"],
+        "paths": {
+            "@api/*": ["./src/api/*"],
+            "@utils/*": ["./src/utils/*"],
+            "@ui/*": ["./src/ui/*"],
+            "@x/*": ["./src/x/*"],
+            "@plugins/*": ["./src/plugins/*"],
+            "@rules/*": ["./src/rules/*"],
+            "@ai/*": ["./src/ai/*"],
+            "@config/*": ["./src/config/*"],
+            "@filter/*": ["./src/filter/*"],
+            "~plugins": ["./src/generated/plugins.ts"]
+        },
+        "types": ["bun"]
+    },
+    "include": ["src/**/*.ts", "test/**/*.ts", "build.ts"]
+}

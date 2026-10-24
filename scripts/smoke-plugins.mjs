@@ -1,0 +1,40 @@
+// Smoke actions for the plugin manager (Alt+Shift+X) and the drawer's 插件 tab.
+export default async function (page) {
+    const out = {};
+    await page.keyboard.press("Alt+Shift+KeyX");
+    await page.waitForSelector(".xc-pm-shell");
+    out.defaultTab = await page.textContent(".xc-pm-tab.is-active");
+    out.empty = await page.textContent(".xc-pm-empty").catch(() => null);
+    await page.screenshot({ path: "/tmp/claude-0/pm-1-favorites.png" });
+    await page.click('.xc-pm-tab:text-is("全部")');
+    out.placeholder = await page.getAttribute(".xc-pm-search", "placeholder");
+    out.cards = await page.$$eval(".xc-pm-card", cs => cs.map(c => c.dataset.plugin + (c.classList.contains("is-required") ? "(必需)" : "")));
+    await page.screenshot({ path: "/tmp/claude-0/pm-2-all.png" });
+    await page.click('.xc-pm-card[data-plugin="PhraseBlacklist"] [aria-label="收藏"]');
+    await page.click('.xc-pm-card[data-plugin="RegexBlacklist"] [aria-label="置顶"]');
+    out.firstAfterPin = await page.$eval(".xc-pm-card", c => c.dataset.plugin);
+    await page.fill(".xc-pm-search", "正则");
+    out.searchHits = await page.$$eval(".xc-pm-card", cs => cs.map(c => c.dataset.plugin));
+    await page.fill(".xc-pm-search", "");
+    await page.selectOption(".xc-pm-filter", "disabled");
+    out.disabledCount = await page.$$eval(".xc-pm-card", cs => cs.length);
+    await page.selectOption(".xc-pm-filter", "all");
+    await page.click('.xc-pm-card[data-plugin="AutoBlacklist"] .xc-switch');
+    out.autoOff = await page.$eval('.xc-pm-card[data-plugin="AutoBlacklist"]', c => c.dataset.enabled);
+    await page.click('.xc-pm-card[data-plugin="AutoBlacklist"] .xc-switch');
+    await page.click('.xc-pm-tab:text-is("收藏")');
+    out.favorites = await page.$$eval(".xc-pm-card", cs => cs.map(c => c.dataset.plugin));
+    await page.click('.xc-pm-card[data-plugin="PhraseBlacklist"] [aria-label="配置"]');
+    await page.waitForTimeout(150);
+    out.afterConfig = { pmOpen: !!(await page.$(".xc-pm-shell")), drawerSub: await page.textContent("#x-cleaner-ui .xc-sub-tabs [aria-selected=true]").catch(() => null) };
+    await page.screenshot({ path: "/tmp/claude-0/pm-3-config.png" });
+    await page.click('#x-cleaner-ui .xc-main-tabs [role=tab]:text-is("插件")');
+    await page.waitForTimeout(100);
+    await page.screenshot({ path: "/tmp/claude-0/pm-4-drawer.png" });
+    await page.keyboard.press("Escape");
+    await page.setViewportSize({ width: 390, height: 800 });
+    await page.keyboard.press("Alt+Shift+KeyX");
+    await page.waitForTimeout(150);
+    await page.screenshot({ path: "/tmp/claude-0/pm-5-narrow.png" });
+    console.log(JSON.stringify(out, null, 1));
+}

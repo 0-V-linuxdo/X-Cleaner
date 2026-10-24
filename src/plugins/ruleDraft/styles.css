@@ -1,0 +1,47 @@
+.xc-rule-dialog-backdrop { position: fixed; inset: 0; z-index: 2147483646; background: rgba(0,0,0,.55); display: flex; align-items: center; justify-content: center; padding: 18px; }
+.xc-rd-dialog {
+    width: min(560px, 100%); max-height: min(760px, calc(100vh - 36px)); display: flex; flex-direction: column; overflow: hidden;
+    background: var(--xc-bg); color: var(--xc-fg); border: 1px solid var(--xc-border); border-radius: 16px; box-shadow: var(--xc-shadow);
+    font-size: 14px; line-height: 1.4; text-size-adjust: 100%; -webkit-text-size-adjust: 100%;
+}
+.xc-rd-head { display: flex; align-items: flex-start; gap: 8px; padding: 14px 16px 10px; border-bottom: 1px solid var(--xc-border); }
+.xc-rd-head > div { flex: 1; min-width: 0; }
+.xc-rd-eyebrow { margin: 0; font-size: 12px; font-weight: 700; color: var(--xc-accent); }
+.xc-rd-title { margin: 2px 0 0; font-size: 18px; font-weight: 800; }
+.xc-rd-form { display: flex; flex-direction: column; gap: 10px; padding: 12px 16px 16px; overflow: auto; }
+.xc-rd-form label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; font-weight: 600; }
+.xc-rd-target { display: flex; flex-direction: column; gap: 8px; padding: 10px; border: 1px solid var(--xc-border); border-radius: 12px; background: var(--xc-bg-2); }
+.xc-rd-identity { margin: 0; font-weight: 700; word-break: break-word; }
+.xc-rd-sources { display: flex; gap: 2px; }
+.xc-rd-sources[hidden] { display: none; }
+.xc-rd-sources .xc-tab { appearance: none; border: 0; border-bottom: 2px solid transparent; background: transparent; color: var(--xc-fg-2); font: 700 13px/1.4 var(--xc-font); padding: 6px 10px; cursor: pointer; }
+.xc-rd-sources .xc-tab[aria-selected="true"] { color: var(--xc-fg); border-bottom-color: var(--xc-accent); }
+.xc-rd-selector-area .xc-textarea { font-family: var(--xc-font); font-size: 13px; min-height: 0; resize: none; }
+.xc-rd-preview { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.xc-rd-preview[hidden] { display: none; }
+.xc-rd-preview-text { padding: 2px 8px; border-radius: 6px; background: color-mix(in srgb, var(--xc-accent) 14%, transparent); font-weight: 700; word-break: break-all; }
+.xc-rd-candidates { display: flex; flex-wrap: wrap; gap: 6px; }
+.xc-rd-candidate { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px; border: 1px solid var(--xc-border); background: transparent; color: var(--xc-fg); font: inherit; font-size: 13px; cursor: pointer; }
+.xc-rd-candidate[aria-checked="true"] { border-color: var(--xc-accent); background: color-mix(in srgb, var(--xc-accent) 14%, transparent); }
+.xc-rd-candidate[aria-checked="true"]::before { content: "✓"; color: var(--xc-accent); font-weight: 800; }
+.xc-rd-hint, .xc-rd-endpoint { margin: 0; font-size: 12px; word-break: break-all; }
+.xc-rd-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.xc-rd-conclusion { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.xc-rd-conclusion strong { font-size: 13px; }
+.xc-rd-reason { margin: 0; flex-basis: 100%; font-size: 13px; color: var(--xc-fg-2); }
+.xc-rd-conclusion .xc-pill[hidden] { display: none; }
+.xc-rd-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.xc-rd-card { display: flex; flex-direction: column; gap: 2px; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--xc-border); font-size: 13px; }
+.xc-rd-card[data-state="ok"] { border-color: var(--xc-success); color: var(--xc-success); }
+.xc-rd-card[data-state="fail"] { border-color: var(--xc-danger); color: var(--xc-danger); }
+.xc-rd-card strong { color: var(--xc-fg); }
+.xc-rd-followup summary { cursor: pointer; font-weight: 700; font-size: 13px; }
+.xc-rd-followup > label, .xc-rd-followup > div { margin-top: 8px; }
+.xc-rd-actions { display: flex; justify-content: flex-end; gap: 8px; flex-wrap: wrap; }
+@media (max-width: 520px) {
+    .xc-rule-dialog-backdrop { align-items: flex-end; padding: 0; }
+    .xc-rd-dialog { width: 100%; max-height: 92vh; border-radius: 16px 16px 0 0; }
+    .xc-rd-grid, .xc-rd-cards { grid-template-columns: 1fr; }
+    .xc-rd-actions { display: grid; grid-template-columns: 1fr 1fr; }
+    .xc-rd-actions .xc-btn-primary { grid-column: 1 / -1; }
+}
