@@ -39,6 +39,15 @@ describe("settings migration", () => {
         expect(PlainSettings.plugins.Src).toEqual({ b: 2 });
     });
 
+    test("registerPlugin carries settings over from a plugin's oldNames", () => {
+        const name = fresh("Renamed");
+        loadSettings(memoryStorage({ XCleanerSettings: { plugins: { [`${name}Old`]: { enabled: false, k: 1 } }, core: { starredPlugins: [`${name}Old`] } } }));
+        registerPlugin(definePlugin({ name, description: "", oldNames: [`${name}Old`] }));
+        expect(PlainSettings.plugins[name]).toEqual({ enabled: false, k: 1 });
+        expect(PlainSettings.plugins[`${name}Old`]).toBeUndefined();
+        expect(PlainSettings.core.starredPlugins).toEqual([name]);
+    });
+
     test("pruneOrphanedPluginSettings drops settings of plugins that are not registered", () => {
         const keep = definePlugin({ name: fresh("Keep"), description: "" });
         registerPlugin(keep);

@@ -5,7 +5,7 @@
  */
 
 // X's counterpart of Void++'s Cleaner / NoGrokBot / NoShareLink: one switch per distraction.
-// The right sidebar's trends, who-to-follow and footer cards live in SidebarWidgets.
+// The right sidebar's trends, who-to-follow and footer cards live in RightSidebarCleaner.
 // Everything is CSS except two things X gives no stable selector for: promoted posts are marked
 // on their cell first, and the unread count is stripped from the tab title.
 
@@ -98,7 +98,7 @@ function apply() {
 
 export default definePlugin({
     name: "Declutter",
-    description: "精简 X 的页面：分别隐藏 Premium 推销、推广帖、Grok 按钮和浮窗、浏览量等干扰元素。右侧栏的趋势、推荐关注和页脚见 SidebarWidgets。",
+    description: "精简 X 的页面：分别隐藏 Premium 推销、推广帖、Grok 按钮和浮窗、浏览量等干扰元素。右侧栏的趋势、推荐关注和页脚见 RightSidebarCleaner。",
     icon: Icons.broom,
     tags: ["declutter", "timeline"],
     settings,

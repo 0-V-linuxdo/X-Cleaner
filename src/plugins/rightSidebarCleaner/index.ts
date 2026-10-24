@@ -12,7 +12,7 @@ import { Icons } from "@ui/icons";
 import { registerStyle, unregisterStyle } from "@utils/css";
 import definePlugin, { OptionType } from "@utils/types";
 
-const STYLE = "sidebarWidgets:rules";
+const STYLE = "rightSidebarCleaner:rules";
 const SIDE = '[data-testid="sidebarColumn"]';
 
 const opt = (label: string, description: string) => ({ type: OptionType.BOOLEAN as const, label, description, default: true });
@@ -49,7 +49,8 @@ function apply() {
 }
 
 export default definePlugin({
-    name: "SidebarWidgets",
+    name: "RightSidebarCleaner",
+    oldNames: ["SidebarWidgets"],
     description: "隐藏右侧栏三大件：「有什么新鲜事」趋势、「推荐关注」和底部页脚链接，可分别开关。",
     icon: Icons.eyeOff,
     tags: ["appearance", "declutter"],

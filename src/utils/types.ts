@@ -97,6 +97,8 @@ export interface PluginDef extends Partial<PluginHooks> {
     dev?: boolean;
     startAt?: StartAt;
     dependencies?: string[];
+    /** Names this plugin had before; their settings, stars and pins carry over on first run. */
+    oldNames?: string[];
     healthChecks?: HealthCheck[];
     /** Enabling or disabling only fully applies after a page reload. */
     requiresRestart?: boolean;

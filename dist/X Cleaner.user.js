@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         X Cleaner
 // @namespace    https://github.com/0-V-linuxdo/x-cleaner
-// @version      0.1.0.202610240453
+// @version      0.1.0.202610240648
 // @description  A plugin-based cleaner for x.com: hide adult promotion, crypto funnels and promotional reply accounts. Includes review, lists, safe regex rules and optional AI-assisted rule drafts.
 // @author       X Cleaner Contributors
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z'/%3E%3Cpath d='m4.5 4.5 15 15'/%3E%3C/svg%3E
@@ -600,6 +600,8 @@
       logger4.warn(`Duplicate plugin ${plugin.name}`);
       return;
     }
+    if (plugin.oldNames?.length)
+      migratePluginSettings(plugin.name, ...plugin.oldNames);
     plugin.started = false;
     plugins[plugin.name] = plugin;
     if (plugin.settings)
@@ -2338,7 +2340,7 @@ ${TOOLTIP_CSS}`,
     const hint = h("span", { class: "xc-pm-hint", tabindex: "0" }, svgIcon(Icons.info, 14));
     const hintTip = attachTooltip(hint, () => TABS.find((t) => t.id === activeId)?.description ?? "", "bottom");
     const body = h("div", { class: "xc-pm-body" });
-    const version = h("div", { class: "xc-pm-version" }, h("div", null, "X Cleaner · ", "0.1.0.202610240453"), h("div", null, "正式版", " · 用户脚本"), h("div", null, h("a", { href: "https://raw.githubusercontent.com/0-V-linuxdo/X-Cleaner/main/dist/X%20Cleaner.user.js", target: "_blank", rel: "noopener" }, "检查更新"), " · ", h("a", { href: `${"https://github.com/0-V-linuxdo/X-Cleaner"}/commits/main`, target: "_blank", rel: "noopener" }, "更新记录")));
+    const version = h("div", { class: "xc-pm-version" }, h("div", null, "X Cleaner · ", "0.1.0.202610240648"), h("div", null, "正式版", " · 用户脚本"), h("div", null, h("a", { href: "https://raw.githubusercontent.com/0-V-linuxdo/X-Cleaner/main/dist/X%20Cleaner.user.js", target: "_blank", rel: "noopener" }, "检查更新"), " · ", h("a", { href: `${"https://github.com/0-V-linuxdo/X-Cleaner"}/commits/main`, target: "_blank", rel: "noopener" }, "更新记录")));
     const content = h("div", { class: "xc-pm-shell" }, h("aside", { class: "xc-pm-sidebar" }, nav, version), h("section", { class: "xc-pm-main" }, h("header", { class: "xc-pm-header" }, heading, hint, closeButton(() => close())), body));
     const show = (id, plugin) => {
       activeId = id;
@@ -6075,7 +6077,7 @@ ${target}
   }
   var declutter_default = definePlugin({
     name: "Declutter",
-    description: "精简 X 的页面：分别隐藏 Premium 推销、推广帖、Grok 按钮和浮窗、浏览量等干扰元素。右侧栏的趋势、推荐关注和页脚见 SidebarWidgets。",
+    description: "精简 X 的页面：分别隐藏 Premium 推销、推广帖、Grok 按钮和浮窗、浏览量等干扰元素。右侧栏的趋势、推荐关注和页脚见 RightSidebarCleaner。",
     icon: Icons.broom,
     tags: ["declutter", "timeline"],
     settings: settings3,
@@ -9032,6 +9034,50 @@ ${RESPONSE_FORMAT}` }
     }
   });
 
+  // src/plugins/rightSidebarCleaner/index.ts
+  var STYLE3 = "rightSidebarCleaner:rules";
+  var SIDE2 = '[data-testid="sidebarColumn"]';
+  var opt2 = (label, description) => ({ type: "boolean" /* BOOLEAN */, label, description, default: true });
+  var settings5 = definePluginSettings({
+    hideTrends: opt2("有什么新鲜事", "「What's happening」趋势卡片。"),
+    hideWhoToFollow: opt2("推荐关注", "「Who to follow」卡片，帖子页的「相关用户」也算。"),
+    hideFooter: opt2("页脚链接", "服务条款、隐私政策、Cookie、© X Corp. 那一排链接。")
+  });
+  var RULES2 = {
+    hideTrends: `${SIDE2} div:has(> section [data-testid="trend"])`,
+    hideWhoToFollow: `${SIDE2} div:has(> div > aside [data-testid="UserCell"])`,
+    hideFooter: `${SIDE2} div:has(> nav[role="navigation"])`
+  };
+  var DIVIDER = `${SIDE2} div:has(> div > nav[role="navigation"]) > div:empty:has(+ div:not(:empty))`;
+  function buildCss3(values) {
+    const hidden = Object.keys(RULES2).filter((k) => values[k]).map((k) => RULES2[k]);
+    if (!hidden.length)
+      return "";
+    return [...hidden, DIVIDER].map((sel) => `${sel} { display: none !important; }`).join(`
+`);
+  }
+  function apply3() {
+    const css = buildCss3(settings5.store);
+    if (css)
+      registerStyle(STYLE3, css);
+    else
+      unregisterStyle(STYLE3);
+  }
+  var rightSidebarCleaner_default = definePlugin({
+    name: "RightSidebarCleaner",
+    oldNames: ["SidebarWidgets"],
+    description: "隐藏右侧栏三大件：「有什么新鲜事」趋势、「推荐关注」和底部页脚链接，可分别开关。",
+    icon: Icons.eyeOff,
+    tags: ["appearance", "declutter"],
+    enabledByDefault: true,
+    settings: settings5,
+    start: apply3,
+    stop() {
+      unregisterStyle(STYLE3);
+    },
+    onSettingsChange: apply3
+  });
+
   // src/ui/notice.ts
   var open = new Map;
   var stack = null;
@@ -9259,7 +9305,7 @@ ${RESPONSE_FORMAT}` }
     }
     return out;
   }
-  function buildCss3(entries, layout) {
+  function buildCss4(entries, layout) {
     const natural = entries.map((e) => e.key);
     const bySelector = new Map(entries.map((e) => [e.key, e.selector]));
     const rules = [];
@@ -9383,8 +9429,8 @@ ${RESPONSE_FORMAT}` }
 `;
 
   // src/plugins/sidebarEntries/index.ts
-  var STYLE3 = "sidebarEntries:layout";
-  var settings5 = definePluginSettings({
+  var STYLE4 = "sidebarEntries:layout";
+  var settings6 = definePluginSettings({
     layout: {
       type: "custom" /* CUSTOM */,
       label: "侧栏入口",
@@ -9393,17 +9439,17 @@ ${RESPONSE_FORMAT}` }
       render: (ctx) => renderEditor(ctx, entriesForEditor)
     }
   }).withPrivateSettings();
-  var known = () => settings5.plain.known ?? [];
+  var known = () => settings6.plain.known ?? [];
   function layout() {
-    const l = settings5.plain.layout;
+    const l = settings6.plain.layout;
     return { order: Array.isArray(l?.order) ? l.order : [], hidden: Array.isArray(l?.hidden) ? l.hidden : [] };
   }
-  function apply3() {
-    const text = buildCss3(known(), layout());
+  function apply4() {
+    const text = buildCss4(known(), layout());
     if (text)
-      registerStyle(STYLE3, text);
+      registerStyle(STYLE4, text);
     else
-      unregisterStyle(STYLE3);
+      unregisterStyle(STYLE4);
   }
   function record(nav) {
     const live = readEntries(nav);
@@ -9417,7 +9463,7 @@ ${RESPONSE_FORMAT}` }
     const same = next.length === prev.length && next.every((e, i) => e.key === prev[i].key && e.label === prev[i].label && e.selector === prev[i].selector);
     if (same)
       return;
-    settings5.store.known = next;
+    settings6.store.known = next;
   }
   function entriesForEditor() {
     const nav = document.querySelector(NAV2);
@@ -9431,7 +9477,7 @@ ${RESPONSE_FORMAT}` }
     icon: Icons.list,
     tags: ["appearance", "declutter"],
     enabledByDefault: true,
-    settings: settings5,
+    settings: settings6,
     managedStyle: styles_default4,
     healthChecks: [CHECKS.sideNav],
     elements: {
@@ -9442,49 +9488,6 @@ ${RESPONSE_FORMAT}` }
         return () => observer.disconnect();
       }
     },
-    start: apply3,
-    stop() {
-      unregisterStyle(STYLE3);
-    },
-    onSettingsChange: apply3
-  });
-
-  // src/plugins/sidebarWidgets/index.ts
-  var STYLE4 = "sidebarWidgets:rules";
-  var SIDE2 = '[data-testid="sidebarColumn"]';
-  var opt2 = (label, description) => ({ type: "boolean" /* BOOLEAN */, label, description, default: true });
-  var settings6 = definePluginSettings({
-    hideTrends: opt2("有什么新鲜事", "「What's happening」趋势卡片。"),
-    hideWhoToFollow: opt2("推荐关注", "「Who to follow」卡片，帖子页的「相关用户」也算。"),
-    hideFooter: opt2("页脚链接", "服务条款、隐私政策、Cookie、© X Corp. 那一排链接。")
-  });
-  var RULES2 = {
-    hideTrends: `${SIDE2} div:has(> section [data-testid="trend"])`,
-    hideWhoToFollow: `${SIDE2} div:has(> div > aside [data-testid="UserCell"])`,
-    hideFooter: `${SIDE2} div:has(> nav[role="navigation"])`
-  };
-  var DIVIDER = `${SIDE2} div:has(> div > nav[role="navigation"]) > div:empty:has(+ div:not(:empty))`;
-  function buildCss4(values) {
-    const hidden = Object.keys(RULES2).filter((k) => values[k]).map((k) => RULES2[k]);
-    if (!hidden.length)
-      return "";
-    return [...hidden, DIVIDER].map((sel) => `${sel} { display: none !important; }`).join(`
-`);
-  }
-  function apply4() {
-    const css = buildCss4(settings6.store);
-    if (css)
-      registerStyle(STYLE4, css);
-    else
-      unregisterStyle(STYLE4);
-  }
-  var sidebarWidgets_default = definePlugin({
-    name: "SidebarWidgets",
-    description: "隐藏右侧栏三大件：「有什么新鲜事」趋势、「推荐关注」和底部页脚链接，可分别开关。",
-    icon: Icons.eyeOff,
-    tags: ["appearance", "declutter"],
-    enabledByDefault: true,
-    settings: settings6,
     start: apply4,
     stop() {
       unregisterStyle(STYLE4);
@@ -9682,7 +9685,7 @@ ${RESPONSE_FORMAT}` }
   });
 
   // src/generated/plugins.ts
-  var plugins_default = { [coreUI_default.name]: coreUI_default, [settings_default.name]: settings_default, [themes_default.name]: themes_default, [aiClient_default.name]: aiClient_default, [blockerConfig_default.name]: blockerConfig_default, [domObserver_default.name]: domObserver_default, [navigation_default.name]: navigation_default, [postMenu_default.name]: postMenu_default, [replyFilter_default.name]: replyFilter_default, [absoluteTimestamps_default.name]: absoluteTimestamps_default, [accountBlacklist_default.name]: accountBlacklist_default, [aiReview_default.name]: aiReview_default, [allowList_default.name]: allowList_default, [autoBlacklist_default.name]: autoBlacklist_default, [betterLinks_default.name]: betterLinks_default, [builtinClassifier_default.name]: builtinClassifier_default, [declutter_default.name]: declutter_default, [domainBlacklist_default.name]: domainBlacklist_default, [exportThread_default.name]: exportThread_default, [moreMenuEntry_default.name]: moreMenuEntry_default, [nativeBlock_default.name]: nativeBlock_default, [panel_default.name]: panel_default, [phraseBlacklist_default.name]: phraseBlacklist_default, [regexBlacklist_default.name]: regexBlacklist_default, [replyShield_default.name]: replyShield_default, [ruleDraft_default.name]: ruleDraft_default, [ruleStats_default.name]: ruleStats_default, [selectorHealth_default.name]: selectorHealth_default, [sidebarEntries_default.name]: sidebarEntries_default, [sidebarWidgets_default.name]: sidebarWidgets_default, [streamerMode_default.name]: streamerMode_default, [tombstoneFilter_default.name]: tombstoneFilter_default, [widerTimeline_default.name]: widerTimeline_default };
+  var plugins_default = { [coreUI_default.name]: coreUI_default, [settings_default.name]: settings_default, [themes_default.name]: themes_default, [aiClient_default.name]: aiClient_default, [blockerConfig_default.name]: blockerConfig_default, [domObserver_default.name]: domObserver_default, [navigation_default.name]: navigation_default, [postMenu_default.name]: postMenu_default, [replyFilter_default.name]: replyFilter_default, [absoluteTimestamps_default.name]: absoluteTimestamps_default, [accountBlacklist_default.name]: accountBlacklist_default, [aiReview_default.name]: aiReview_default, [allowList_default.name]: allowList_default, [autoBlacklist_default.name]: autoBlacklist_default, [betterLinks_default.name]: betterLinks_default, [builtinClassifier_default.name]: builtinClassifier_default, [declutter_default.name]: declutter_default, [domainBlacklist_default.name]: domainBlacklist_default, [exportThread_default.name]: exportThread_default, [moreMenuEntry_default.name]: moreMenuEntry_default, [nativeBlock_default.name]: nativeBlock_default, [panel_default.name]: panel_default, [phraseBlacklist_default.name]: phraseBlacklist_default, [regexBlacklist_default.name]: regexBlacklist_default, [replyShield_default.name]: replyShield_default, [rightSidebarCleaner_default.name]: rightSidebarCleaner_default, [ruleDraft_default.name]: ruleDraft_default, [ruleStats_default.name]: ruleStats_default, [selectorHealth_default.name]: selectorHealth_default, [sidebarEntries_default.name]: sidebarEntries_default, [streamerMode_default.name]: streamerMode_default, [tombstoneFilter_default.name]: tombstoneFilter_default, [widerTimeline_default.name]: widerTimeline_default };
 
   // src/XCleaner.ts
   var logger17 = new Logger("Core", "#1d9bf0");
@@ -9703,7 +9706,7 @@ ${RESPONSE_FORMAT}` }
     else
       onReady();
     addEventListener("pagehide", () => settingsStore.flush());
-    logger17.info(`${"0.1.0.202610240453"} started with ${Object.keys(plugins_default).length} plugins`);
+    logger17.info(`${"0.1.0.202610240648"} started with ${Object.keys(plugins_default).length} plugins`);
   }
 
   // src/index.ts

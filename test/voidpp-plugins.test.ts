@@ -8,7 +8,7 @@ import { closeMenu, contextForCaret, fillMenu, ITEM_ATTR } from "@plugins/_api/p
 import { formatTime } from "@plugins/absoluteTimestamps";
 import { buildCss as linkCss, expandedUrl } from "@plugins/betterLinks";
 import { AD_ATTR, buildCss as declutterCss, isAdTweet, stripTitleCount } from "@plugins/declutter";
-import { buildCss as sidebarWidgetsCss, DIVIDER as SIDEBAR_DIVIDER, RULES as SIDEBAR_RULES } from "@plugins/sidebarWidgets";
+import { buildCss as rightSidebarCss, DIVIDER as SIDEBAR_DIVIDER, RULES as SIDEBAR_RULES } from "@plugins/rightSidebarCleaner";
 import { ENTRY_ATTR, fillMoreMenu } from "@plugins/moreMenuEntry";
 import { resetHealth, runChecks } from "@plugins/selectorHealth";
 import { buildCss as streamerCss } from "@plugins/streamerMode";
@@ -81,7 +81,7 @@ describe("Declutter", () => {
     });
 });
 
-describe("SidebarWidgets", () => {
+describe("RightSidebarCleaner", () => {
     const sidebar = `<div data-testid="sidebarColumn"><div>
         <div id="spacer"></div><div id="divider"></div>
         <div id="trends"><section><div data-testid="trend">t</div></section></div>
@@ -90,8 +90,8 @@ describe("SidebarWidgets", () => {
     </div></div>`;
 
     test("builds one rule per switch", () => {
-        expect(sidebarWidgetsCss({})).toBe("");
-        const css = sidebarWidgetsCss({ hideTrends: true, hideFooter: true });
+        expect(rightSidebarCss({})).toBe("");
+        const css = rightSidebarCss({ hideTrends: true, hideFooter: true });
         expect(css).toContain('[data-testid="trend"]');
         expect(css).toContain('nav[role="navigation"]');
         expect(css).not.toContain("UserCell");
@@ -110,16 +110,16 @@ describe("SidebarWidgets", () => {
     });
 
     test("is on by default with all three cards hidden, and cleans up on stop", () => {
-        expect(plugins.SidebarWidgets.enabledByDefault).toBe(true);
-        setPluginEnabled("SidebarWidgets", true);
-        const css = styleText("sidebarWidgets:rules");
+        expect(plugins.RightSidebarCleaner.enabledByDefault).toBe(true);
+        setPluginEnabled("RightSidebarCleaner", true);
+        const css = styleText("rightSidebarCleaner:rules");
         expect(css).toContain("trend");
         expect(css).toContain("UserCell");
         expect(css).toContain("navigation");
-        Settings.plugins.SidebarWidgets.hideWhoToFollow = false;
-        expect(styleText("sidebarWidgets:rules")).not.toContain("UserCell");
-        setPluginEnabled("SidebarWidgets", false);
-        expect(styleText("sidebarWidgets:rules")).toBe("");
+        Settings.plugins.RightSidebarCleaner.hideWhoToFollow = false;
+        expect(styleText("rightSidebarCleaner:rules")).not.toContain("UserCell");
+        setPluginEnabled("RightSidebarCleaner", false);
+        expect(styleText("rightSidebarCleaner:rules")).toBe("");
     });
 });
 

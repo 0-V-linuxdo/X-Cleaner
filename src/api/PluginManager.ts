@@ -9,7 +9,7 @@ import { errorMessage } from "@utils/misc";
 import { type Plugin, type PluginHooks, StartAt, type XCleanerEventMap } from "@utils/types";
 
 import { dispatch, subscribe } from "./Events";
-import { mergePluginSettings, PlainSettings, pluginPath, Settings, settingsStore } from "./Settings";
+import { mergePluginSettings, migratePluginSettings, PlainSettings, pluginPath, Settings, settingsStore } from "./Settings";
 
 const logger = new Logger("PluginManager", "#f4c430");
 
@@ -63,6 +63,7 @@ export function registerPlugin(plugin: Plugin) {
         logger.warn(`Duplicate plugin ${plugin.name}`);
         return;
     }
+    if (plugin.oldNames?.length) migratePluginSettings(plugin.name, ...plugin.oldNames);
     plugin.started = false;
     plugins[plugin.name] = plugin;
     if (plugin.settings) plugin.settings.pluginName = plugin.name;
