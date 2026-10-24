@@ -11,6 +11,7 @@ export enum OptionType {
     SLIDER = "slider",
     LIST = "list",
     CUSTOM = "custom",
+    COLOR = "color",
 }
 
 export const enum StartAt {
@@ -36,17 +37,19 @@ export interface BooleanSetting extends SettingCommon { type: OptionType.BOOLEAN
 export interface SelectSetting<V extends string | number = string | number> extends SettingCommon { type: OptionType.SELECT; options: readonly { label: string; value: V; default?: boolean }[] }
 export interface SliderSetting extends SettingCommon { type: OptionType.SLIDER; min: number; max: number; step?: number; default: number; unit?: string }
 export interface ListSetting extends SettingCommon { type: OptionType.LIST; default?: string[]; itemPlaceholder?: string; isValid?(v: string): true | string }
+/** A CSS colour: a picker plus a text box for any CSS colour; empty means "use X's own colour". */
+export interface ColorSetting extends SettingCommon { type: OptionType.COLOR; default?: string; isValid?(v: string): true | string }
 export interface CustomSetting<T = unknown> extends SettingCommon {
     type: OptionType.CUSTOM;
     default?: T;
     render(ctx: { get(): T; set(value: T): void; pluginName: string }): HTMLElement;
 }
 
-export type SettingDef = StringSetting | NumberSetting | BooleanSetting | SelectSetting | SliderSetting | ListSetting | CustomSetting<any>;
+export type SettingDef = StringSetting | NumberSetting | BooleanSetting | SelectSetting | SliderSetting | ListSetting | ColorSetting | CustomSetting<any>;
 export type SettingsDefinition = Record<string, SettingDef>;
 
 type ValueOf<D extends SettingDef> =
-    D extends StringSetting ? string
+    D extends StringSetting | ColorSetting ? string
     : D extends NumberSetting | SliderSetting ? number
     : D extends BooleanSetting ? boolean
     : D extends SelectSetting<infer V> ? V

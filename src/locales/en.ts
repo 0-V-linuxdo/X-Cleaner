@@ -617,7 +617,9 @@ const en: Record<string, string> = {
     "悬停时显示": "Reveal on hover",
     "鼠标移上去时暂时取消模糊。": "Temporarily removes the blur while the mouse is over it.",
     "模糊程度": "Blur amount",
-    "主播模式：模糊你自己的头像、昵称和 @handle，可选模糊私信列表，截图和录屏时不暴露账号。": "Streamer mode: blurs your own avatar, name and @handle, optionally the message list too, so screenshots and recordings don't reveal your account.",
+    "主播模式：模糊你自己的头像、昵称和 @handle、设置页里的邮箱和手机号，可选模糊私信列表，截图和录屏时不暴露账号。": "Streamer mode: blurs your own avatar, name and @handle and the email and phone number in Settings, optionally the message list too, so screenshots and recordings don't reveal your account.",
+    "设置页账号信息": "Settings account info",
+    "「设置」里的用户名、邮箱、手机号和国家，包括「账号信息」页。": "Your username, email, phone number and country in Settings, including the Account information page.",
 
     // ---------- CustomSidebarIdentity ----------
     "自定义身份：把左下角账号按钮里的头像、名字和 @用户名换成你自己设定的，头像支持粘贴图片和裁剪。只改你看到的样子，不会改动 X 上的资料。": "Custom identity: swaps the avatar, name and @username in the account button at the bottom left for your own. Paste or crop a picture for the avatar. Only changes what you see; your X profile stays as it is.",
@@ -692,7 +694,16 @@ const en: Record<string, string> = {
 
     "显示收藏的插件": "Show favorite plugins",
     "在入口下面列出你收藏的插件，点一下就能开关。": "Lists your favorite plugins under the entry, each one a click to toggle.",
-    "在 X 左侧栏的「更多」菜单里加一个「X Cleaner 插件管理」入口，并列出收藏的插件供快速开关。": "Adds an “X Cleaner plugins” entry to the “More” menu in X's left sidebar, plus your favorite plugins for quick toggling.",
+    "在 X 左侧栏的「更多」菜单里加一个「X Cleaner 插件管理」入口，并列出收藏的插件供快速开关，以及 X 隐藏词、已屏蔽和已隐藏账号的快捷方式。": "Adds an “X Cleaner plugins” entry to the “More” menu in X's left sidebar, plus your favorite plugins for quick toggling and shortcuts to X's muted words, blocked accounts and muted accounts.",
+    "快捷方式：隐藏词": "Shortcut: muted words",
+    "打开 X 的「隐藏的字词」设置页。": "Opens X's Muted words settings.",
+    "快捷方式：已屏蔽账号": "Shortcut: blocked accounts",
+    "打开 X 的「已屏蔽的账号」列表。": "Opens X's Blocked accounts list.",
+    "快捷方式：已隐藏账号": "Shortcut: muted accounts",
+    "打开 X 的「已隐藏的账号」列表。": "Opens X's Muted accounts list.",
+    "X 隐藏词": "X muted words",
+    "X 已屏蔽账号": "X blocked accounts",
+    "X 已隐藏账号": "X muted accounts",
 
     "显示格式": "Format",
     "「智能」：今天只显示时间，今年显示月日，更早的显示完整日期。": "“Smart”: only the time for today, month and day for this year, and the full date before that.",

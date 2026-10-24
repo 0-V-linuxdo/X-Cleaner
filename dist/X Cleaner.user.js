@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         X Cleaner
 // @namespace    https://github.com/0-V-linuxdo/x-cleaner
-// @version      0.1.0.202610241218
+// @version      0.1.0.202610242342
 // @description  A plugin-based cleaner for x.com: hide adult promotion, crypto funnels and promotional reply accounts. Includes review, lists, safe regex rules and optional AI-assisted rule drafts.
 // @author       X Cleaner Contributors
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z'/%3E%3Cpath d='m4.5 4.5 15 15'/%3E%3C/svg%3E
@@ -1108,7 +1108,9 @@ Continue?`,
     "悬停时显示": "Reveal on hover",
     "鼠标移上去时暂时取消模糊。": "Temporarily removes the blur while the mouse is over it.",
     "模糊程度": "Blur amount",
-    "主播模式：模糊你自己的头像、昵称和 @handle，可选模糊私信列表，截图和录屏时不暴露账号。": "Streamer mode: blurs your own avatar, name and @handle, optionally the message list too, so screenshots and recordings don't reveal your account.",
+    "主播模式：模糊你自己的头像、昵称和 @handle、设置页里的邮箱和手机号，可选模糊私信列表，截图和录屏时不暴露账号。": "Streamer mode: blurs your own avatar, name and @handle and the email and phone number in Settings, optionally the message list too, so screenshots and recordings don't reveal your account.",
+    "设置页账号信息": "Settings account info",
+    "「设置」里的用户名、邮箱、手机号和国家，包括「账号信息」页。": "Your username, email, phone number and country in Settings, including the Account information page.",
     "自定义身份：把左下角账号按钮里的头像、名字和 @用户名换成你自己设定的，头像支持粘贴图片和裁剪。只改你看到的样子，不会改动 X 上的资料。": "Custom identity: swaps the avatar, name and @username in the account button at the bottom left for your own. Paste or crop a picture for the avatar. Only changes what you see; your X profile stays as it is.",
     "显示名称": "Display name",
     "左下角账号按钮里显示的名字，认证徽标随之隐藏。留空保留原来的名字。": "The name shown in the account button at the bottom left; the verified badge is hidden with it. Leave empty to keep your real name.",
@@ -1178,7 +1180,16 @@ Continue?`,
     "更多": "More",
     "显示收藏的插件": "Show favorite plugins",
     "在入口下面列出你收藏的插件，点一下就能开关。": "Lists your favorite plugins under the entry, each one a click to toggle.",
-    "在 X 左侧栏的「更多」菜单里加一个「X Cleaner 插件管理」入口，并列出收藏的插件供快速开关。": "Adds an “X Cleaner plugins” entry to the “More” menu in X's left sidebar, plus your favorite plugins for quick toggling.",
+    "在 X 左侧栏的「更多」菜单里加一个「X Cleaner 插件管理」入口，并列出收藏的插件供快速开关，以及 X 隐藏词、已屏蔽和已隐藏账号的快捷方式。": "Adds an “X Cleaner plugins” entry to the “More” menu in X's left sidebar, plus your favorite plugins for quick toggling and shortcuts to X's muted words, blocked accounts and muted accounts.",
+    "快捷方式：隐藏词": "Shortcut: muted words",
+    "打开 X 的「隐藏的字词」设置页。": "Opens X's Muted words settings.",
+    "快捷方式：已屏蔽账号": "Shortcut: blocked accounts",
+    "打开 X 的「已屏蔽的账号」列表。": "Opens X's Blocked accounts list.",
+    "快捷方式：已隐藏账号": "Shortcut: muted accounts",
+    "打开 X 的「已隐藏的账号」列表。": "Opens X's Muted accounts list.",
+    "X 隐藏词": "X muted words",
+    "X 已屏蔽账号": "X blocked accounts",
+    "X 已隐藏账号": "X muted accounts",
     "显示格式": "Format",
     "「智能」：今天只显示时间，今年显示月日，更早的显示完整日期。": "“Smart”: only the time for today, month and day for this year, and the full date before that.",
     "智能（14:05 / 10-23 14:05 / 2025-10-23 14:05）": "Smart (14:05 / 10-23 14:05 / 2025-10-23 14:05)",
@@ -1566,6 +1577,9 @@ Continue?`,
 .xc-chip button:hover { color: var(--xc-danger); }
 .xc-slider { display: flex; align-items: center; gap: 10px; }
 .xc-slider input { flex: 1; accent-color: var(--xc-accent); }
+.xc-color-row { justify-content: flex-end; gap: 8px; flex-shrink: 0; }
+.xc-color { width: 34px; height: 30px; padding: 2px; border: 1px solid var(--xc-border); border-radius: 6px; background: transparent; cursor: pointer; }
+.xc-color.xc-color-unset { opacity: .45; }
 .xc-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 .xc-row > .xc-input { flex: 1; min-width: 140px; width: auto; }
 .xc-form-msg { font-size: 12.5px; color: var(--xc-fg-2); margin: 0; }
@@ -2518,6 +2532,8 @@ ${TOOLTIP_CSS}`,
     render();
     return h("div", { class: "xc-list-editor" }, items, h("div", { class: "xc-field-row" }, input, h("button", { class: "xc-btn xc-btn-sm", type: "button", onclick: add }, t("添加"))), error);
   }
+  var HEX_RE = /^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i;
+  var expandHex = (v) => (v.length === 4 ? `#${[...v.slice(1)].map((c) => c + c).join("")}` : v).toLowerCase();
   function control(key, def, settings, onError) {
     const store = settings.store;
     const set = (value) => {
@@ -2573,6 +2589,35 @@ ${TOOLTIP_CSS}`,
       }
       case "list" /* LIST */:
         return listEditor(store[key] ?? [], (v) => set(v), { placeholder: def.itemPlaceholder, isValid: def.isValid });
+      case "color" /* COLOR */: {
+        const text = h("input", { class: "xc-input", type: "text", placeholder: def.placeholder && t(def.placeholder), disabled, autocomplete: "off", style: "max-width:140px" });
+        const picker = h("input", { class: "xc-color", type: "color", disabled, "aria-label": def.label ? t(def.label) : key });
+        const reset = h("button", { class: "xc-btn xc-btn-sm", type: "button", disabled }, t("清除"));
+        const fallback = HEX_RE.test(def.placeholder ?? "") ? def.placeholder.toLowerCase() : "#000000";
+        const commit = (value) => {
+          const valid = def.isValid?.(value) ?? true;
+          onError(valid === true ? null : t(valid));
+          if (valid !== true)
+            return;
+          set(value);
+          sync(value);
+        };
+        const sync = (value) => {
+          text.value = value;
+          picker.value = HEX_RE.test(value.trim()) ? expandHex(value.trim()) : fallback;
+          picker.classList.toggle("xc-color-unset", !value.trim());
+          reset.disabled = disabled || !value.trim();
+        };
+        sync(store[key] ?? "");
+        picker.addEventListener("input", () => {
+          text.value = picker.value;
+          picker.classList.remove("xc-color-unset");
+        });
+        picker.addEventListener("change", () => commit(picker.value));
+        text.addEventListener("change", () => commit(text.value.trim()));
+        reset.addEventListener("click", () => commit(String(def.default ?? "")));
+        return h("div", { class: "xc-field-row xc-color-row" }, picker, text, reset);
+      }
       case "custom" /* CUSTOM */:
         return def.render({ get: () => store[key], set, pluginName: settings.pluginName });
     }
@@ -2583,7 +2628,7 @@ ${TOOLTIP_CSS}`,
       error.textContent = msg ?? "";
       error.hidden = !msg;
     });
-    const inline = def.type === "boolean" /* BOOLEAN */ || def.type === "select" /* SELECT */ || def.type === "number" /* NUMBER */;
+    const inline = def.type === "boolean" /* BOOLEAN */ || def.type === "select" /* SELECT */ || def.type === "number" /* NUMBER */ || def.type === "color" /* COLOR */;
     const label = h("div", null, h("div", { class: "xc-field-label" }, def.label ? t(def.label) : key, def.restartNeeded ? h("span", { class: "xc-badge", style: "margin-left:6px" }, t("需刷新")) : null), def.description ? h("div", { class: "xc-field-desc" }, t(def.description)) : null);
     return h("div", { class: "xc-field", dataset: { key } }, inline ? h("div", { class: "xc-field-row" }, label, ctrl) : [label, ctrl], error);
   }
@@ -3062,7 +3107,7 @@ ${TOOLTIP_CSS}`,
     const hint = h("span", { class: "xc-pm-hint", tabindex: "0" }, svgIcon(Icons.info, 14));
     const hintTip = attachTooltip(hint, () => t(TABS.find((tab) => tab.id === activeId)?.description ?? ""), "bottom");
     const body = h("div", { class: "xc-pm-body" });
-    const version = h("div", { class: "xc-pm-version" }, h("div", null, "X Cleaner · ", "0.1.0.202610241218"), h("div", null, t("正式版"), " · ", t("用户脚本")), h("div", null, h("a", { href: "https://cdn.jsdelivr.net/gh/0-V-linuxdo/X-Cleaner@heads/main/dist/X%20Cleaner.user.js", target: "_blank", rel: "noopener" }, t("检查更新")), " · ", h("a", { href: `${"https://github.com/0-V-linuxdo/X-Cleaner"}/commits/main`, target: "_blank", rel: "noopener" }, t("更新记录"))));
+    const version = h("div", { class: "xc-pm-version" }, h("div", null, "X Cleaner · ", "0.1.0.202610242342"), h("div", null, t("正式版"), " · ", t("用户脚本")), h("div", null, h("a", { href: "https://cdn.jsdelivr.net/gh/0-V-linuxdo/X-Cleaner@heads/main/dist/X%20Cleaner.user.js", target: "_blank", rel: "noopener" }, t("检查更新")), " · ", h("a", { href: `${"https://github.com/0-V-linuxdo/X-Cleaner"}/commits/main`, target: "_blank", rel: "noopener" }, t("更新记录"))));
     const content = h("div", { class: "xc-pm-shell" }, h("aside", { class: "xc-pm-sidebar" }, nav, version), h("section", { class: "xc-pm-main" }, h("header", { class: "xc-pm-header" }, heading, hint, closeButton(() => close())), body));
     const show = (id, plugin) => {
       activeId = id;
@@ -4263,15 +4308,15 @@ ${TOOLTIP_CSS}`,
     required: true,
     hidden: true,
     start() {
-      const history = pageWindow.history ?? window.history;
-      const push = history.pushState;
-      const replace = history.replaceState;
-      history.pushState = function(...args) {
+      const history2 = pageWindow.history ?? window.history;
+      const push = history2.pushState;
+      const replace = history2.replaceState;
+      history2.pushState = function(...args) {
         const r = push.apply(this, args);
         queueMicrotask(check);
         return r;
       };
-      history.replaceState = function(...args) {
+      history2.replaceState = function(...args) {
         const r = replace.apply(this, args);
         queueMicrotask(check);
         return r;
@@ -4279,8 +4324,8 @@ ${TOOLTIP_CSS}`,
       addEventListener("popstate", check);
       const timer = setInterval(check, 1000);
       restore = () => {
-        history.pushState = push;
-        history.replaceState = replace;
+        history2.pushState = push;
+        history2.replaceState = replace;
         removeEventListener("popstate", check);
         clearInterval(timer);
       };
@@ -6618,8 +6663,8 @@ Write reason in ${aiLanguageName()}.` },
   var settings2 = definePluginSettings({
     bypassTco: { type: "boolean" /* BOOLEAN */, label: N_("直接打开真实地址"), description: N_("点击帖子里的链接时直接打开原网址，不经过 t.co 跳转。"), default: true },
     showFullUrl: { type: "boolean" /* BOOLEAN */, label: N_("悬停显示完整地址"), description: N_("鼠标停在链接上时，用提示显示被截断的完整网址。"), default: true },
-    linkColor: { type: "string" /* STRING */, label: N_("链接颜色"), description: N_("留空则用 X 的默认蓝色。"), placeholder: "#1d9bf0", default: "", isValid: isValidColor },
-    visitedColor: { type: "string" /* STRING */, label: N_("已访问链接颜色"), description: N_("打开过的链接换成这个颜色；留空则不区分。"), placeholder: "#a371f7", default: "", isValid: isValidColor }
+    linkColor: { type: "color" /* COLOR */, label: N_("链接颜色"), description: N_("留空则用 X 的默认蓝色。"), placeholder: "#1d9bf0", default: "", isValid: isValidColor },
+    visitedColor: { type: "color" /* COLOR */, label: N_("已访问链接颜色"), description: N_("打开过的链接换成这个颜色；留空则不区分。"), placeholder: "#a371f7", default: "", isValid: isValidColor }
   });
   function expandedUrl(a) {
     const href = a.getAttribute(ORIGINAL_ATTR) ?? a.getAttribute("href") ?? "";
@@ -7677,8 +7722,22 @@ Write reason in ${aiLanguageName()}.` },
   var ENTRY_ATTR = "data-xc-more-entry";
   var WAIT_MS2 = 1500;
   var settings6 = definePluginSettings({
-    showStarred: { type: "boolean" /* BOOLEAN */, label: N_("显示收藏的插件"), description: N_("在入口下面列出你收藏的插件，点一下就能开关。"), default: true }
+    showStarred: { type: "boolean" /* BOOLEAN */, label: N_("显示收藏的插件"), description: N_("在入口下面列出你收藏的插件，点一下就能开关。"), default: true },
+    xMutedWords: { type: "boolean" /* BOOLEAN */, label: N_("快捷方式：隐藏词"), description: N_("打开 X 的「隐藏的字词」设置页。"), default: true },
+    xBlocked: { type: "boolean" /* BOOLEAN */, label: N_("快捷方式：已屏蔽账号"), description: N_("打开 X 的「已屏蔽的账号」列表。"), default: true },
+    xMuted: { type: "boolean" /* BOOLEAN */, label: N_("快捷方式：已隐藏账号"), description: N_("打开 X 的「已隐藏的账号」列表。"), default: true }
   });
+  var X_SHORTCUTS = [
+    { key: "xMutedWords", path: "/settings/muted_keywords", label: N_("X 隐藏词"), icon: Icons.filter },
+    { key: "xBlocked", path: "/settings/blocked/all", label: N_("X 已屏蔽账号"), icon: Icons.ban },
+    { key: "xMuted", path: "/settings/muted/all", label: N_("X 已隐藏账号"), icon: Icons.eyeOff }
+  ];
+  function goTo(path) {
+    if (location.pathname === path)
+      return;
+    history.pushState({}, "", path);
+    dispatchEvent(new PopStateEvent("popstate"));
+  }
   function templateRow(menu) {
     const link = menu.querySelector('[data-testid="Dropdown"] a[href="/settings"]') ?? [...menu.querySelectorAll('[data-testid="Dropdown"] a[role="link"]')].at(-1);
     if (!link)
@@ -7728,6 +7787,10 @@ Write reason in ${aiLanguageName()}.` },
         });
       }
     }
+    for (const sc of X_SHORTCUTS) {
+      if (settings6.store[sc.key])
+        add(`x:${sc.key}`, t(sc.label), sc.icon, () => goTo(sc.path));
+    }
     return rows;
   }
   var pendingAt = 0;
@@ -7753,7 +7816,7 @@ Write reason in ${aiLanguageName()}.` },
   }
   var moreMenuEntry_default = definePlugin({
     name: "MoreMenuEntry",
-    description: N_("在 X 左侧栏的「更多」菜单里加一个「X Cleaner 插件管理」入口，并列出收藏的插件供快速开关。"),
+    description: N_("在 X 左侧栏的「更多」菜单里加一个「X Cleaner 插件管理」入口，并列出收藏的插件供快速开关，以及 X 隐藏词、已屏蔽和已隐藏账号的快捷方式。"),
     icon: Icons.menu,
     tags: ["core", "appearance"],
     enabledByDefault: true,
@@ -11231,10 +11294,21 @@ body[style*="255, 255, 255"] [data-xc-pin]:hover > div, body[style*="255, 255, 2
     accountAvatar: { type: "boolean" /* BOOLEAN */, label: N_("账号菜单头像"), description: N_("左下角账号菜单里的头像。"), default: true },
     accountName: { type: "boolean" /* BOOLEAN */, label: N_("账号菜单名字"), description: N_("左下角账号菜单里的昵称和 @handle。"), default: true },
     ownAvatars: { type: "boolean" /* BOOLEAN */, label: N_("自己的头像"), description: N_("页面其他位置（发帖框、自己的帖子）出现的你的头像。"), default: true },
+    settingsInfo: { type: "boolean" /* BOOLEAN */, label: N_("设置页账号信息"), description: N_("「设置」里的用户名、邮箱、手机号和国家，包括「账号信息」页。"), default: true },
     dmNames: { type: "boolean" /* BOOLEAN */, label: N_("私信列表"), description: N_("私信页里对话的头像和名字。"), default: false },
     revealOnHover: { type: "boolean" /* BOOLEAN */, label: N_("悬停时显示"), description: N_("鼠标移上去时暂时取消模糊。"), default: true },
     blur: { type: "slider" /* SLIDER */, label: N_("模糊程度"), description: "", min: 2, max: 16, step: 1, default: 8, unit: "px" }
   });
+  var INFO_ROWS = ["screen_name", "email", "phone", "country"].map((p) => `main a[href="/settings/${p}"]`).join(", ");
+  var VALUE_ATTR = "data-xc-streamer-value";
+  var INFO_INPUTS = ['input[name="typedScreenName"]', 'input[name="current_email"]', 'input[type="tel"]'].map((s) => `main ${s}`);
+  function markInfoRow(row) {
+    const lines = [...row.querySelectorAll("[dir]")].filter((d) => !d.querySelector("[dir]"));
+    const values = lines.slice(1);
+    for (const v of values)
+      v.setAttribute(VALUE_ATTR, "");
+    return values;
+  }
   var escapeAttr = (v) => v.replace(/["\\]/g, "\\$&");
   function buildCss7(opts, self) {
     const targets = [];
@@ -11244,6 +11318,8 @@ body[style*="255, 255, 255"] [data-xc-pin]:hover > div, body[style*="255, 255, 2
       targets.push(`${SEL.accountSwitcher} [dir]:not(${SEL.accountSwitcher} [dir] [dir])`);
     if (opts.ownAvatars && self)
       targets.push(`[data-testid="UserAvatar-Container-${escapeAttr(self)}" i]`);
+    if (opts.settingsInfo)
+      targets.push(`[${VALUE_ATTR}]`, ...INFO_INPUTS);
     if (opts.dmNames)
       targets.push('[data-testid="conversation"] [data-testid^="UserAvatar-Container-"]', '[data-testid="conversation"] [dir]:not([data-testid="conversation"] [dir] [dir])');
     const rules = [];
@@ -11269,11 +11345,23 @@ body[style*="255, 255, 255"] [data-xc-pin]:hover > div, body[style*="255, 255, 2
   }
   var streamerMode_default = definePlugin({
     name: "StreamerMode",
-    description: N_("主播模式：模糊你自己的头像、昵称和 @handle，可选模糊私信列表，截图和录屏时不暴露账号。"),
+    description: N_("主播模式：模糊你自己的头像、昵称和 @handle、设置页里的邮箱和手机号，可选模糊私信列表，截图和录屏时不暴露账号。"),
     icon: Icons.eyeOff,
     tags: ["privacy"],
     settings: settings9,
     healthChecks: [CHECKS.accountSwitcher],
+    elements: {
+      [INFO_ROWS](row) {
+        markInfoRow(row);
+        const mo = new MutationObserver(() => markInfoRow(row));
+        mo.observe(row, { childList: true, subtree: true });
+        return () => {
+          mo.disconnect();
+          for (const v of row.querySelectorAll(`[${VALUE_ATTR}]`))
+            v.removeAttribute(VALUE_ATTR);
+        };
+      }
+    },
     start() {
       apply7();
       let tries = 0;
@@ -11380,7 +11468,7 @@ body[style*="255, 255, 255"] [data-xc-pin]:hover > div, body[style*="255, 255, 2
     if (booted)
       return;
     booted = true;
-    document.documentElement.dataset.xcVersion = "0.1.0.202610241218";
+    document.documentElement.dataset.xcVersion = "0.1.0.202610242342";
     loadSettings();
     for (const plugin of Object.values(plugins_default))
       registerPlugin(plugin);
@@ -11393,7 +11481,7 @@ body[style*="255, 255, 255"] [data-xc-pin]:hover > div, body[style*="255, 255, 2
     else
       onReady();
     addEventListener("pagehide", () => settingsStore.flush());
-    logger17.info(`${"0.1.0.202610241218"} started with ${Object.keys(plugins_default).length} plugins`);
+    logger17.info(`${"0.1.0.202610242342"} started with ${Object.keys(plugins_default).length} plugins`);
   }
 
   // src/index.ts

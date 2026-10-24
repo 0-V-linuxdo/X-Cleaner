@@ -22,19 +22,35 @@ export const settings = definePluginSettings({
     accountAvatar: { type: OptionType.BOOLEAN, label: N_("账号菜单头像"), description: N_("左下角账号菜单里的头像。"), default: true },
     accountName: { type: OptionType.BOOLEAN, label: N_("账号菜单名字"), description: N_("左下角账号菜单里的昵称和 @handle。"), default: true },
     ownAvatars: { type: OptionType.BOOLEAN, label: N_("自己的头像"), description: N_("页面其他位置（发帖框、自己的帖子）出现的你的头像。"), default: true },
+    settingsInfo: { type: OptionType.BOOLEAN, label: N_("设置页账号信息"), description: N_("「设置」里的用户名、邮箱、手机号和国家，包括「账号信息」页。"), default: true },
     dmNames: { type: OptionType.BOOLEAN, label: N_("私信列表"), description: N_("私信页里对话的头像和名字。"), default: false },
     revealOnHover: { type: OptionType.BOOLEAN, label: N_("悬停时显示"), description: N_("鼠标移上去时暂时取消模糊。"), default: true },
     blur: { type: OptionType.SLIDER, label: N_("模糊程度"), description: "", min: 2, max: 16, step: 1, default: 8, unit: "px" },
 });
 
+/** Rows of 「设置 → 账号信息」 that show a value under their label. */
+export const INFO_ROWS = ["screen_name", "email", "phone", "country"].map(p => `main a[href="/settings/${p}"]`).join(", ");
+export const VALUE_ATTR = "data-xc-streamer-value";
+/** The edit boxes on those rows' own pages. */
+const INFO_INPUTS = ['input[name="typedScreenName"]', 'input[name="current_email"]', 'input[type="tel"]'].map(s => `main ${s}`);
+
+/** Marks every text line of an info row but the first (its label). */
+export function markInfoRow(row: Element): Element[] {
+    const lines = [...row.querySelectorAll("[dir]")].filter(d => !d.querySelector("[dir]"));
+    const values = lines.slice(1);
+    for (const v of values) v.setAttribute(VALUE_ATTR, "");
+    return values;
+}
+
 const escapeAttr = (v: string) => v.replace(/["\\]/g, "\\$&");
 
-export function buildCss(opts: { accountAvatar?: boolean; accountName?: boolean; ownAvatars?: boolean; dmNames?: boolean; revealOnHover?: boolean; blur?: number }, self: string): string {
+export function buildCss(opts: { accountAvatar?: boolean; accountName?: boolean; ownAvatars?: boolean; settingsInfo?: boolean; dmNames?: boolean; revealOnHover?: boolean; blur?: number }, self: string): string {
     const targets: string[] = [];
     if (opts.accountAvatar) targets.push(`${SEL.accountSwitcher} [data-testid^="UserAvatar-Container-"]`);
     // Outermost [dir] only: nested blurs would stack.
     if (opts.accountName) targets.push(`${SEL.accountSwitcher} [dir]:not(${SEL.accountSwitcher} [dir] [dir])`);
     if (opts.ownAvatars && self) targets.push(`[data-testid="UserAvatar-Container-${escapeAttr(self)}" i]`);
+    if (opts.settingsInfo) targets.push(`[${VALUE_ATTR}]`, ...INFO_INPUTS);
     if (opts.dmNames) targets.push('[data-testid="conversation"] [data-testid^="UserAvatar-Container-"]', '[data-testid="conversation"] [dir]:not([data-testid="conversation"] [dir] [dir])');
     const rules: string[] = [];
     if (targets.length) {
@@ -56,12 +72,24 @@ function apply() {
 
 export default definePlugin({
     name: "StreamerMode",
-    description: N_("主播模式：模糊你自己的头像、昵称和 @handle，可选模糊私信列表，截图和录屏时不暴露账号。"),
+    description: N_("主播模式：模糊你自己的头像、昵称和 @handle、设置页里的邮箱和手机号，可选模糊私信列表，截图和录屏时不暴露账号。"),
     icon: Icons.eyeOff,
     tags: ["privacy"],
     settings,
 
     healthChecks: [CHECKS.accountSwitcher],
+    elements: {
+        // X fills a row's value in after the label, so re-mark while the row changes.
+        [INFO_ROWS](row) {
+            markInfoRow(row);
+            const mo = new MutationObserver(() => markInfoRow(row));
+            mo.observe(row, { childList: true, subtree: true });
+            return () => {
+                mo.disconnect();
+                for (const v of row.querySelectorAll(`[${VALUE_ATTR}]`)) v.removeAttribute(VALUE_ATTR);
+            };
+        },
+    },
     start() {
         apply();
         // The handle is only known once X renders the sidebar; keep trying briefly so own avatars get covered.

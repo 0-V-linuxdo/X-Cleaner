@@ -5,7 +5,8 @@
  */
 
 // Void++ SettingsFlyout / PluginsFlyout for X: an 「X Cleaner」 entry in X's own 「更多」 menu that
-// opens the plugin manager, followed by quick switches for the plugins you starred.
+// opens the plugin manager, followed by quick switches for the plugins you starred and shortcuts to
+// X's own muted-word and block lists, which sit three levels deep in X's settings.
 
 import { isPluginEnabled, plugins, setPluginEnabled } from "@api/PluginManager";
 import { definePluginSettings, PlainSettings } from "@api/Settings";
@@ -23,7 +24,24 @@ const WAIT_MS = 1500;
 
 export const settings = definePluginSettings({
     showStarred: { type: OptionType.BOOLEAN, label: N_("显示收藏的插件"), description: N_("在入口下面列出你收藏的插件，点一下就能开关。"), default: true },
+    xMutedWords: { type: OptionType.BOOLEAN, label: N_("快捷方式：隐藏词"), description: N_("打开 X 的「隐藏的字词」设置页。"), default: true },
+    xBlocked: { type: OptionType.BOOLEAN, label: N_("快捷方式：已屏蔽账号"), description: N_("打开 X 的「已屏蔽的账号」列表。"), default: true },
+    xMuted: { type: OptionType.BOOLEAN, label: N_("快捷方式：已隐藏账号"), description: N_("打开 X 的「已隐藏的账号」列表。"), default: true },
 });
+
+/** X's own settings pages that pair with X Cleaner's filters. Only navigates; never changes them. */
+export const X_SHORTCUTS = [
+    { key: "xMutedWords", path: "/settings/muted_keywords", label: N_("X 隐藏词"), icon: Icons.filter },
+    { key: "xBlocked", path: "/settings/blocked/all", label: N_("X 已屏蔽账号"), icon: Icons.ban },
+    { key: "xMuted", path: "/settings/muted/all", label: N_("X 已隐藏账号"), icon: Icons.eyeOff },
+] as const;
+
+/** Client-side navigation through X's own router, like clicking one of its links. */
+export function goTo(path: string) {
+    if (location.pathname === path) return;
+    history.pushState({}, "", path);
+    dispatchEvent(new PopStateEvent("popstate"));
+}
 
 /** The last row of X's 「更多」 menu (「设置和隐私」), whose wrapper we copy. */
 function templateRow(menu: Element): HTMLElement | null {
@@ -68,6 +86,9 @@ export function fillMoreMenu(menu: Element): HTMLElement[] {
             });
         }
     }
+    for (const sc of X_SHORTCUTS) {
+        if (settings.store[sc.key]) add(`x:${sc.key}`, t(sc.label), sc.icon, () => goTo(sc.path));
+    }
     return rows;
 }
 
@@ -91,7 +112,7 @@ function onClick(e: MouseEvent) {
 
 export default definePlugin({
     name: "MoreMenuEntry",
-    description: N_("在 X 左侧栏的「更多」菜单里加一个「X Cleaner 插件管理」入口，并列出收藏的插件供快速开关。"),
+    description: N_("在 X 左侧栏的「更多」菜单里加一个「X Cleaner 插件管理」入口，并列出收藏的插件供快速开关，以及 X 隐藏词、已屏蔽和已隐藏账号的快捷方式。"),
     icon: Icons.menu,
     tags: ["core", "appearance"],
     enabledByDefault: true,

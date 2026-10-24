@@ -303,7 +303,7 @@ describe("MoreMenuEntry", () => {
         setPluginEnabled("MoreMenuEntry", true);
         const { menu } = mountMenu('<div><div><a href="/settings" role="link" data-testid="settings"><svg class="r-icon"></svg><div dir="ltr"><span>Settings and privacy</span></div></a></div></div>');
         const rows = fillMoreMenu(menu);
-        expect(rows.map(r => r.getAttribute(ENTRY_ATTR))).toEqual(["manager", "plugin:Declutter"]);
+        expect(rows.map(r => r.getAttribute(ENTRY_ATTR))).toEqual(["manager", "plugin:Declutter", "x:xMutedWords", "x:xBlocked", "x:xMuted"]);
         expect(rows[0].textContent).toBe("X Cleaner 插件管理");
         expect(rows[0].querySelector("a")!.hasAttribute("href")).toBe(false);
         expect(rows[1].textContent).toBe("启用 Declutter");

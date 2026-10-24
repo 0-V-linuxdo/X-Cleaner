@@ -56,14 +56,14 @@ X Cleaner 是 x.com 的用户脚本，在帖子详情页隐藏成人引流、加
 | `_core/UserStyles` | 应用「主题」（https 链接或本地 .css）与「快速 CSS」；插件管理器对应两个标签页 | — |
 | `_api/PostMenuAPI` | 帖子和主页「…」菜单钩子 `postMenuItems` / `profileMenuItems`：克隆 X 原生行插入自定义项（黑名单、白名单、生成规则、AI 复核、导出已接入） | — |
 | `ExportThread` | 帖子页「…」菜单导出主帖和已加载的回复（Markdown / JSON），标出被隐藏的回复和原因 | — |
-| `MoreMenuEntry` | X 左侧「更多」菜单里的「X Cleaner 插件管理」入口，及星标插件的快捷开关 | — |
+| `MoreMenuEntry` | X 左侧「更多」菜单里的「X Cleaner 插件管理」入口，星标插件的快捷开关，以及 X 隐藏词、已屏蔽和已隐藏账号的快捷方式 | — |
 | `SelectorHealth` | 选择器健康检查：页面结构变化导致插件找不到元素时，在插件卡片和顶部通知条提示 | — |
 | `Declutter` | 隐藏 Premium 推销、推广帖、Grok 按钮、浏览量等（逐项开关） | — |
 | `RightSidebarCleaner` | 隐藏右侧栏的「有什么新鲜事」趋势、「推荐关注」、页脚链接和 Premium 页的合并订阅推广（逐项开关，默认全部隐藏） | — |
 | `HidePostEntries` | 隐藏发帖入口：主页时间线顶部的发帖框、左侧栏的「发帖」按钮（逐项开关，默认全部隐藏） | — |
-| `StreamerMode` | 直播 / 截图模式：模糊自己的头像、名字和私信列表名字，可悬停显示；可把账号菜单里的名字换成别名 | — |
+| `StreamerMode` | 直播 / 截图模式：模糊自己的头像、名字、设置页里的邮箱和手机号、私信列表名字，可悬停显示；可把账号菜单里的名字换成别名 | — |
 | `WiderTimeline` | 加宽时间线（600–1200px），可隐藏右侧栏 | — |
 | `AbsoluteTimestamps` | 把「3 小时」之类相对时间换成绝对时间（智能 / 完整 / 精确到秒） | — |
-| `BetterLinks` | 悬停时把 t.co 换成真实链接、显示完整 URL、自定义链接颜色 | — |
+| `BetterLinks` | 悬停时把 t.co 换成真实链接、显示完整 URL、用取色器自定义链接颜色 | — |
 
 新功能的写法：在 `src/plugins/<名字>/index.ts` 里 `definePlugin({...})`，按需声明 `replyJudges`（判定器）、`panelPages`（面板页面）、`reviewActions`（复查操作）、`events`（订阅 `replyHidden` 等事件）。构建时自动发现，不需要改内核。

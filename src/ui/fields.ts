@@ -55,6 +55,9 @@ export function listEditor(values: string[], onChange: (v: string[]) => void, op
     return h("div", { class: "xc-list-editor" }, items, h("div", { class: "xc-field-row" }, input, h("button", { class: "xc-btn xc-btn-sm", type: "button", onclick: add }, t("添加"))), error);
 }
 
+const HEX_RE = /^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i;
+const expandHex = (v: string) => (v.length === 4 ? `#${[...v.slice(1)].map(c => c + c).join("")}` : v).toLowerCase();
+
 function control(key: string, def: SettingDef, settings: DefinedSettings, onError: (msg: string | null) => void): HTMLElement {
     const store = settings.store as Record<string, any>;
     const set = (value: unknown) => {
@@ -108,6 +111,32 @@ function control(key: string, def: SettingDef, settings: DefinedSettings, onErro
         }
         case OptionType.LIST:
             return listEditor(store[key] ?? [], v => set(v), { placeholder: def.itemPlaceholder, isValid: def.isValid });
+        case OptionType.COLOR: {
+            // <input type=color> only speaks #rrggbb, so the text box keeps names like "orange" working.
+            const text = h("input", { class: "xc-input", type: "text", placeholder: def.placeholder && t(def.placeholder), disabled, autocomplete: "off", style: "max-width:140px" });
+            const picker = h("input", { class: "xc-color", type: "color", disabled, "aria-label": def.label ? t(def.label) : key });
+            const reset = h("button", { class: "xc-btn xc-btn-sm", type: "button", disabled }, t("清除"));
+            const fallback = HEX_RE.test(def.placeholder ?? "") ? def.placeholder!.toLowerCase() : "#000000";
+            const commit = (value: string) => {
+                const valid = def.isValid?.(value) ?? true;
+                onError(valid === true ? null : t(valid));
+                if (valid !== true) return;
+                set(value);
+                sync(value);
+            };
+            const sync = (value: string) => {
+                text.value = value;
+                picker.value = HEX_RE.test(value.trim()) ? expandHex(value.trim()) : fallback;
+                picker.classList.toggle("xc-color-unset", !value.trim());
+                reset.disabled = disabled || !value.trim();
+            };
+            sync(store[key] ?? "");
+            picker.addEventListener("input", () => { text.value = picker.value; picker.classList.remove("xc-color-unset"); });
+            picker.addEventListener("change", () => commit(picker.value));
+            text.addEventListener("change", () => commit(text.value.trim()));
+            reset.addEventListener("click", () => commit(String(def.default ?? "")));
+            return h("div", { class: "xc-field-row xc-color-row" }, picker, text, reset);
+        }
         case OptionType.CUSTOM:
             return def.render({ get: () => store[key], set, pluginName: settings.pluginName });
     }
@@ -116,7 +145,7 @@ function control(key: string, def: SettingDef, settings: DefinedSettings, onErro
 export function renderSettingField(key: string, def: SettingDef, settings: DefinedSettings): HTMLElement {
     const error = h("div", { class: "xc-field-error", hidden: true });
     const ctrl = control(key, def, settings, msg => { error.textContent = msg ?? ""; error.hidden = !msg; });
-    const inline = def.type === OptionType.BOOLEAN || def.type === OptionType.SELECT || def.type === OptionType.NUMBER;
+    const inline = def.type === OptionType.BOOLEAN || def.type === OptionType.SELECT || def.type === OptionType.NUMBER || def.type === OptionType.COLOR;
     const label = h("div", null,
         h("div", { class: "xc-field-label" }, def.label ? t(def.label) : key, def.restartNeeded ? h("span", { class: "xc-badge", style: "margin-left:6px" }, t("需刷新")) : null),
         def.description ? h("div", { class: "xc-field-desc" }, t(def.description)) : null,
