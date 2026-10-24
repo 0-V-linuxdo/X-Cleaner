@@ -4,8 +4,8 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-// Hides the three cards under the search box in X's right sidebar. Each card's wrapper is matched
-// by what it holds (trend rows, user cells, the footer nav), since X gives the wrappers no testid.
+// Hides the cards in X's right sidebar. Each card's wrapper is matched by what it holds (trend rows,
+// user cells, the footer nav, the upgrade banner), since X gives the wrappers no testid.
 
 import { definePluginSettings } from "@api/Settings";
 import { Icons } from "@ui/icons";
@@ -22,6 +22,7 @@ export const settings = definePluginSettings({
     hideTrends: opt(N_("有什么新鲜事"), N_("「What's happening」趋势卡片。")),
     hideWhoToFollow: opt(N_("推荐关注"), N_("「Who to follow」卡片，帖子页的「相关用户」也算。")),
     hideFooter: opt(N_("页脚链接"), N_("服务条款、隐私政策、Cookie、© X Corp. 那一排链接。")),
+    hideSubscriptionPromo: opt(N_("合并订阅推广"), N_("Premium 页右侧「Unlock the new X Subscription」卡片。帮助中心、管理订阅等链接保留。")),
 });
 
 type Key = keyof typeof settings.def;
@@ -31,6 +32,9 @@ export const RULES: Record<Key, string> = {
     hideTrends: `${SIDE} div:has(> section [data-testid="trend"])`,
     hideWhoToFollow: `${SIDE} div:has(> div > aside [data-testid="UserCell"])`,
     hideFooter: `${SIDE} div:has(> nav[role="navigation"])`,
+    // The card is a banner (X's upgrade-card image) over a text block holding the button; the links
+    // block next to it has neither, so only the card itself matches.
+    hideSubscriptionPromo: `${SIDE} div:has(> div img[src*="/upgrade-card"]):has(> div > button)`,
 };
 
 // X keeps empty bordered card boxes between the cards; with the cards gone they are left as a 2px
@@ -53,7 +57,7 @@ function apply() {
 export default definePlugin({
     name: "RightSidebarCleaner",
     oldNames: ["SidebarWidgets"],
-    description: N_("隐藏右侧栏三大件：「有什么新鲜事」趋势、「推荐关注」和底部页脚链接，可分别开关。"),
+    description: N_("隐藏右侧栏的干扰卡片：「有什么新鲜事」趋势、「推荐关注」、底部页脚链接，以及 Premium 页的合并订阅推广，可分别开关。"),
     icon: Icons.eyeOff,
     tags: ["appearance", "declutter"],
     enabledByDefault: true,

@@ -596,7 +596,9 @@ const en: Record<string, string> = {
     "「Who to follow」卡片，帖子页的「相关用户」也算。": "The “Who to follow” card, including “Relevant people” on post pages.",
     "页脚链接": "Footer links",
     "服务条款、隐私政策、Cookie、© X Corp. 那一排链接。": "The row of Terms of Service, Privacy Policy, Cookie and © X Corp. links.",
-    "隐藏右侧栏三大件：「有什么新鲜事」趋势、「推荐关注」和底部页脚链接，可分别开关。": "Hides the three right-sidebar cards, each on its own switch: “What's happening” trends, “Who to follow” and the footer links.",
+    "合并订阅推广": "X Subscription promo",
+    "Premium 页右侧「Unlock the new X Subscription」卡片。帮助中心、管理订阅等链接保留。": "The “Unlock the new X Subscription” card on the Premium page. The Help Center and Manage subscription links stay.",
+    "隐藏右侧栏的干扰卡片：「有什么新鲜事」趋势、「推荐关注」、底部页脚链接，以及 Premium 页的合并订阅推广，可分别开关。": "Hides right-sidebar cards, each on its own switch: “What's happening” trends, “Who to follow”, the footer links and the X Subscription promo on the Premium page.",
 
     "首页发帖框": "Home post box",
     "主页时间线顶部的「有什么新鲜事？」发帖框。帖子页的回复框不受影响。": "The “What's happening?” box on top of the Home timeline. The reply box on post pages stays.",

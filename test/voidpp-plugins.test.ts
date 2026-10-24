@@ -112,6 +112,20 @@ describe("RightSidebarCleaner", () => {
         expect(SIDEBAR_DIVIDER).toContain(':not(div:has(form[role="search"]) + div)');
     });
 
+    test("the subscription promo rule hides the card on the Premium page but keeps its links", () => {
+        // Shape of x.com/i/premium's sidebar: the promo card, then the help / support / manage links.
+        document.body.innerHTML = `<div data-testid="sidebarColumn"><div aria-label="Trending"><div>
+            <div id="promo"><div><div><img src="https://abs.twimg.com/responsive-web/client-web/upgrade-card.3f19.jpg"></div></div>
+                <div><div>Unlock the new X Subscription</div><button>Get started</button></div></div>
+            <div id="links"><div><a href="https://help.x.com/en/using-x/x-premium">Help Center</a><a href="/settings/subscription">Manage</a></div></div>
+        </div></div></div>`;
+        // happy-dom treats `:has(> …)` as a plain descendant match, so it cannot tell the card from the
+        // links block; on x.com the rule matches only the card (checked in Chrome).
+        const ids = [...document.querySelectorAll(SIDEBAR_RULES.hideSubscriptionPromo)].map(e => e.id);
+        expect(ids).toContain("promo");
+        expect(SIDEBAR_RULES.hideSubscriptionPromo).toContain(":has(> div > button)");
+    });
+
     test("is on by default with all three cards hidden, and cleans up on stop", () => {
         expect(plugins.RightSidebarCleaner.enabledByDefault).toBe(true);
         setPluginEnabled("RightSidebarCleaner", true);
