@@ -136,22 +136,23 @@ describe("plugin manager", () => {
     test("renders in X's language", () => {
         setLang("en");
         openSettingsPanel();
-        expect(navText()).toEqual(["Plugins", "Themes", "Quick CSS", "Backup"]);
+        expect(navText()).toEqual(["Plugins", "Themes", "Quick CSS", "Backup", "Language"]);
         [...document.querySelectorAll<HTMLButtonElement>(".xc-pm-tab")].find(b => b.textContent === "All")!.click();
         const card = document.querySelector<HTMLElement>('.xc-pm-card[data-plugin="TombstoneFilter"] .xc-pm-card-desc')!;
         expect(card.textContent).toBe(en[plugins.TombstoneFilter.description]);
         expect(document.querySelector<HTMLInputElement>(".xc-pm-search")!.placeholder).toMatch(/^Search \d+ plugins…$/);
     });
 
-    test("the language picker switches and re-renders the dialog", () => {
-        openSettingsPanel();
-        expect(navText()[0]).toBe("插件");
-        const select = document.querySelector<HTMLSelectElement>(".xc-pm-lang select")!;
-        expect(select.value).toBe("auto");
-        select.value = "en";
-        select.dispatchEvent(new Event("change"));
+    test("the Language tab sits next to Backup and switches the language", () => {
+        openSettingsPanel({ tab: "language" });
+        expect(navText()).toEqual(["插件", "主题", "快速 CSS", "备份", "语言"]);
+        const radio = (v: string) => document.querySelector<HTMLInputElement>(`.xc-pm-lang-option[data-locale="${v}"] input`)!;
+        expect(radio("auto").checked).toBe(true);
+        radio("en").click();
         expect(Settings.core.language).toBe("en");
-        expect(navText()[0]).toBe("Plugins");
+        expect(navText()).toEqual(["Plugins", "Themes", "Quick CSS", "Backup", "Language"]);
+        expect(document.querySelector(".xc-pm-title")!.textContent).toBe("Language");
+        expect(radio("en").checked).toBe(true);
         expect(document.querySelectorAll(".xc-pm-overlay").length).toBe(1);
     });
 });

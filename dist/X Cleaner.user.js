@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         X Cleaner
 // @namespace    https://github.com/0-V-linuxdo/x-cleaner
-// @version      0.1.0.202610241122
+// @version      0.1.0.202610241136
 // @description  A plugin-based cleaner for x.com: hide adult promotion, crypto funnels and promotional reply accounts. Includes review, lists, safe regex rules and optional AI-assisted rule drafts.
 // @author       X Cleaner Contributors
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z'/%3E%3Cpath d='m4.5 4.5 15 15'/%3E%3C/svg%3E
@@ -663,7 +663,10 @@
 [data-testid="sidebarColumn"] { display: none; }`,
     "启用快速 CSS": "Enable Quick CSS",
     "在所有主题之后加载，所以同名规则以这里为准。": "Loaded after all themes, so its rules win over theirs.",
-    "跟随 X（{name}）": "Follow X ({name})",
+    "语言": "Language",
+    "跟随 X": "Follow X",
+    "和 X 的显示语言一致，现在是 {name}。": "Same as X's display language, currently {name}.",
+    "X Cleaner 的界面语言，默认跟随 X 自己的语言设置。": "The language X Cleaner's interface uses. By default it follows X's own language setting.",
     "界面语言": "Language",
     "开发版": "Dev build",
     "正式版": "Release",
@@ -2286,6 +2289,7 @@ ${TOOLTIP_CSS}`,
     download: icon('<path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/>'),
     widen: icon('<path d="M21 12H3"/><path d="m7 8-4 4 4 4"/><path d="m17 8 4 4-4 4"/>'),
     heartPulse: icon('<path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/><path d="M3.22 12H9.5l.5-1 2 4.5 2-7 1.5 3.5h5.27"/>'),
+    languages: icon('<path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/>'),
     menu: icon('<path d="M4 12h16"/><path d="M4 18h16"/><path d="M4 6h16"/>'),
     ellipsis: icon('<circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/>')
   };
@@ -2989,24 +2993,36 @@ ${TOOLTIP_CSS}`,
       }
     };
   }
+  function languageTab() {
+    const current = getLocalePreference();
+    const options = [
+      { value: "auto", name: t("跟随 X"), hint: t("和 X 的显示语言一致，现在是 {name}。", { name: LOCALE_NAMES[xLocale()] }) },
+      { value: "zh", name: LOCALE_NAMES.zh, hint: "" },
+      { value: "en", name: LOCALE_NAMES.en, hint: "" }
+    ];
+    const banner = reloadBanner();
+    const rows = options.map((o) => {
+      const radio = h("input", { type: "radio", name: "xc-pm-language", value: o.value, checked: o.value === current });
+      radio.addEventListener("change", () => {
+        setLocalePreference(o.value);
+        markReloadNeeded("language");
+        openSettingsPanel({ tab: "language" });
+      });
+      return h("label", { class: `xc-pm-row xc-pm-lang-option${o.value === current ? " is-active" : ""}`, dataset: { locale: o.value } }, h("div", { class: "xc-pm-row-body" }, h("strong", null, o.name), o.hint ? h("span", { class: "xc-muted" }, o.hint) : null), h("div", { class: "xc-pm-row-actions" }, radio));
+    });
+    return {
+      el: h("div", { class: "xc-pm-tab-root" }, banner.el, h("div", { class: "xc-pm-lang-list", role: "radiogroup", "aria-label": t("界面语言") }, rows)),
+      dispose: banner.dispose
+    };
+  }
   var TABS = [
     { id: "plugins", name: N_("插件"), icon: Icons.unplug, description: N_("开关功能。点击滑杆图标进入配置。"), render: (ctx) => pluginsTab(ctx) },
     { id: "themes", name: N_("主题"), icon: Icons.palette, description: N_("从网址或本地 .css 文件添加主题，每个主题单独开关。"), render: () => themesTab() },
     { id: "quickCss", name: N_("快速 CSS"), icon: Icons.braces, description: N_("直接写 CSS 改 X 的样式，输入后立即生效，不需要刷新。"), render: () => quickCssTab() },
-    { id: "backup", name: N_("备份"), icon: Icons.archive, render: () => backupTab() }
+    { id: "backup", name: N_("备份"), icon: Icons.archive, render: () => backupTab() },
+    { id: "language", name: N_("语言"), icon: Icons.languages, description: N_("X Cleaner 的界面语言，默认跟随 X 自己的语言设置。"), render: () => languageTab() }
   ];
   var closeCurrent = null;
-  function languagePicker(onChange) {
-    const options = [["auto", t("跟随 X（{name}）", { name: LOCALE_NAMES[xLocale()] })], ["zh", LOCALE_NAMES.zh], ["en", LOCALE_NAMES.en]];
-    const select = h("select", { class: "xc-select", "aria-label": t("界面语言") }, options.map(([value, label]) => h("option", { value }, label)));
-    select.value = getLocalePreference();
-    select.addEventListener("change", () => {
-      setLocalePreference(select.value);
-      markReloadNeeded("language");
-      onChange();
-    });
-    return h("label", { class: "xc-pm-lang" }, h("span", null, t("界面语言")), select);
-  }
   function openSettingsPanel(options = {}) {
     closeCurrent?.();
     let current = null;
@@ -3016,8 +3032,8 @@ ${TOOLTIP_CSS}`,
     const hint = h("span", { class: "xc-pm-hint", tabindex: "0" }, svgIcon(Icons.info, 14));
     const hintTip = attachTooltip(hint, () => t(TABS.find((tab) => tab.id === activeId)?.description ?? ""), "bottom");
     const body = h("div", { class: "xc-pm-body" });
-    const version = h("div", { class: "xc-pm-version" }, h("div", null, "X Cleaner · ", "0.1.0.202610241122"), h("div", null, t("正式版"), " · ", t("用户脚本")), h("div", null, h("a", { href: "https://raw.githubusercontent.com/0-V-linuxdo/X-Cleaner/main/dist/X%20Cleaner.user.js", target: "_blank", rel: "noopener" }, t("检查更新")), " · ", h("a", { href: `${"https://github.com/0-V-linuxdo/X-Cleaner"}/commits/main`, target: "_blank", rel: "noopener" }, t("更新记录"))));
-    const content = h("div", { class: "xc-pm-shell" }, h("aside", { class: "xc-pm-sidebar" }, nav, h("div", { class: "xc-pm-foot" }, languagePicker(() => openSettingsPanel({ tab: activeId })), version)), h("section", { class: "xc-pm-main" }, h("header", { class: "xc-pm-header" }, heading, hint, closeButton(() => close())), body));
+    const version = h("div", { class: "xc-pm-version" }, h("div", null, "X Cleaner · ", "0.1.0.202610241136"), h("div", null, t("正式版"), " · ", t("用户脚本")), h("div", null, h("a", { href: "https://raw.githubusercontent.com/0-V-linuxdo/X-Cleaner/main/dist/X%20Cleaner.user.js", target: "_blank", rel: "noopener" }, t("检查更新")), " · ", h("a", { href: `${"https://github.com/0-V-linuxdo/X-Cleaner"}/commits/main`, target: "_blank", rel: "noopener" }, t("更新记录"))));
+    const content = h("div", { class: "xc-pm-shell" }, h("aside", { class: "xc-pm-sidebar" }, nav, version), h("section", { class: "xc-pm-main" }, h("header", { class: "xc-pm-header" }, heading, hint, closeButton(() => close())), body));
     const show = (id, plugin) => {
       activeId = id;
       current?.dispose?.();
@@ -3057,10 +3073,7 @@ ${TOOLTIP_CSS}`,
 .xc-pm-nav-item { display: flex; align-items: center; gap: 0.625rem; width: 100%; padding: 0.5rem 0.625rem; border: 0; border-radius: 0.5rem; background: transparent; color: var(--xc-fg-2); font: inherit; font-weight: 500; text-align: left; cursor: pointer; }
 .xc-pm-nav-item:hover { background: var(--xc-bg-3); color: var(--xc-fg); }
 .xc-pm-nav-item.is-active { background: var(--xc-bg-3); color: var(--xc-fg); }
-.xc-pm-foot { position: absolute; left: 0; right: 0; bottom: 0; padding: 0.75rem; display: flex; flex-direction: column; gap: 0.625rem; }
-.xc-pm-lang { display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.75rem; color: var(--xc-fg-2); }
-.xc-pm-lang .xc-select { width: 100%; font-size: 0.8125rem; }
-.xc-pm-version { font-size: 0.625rem; line-height: 1rem; color: var(--xc-fg-2); opacity: 0.5; user-select: text; }
+.xc-pm-version { position: absolute; left: 0; right: 0; bottom: 0; padding: 0.75rem; font-size: 0.625rem; line-height: 1rem; color: var(--xc-fg-2); opacity: 0.5; user-select: text; }
 .xc-pm-version a { color: inherit; text-decoration: underline; }
 .xc-pm-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .xc-pm-header { display: flex; align-items: center; gap: 0.375rem; padding: 1rem 1.25rem 0.75rem; }
@@ -3136,6 +3149,10 @@ ${TOOLTIP_CSS}`,
 .xc-pm-row-body { display: flex; flex-direction: column; gap: 0.25rem; min-width: 0; font-size: 0.8125rem; }
 .xc-pm-row-body strong { font-size: 0.875rem; font-weight: 500; }
 .xc-pm-row-actions { display: flex; gap: 0.5rem; flex: none; }
+.xc-pm-lang-list { display: flex; flex-direction: column; gap: 0.5rem; }
+.xc-pm-lang-option { cursor: pointer; }
+.xc-pm-lang-option:hover, .xc-pm-lang-option.is-active { border-color: var(--xc-accent); }
+.xc-pm-lang-option input { margin: 0; accent-color: var(--xc-accent); cursor: pointer; }
 
 /* The drawer's 「插件」 tab reuses the cards in one column. */
 .xc-pm-page { display: flex; flex-direction: column; gap: 0.75rem; }
@@ -3147,7 +3164,6 @@ ${TOOLTIP_CSS}`,
     .xc-pm-sidebar { width: 100%; padding: 0.5rem; border-right: 0; border-bottom: 1px solid var(--xc-border); }
     .xc-pm-nav { flex-direction: row; }
     .xc-pm-nav-item { width: auto; }
-    .xc-pm-foot { position: static; padding: 0.5rem 0 0; }
     .xc-pm-version { display: none; }
     .xc-pm-grid { grid-template-columns: minmax(0, 1fr); }
 }
@@ -10762,7 +10778,7 @@ Write rule.name and reason in ${aiLanguageName()}.` }
     else
       onReady();
     addEventListener("pagehide", () => settingsStore.flush());
-    logger17.info(`${"0.1.0.202610241122"} started with ${Object.keys(plugins_default).length} plugins`);
+    logger17.info(`${"0.1.0.202610241136"} started with ${Object.keys(plugins_default).length} plugins`);
   }
 
   // src/index.ts

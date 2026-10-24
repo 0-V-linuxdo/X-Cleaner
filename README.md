@@ -8,7 +8,7 @@ X Cleaner 是 x.com 的用户脚本，在帖子详情页隐藏成人引流、加
 
 - 安装：打开 <https://raw.githubusercontent.com/0-V-linuxdo/X-Cleaner/main/dist/X%20Cleaner.user.js>，在 Tampermonkey / Violentmonkey 里确认安装（Helium 同样适用）。
 - 更新：脚本头带 `@updateURL` / `@downloadURL`，脚本管理器会从仓库 `main` 分支自动检查新版本；插件管理左下角的「检查更新」可以立即检查。每次改动都要把 `dist/` 下的构建产物一起提交。
-- 语言：界面默认跟随 X 自己的语言设置（`<html lang>`），目前支持简体中文和英文；插件管理左下角的「界面语言」可以手动指定。
+- 语言：界面默认跟随 X 自己的语言设置（`<html lang>`），目前支持简体中文和英文；插件管理侧栏的「语言」标签页可以手动指定。
 - 构建：`bun install && bun run build`，产物在 `dist/`。
 - 测试：`bun test`（happy-dom 单元与集成测试），`bunx tsc --noEmit`（类型检查）。
 - 浏览器冒烟：`URL=https://x.com/op/status/100 ACTIONS=$PWD/scripts/smoke-extra.mjs node scripts/smoke.mjs test/fixtures/x-status.html`。

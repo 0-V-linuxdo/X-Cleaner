@@ -456,28 +456,43 @@ function quickCssTab() {
     };
 }
 
+/** 「语言」: follows X by default; picking one re-opens the dialog in that language. */
+function languageTab() {
+    const current = getLocalePreference();
+    const options: { value: LocalePreference; name: string; hint: string }[] = [
+        { value: "auto", name: t("跟随 X"), hint: t("和 X 的显示语言一致，现在是 {name}。", { name: LOCALE_NAMES[xLocale()] }) },
+        { value: "zh", name: LOCALE_NAMES.zh, hint: "" },
+        { value: "en", name: LOCALE_NAMES.en, hint: "" },
+    ];
+    const banner = reloadBanner();
+    const rows = options.map(o => {
+        const radio = h("input", { type: "radio", name: "xc-pm-language", value: o.value, checked: o.value === current });
+        radio.addEventListener("change", () => {
+            setLocalePreference(o.value);
+            // Menus X Cleaner already added to the page keep their old text until a reload.
+            markReloadNeeded("language");
+            openSettingsPanel({ tab: "language" });
+        });
+        return h("label", { class: `xc-pm-row xc-pm-lang-option${o.value === current ? " is-active" : ""}`, dataset: { locale: o.value } },
+            h("div", { class: "xc-pm-row-body" }, h("strong", null, o.name), o.hint ? h("span", { class: "xc-muted" }, o.hint) : null),
+            h("div", { class: "xc-pm-row-actions" }, radio),
+        );
+    });
+    return {
+        el: h("div", { class: "xc-pm-tab-root" }, banner.el, h("div", { class: "xc-pm-lang-list", role: "radiogroup", "aria-label": t("界面语言") }, rows)),
+        dispose: banner.dispose,
+    };
+}
+
 const TABS: SettingsTab[] = [
     { id: "plugins", name: N_("插件"), icon: Icons.unplug, description: N_("开关功能。点击滑杆图标进入配置。"), render: ctx => pluginsTab(ctx) },
     { id: "themes", name: N_("主题"), icon: Icons.palette, description: N_("从网址或本地 .css 文件添加主题，每个主题单独开关。"), render: () => themesTab() },
     { id: "quickCss", name: N_("快速 CSS"), icon: Icons.braces, description: N_("直接写 CSS 改 X 的样式，输入后立即生效，不需要刷新。"), render: () => quickCssTab() },
     { id: "backup", name: N_("备份"), icon: Icons.archive, render: () => backupTab() },
+    { id: "language", name: N_("语言"), icon: Icons.languages, description: N_("X Cleaner 的界面语言，默认跟随 X 自己的语言设置。"), render: () => languageTab() },
 ];
 
 let closeCurrent: (() => void) | null = null;
-
-/** 「界面语言」: follows X by default; a change re-opens the dialog in the new language. */
-function languagePicker(onChange: () => void): HTMLElement {
-    const options: [LocalePreference, string][] = [["auto", t("跟随 X（{name}）", { name: LOCALE_NAMES[xLocale()] })], ["zh", LOCALE_NAMES.zh], ["en", LOCALE_NAMES.en]];
-    const select = h("select", { class: "xc-select", "aria-label": t("界面语言") }, options.map(([value, label]) => h("option", { value }, label)));
-    select.value = getLocalePreference();
-    select.addEventListener("change", () => {
-        setLocalePreference(select.value as LocalePreference);
-        // Menus X Cleaner already added to the page keep their old text until a reload.
-        markReloadNeeded("language");
-        onChange();
-    });
-    return h("label", { class: "xc-pm-lang" }, h("span", null, t("界面语言")), select);
-}
 
 export function openSettingsPanel(options: { tab?: string; plugin?: string } = {}): () => void {
     closeCurrent?.();
@@ -497,7 +512,7 @@ export function openSettingsPanel(options: { tab?: string; plugin?: string } = {
             h("a", { href: `${REPO_URL}/commits/main`, target: "_blank", rel: "noopener" }, t("更新记录"))),
     );
     const content = h("div", { class: "xc-pm-shell" },
-        h("aside", { class: "xc-pm-sidebar" }, nav, h("div", { class: "xc-pm-foot" }, languagePicker(() => openSettingsPanel({ tab: activeId })), version)),
+        h("aside", { class: "xc-pm-sidebar" }, nav, version),
         h("section", { class: "xc-pm-main" }, h("header", { class: "xc-pm-header" }, heading, hint, closeButton(() => close())), body),
     );
 
