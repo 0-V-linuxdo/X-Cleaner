@@ -470,6 +470,10 @@ export function openSettingsPanel(options: { tab?: string; plugin?: string } = {
     const version = h("div", { class: "xc-pm-version" },
         h("div", null, "X Cleaner · ", VERSION),
         h("div", null, IS_DEV ? "开发版" : "正式版", " · 用户脚本"),
+        // Opening the script URL makes the script manager compare versions and offer the update.
+        h("div", null,
+            h("a", { href: DOWNLOAD_URL, target: "_blank", rel: "noopener" }, "检查更新"), " · ",
+            h("a", { href: `${REPO_URL}/commits/main`, target: "_blank", rel: "noopener" }, "更新记录")),
     );
     const content = h("div", { class: "xc-pm-shell" },
         h("aside", { class: "xc-pm-sidebar" }, nav, version),

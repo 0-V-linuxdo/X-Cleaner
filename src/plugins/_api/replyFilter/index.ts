@@ -13,6 +13,8 @@ import type { PanelContext } from "@plugins/panel/types";
 import { h } from "@ui/h";
 import definePlugin, { StartAt } from "@utils/types";
 
+import type { ReplyContext } from "@x/dom";
+
 import { getConfigStore } from "../blockerConfig";
 import { CHECKS } from "@x/health";
 
@@ -29,6 +31,18 @@ export function disposeController() {
 
 export function isFilterActive(): boolean {
     return !!controller?.active;
+}
+
+/** A reply the user may act on by hand (shield button, 「…」 menu): in scope, not OP, self or promoted. */
+export function eligibleReplyContext(article: HTMLElement): ReplyContext | null {
+    if (!isFilterActive()) return null;
+    const c = getController();
+    if (!c.config.enabled || !c.route.isStatusRoute || !c.selfHandle || !article.isConnected) return null;
+    const ctx = c.extract(article);
+    if (!ctx || !ctx.opIdentityKnown || ctx.isPromoted) return null;
+    if (c.isProtected(ctx)) return null;
+    if (!c.inScope(ctx, "manual")) return null;
+    return ctx;
 }
 
 const LEVELS: [Sensitivity, string][] = [["conservative", "保守"], ["balanced", "均衡"], ["aggressive", "激进"]];

@@ -8,7 +8,7 @@ import { findAccount } from "@rules/lists";
 import { Icons } from "@ui/icons";
 import definePlugin from "@utils/types";
 
-import { blacklistMenuItem } from "./menu";
+import { blacklistMenuItem, blacklistProfileItem } from "./menu";
 import { createAccountsPage } from "./page";
 
 export default definePlugin({
@@ -18,6 +18,7 @@ export default definePlugin({
     tags: ["filters", "moderation"],
     enabledByDefault: true,
     postMenuItems: [blacklistMenuItem],
+    profileMenuItems: [blacklistProfileItem],
     panelPages: [{ tab: "blacklist", id: "accounts", label: "账号", order: 40, isDefault: true, create: createAccountsPage }],
     replyJudges: [
         {

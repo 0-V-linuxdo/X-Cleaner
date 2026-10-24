@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         X Cleaner
 // @namespace    https://github.com/0-V-linuxdo/x-cleaner
-// @version      0.1.0.202610240210
+// @version      0.1.0.202610240411
 // @description  A plugin-based cleaner for x.com: hide adult promotion, crypto funnels and promotional reply accounts. Includes review, lists, safe regex rules and optional AI-assisted rule drafts.
 // @author       X Cleaner Contributors
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z'/%3E%3Cpath d='m4.5 4.5 15 15'/%3E%3C/svg%3E
@@ -24,6 +24,10 @@
 // @grant        GM_info
 // @connect      *
 // @license      GPL-3.0-or-later
+// @homepageURL  https://github.com/0-V-linuxdo/X-Cleaner
+// @supportURL   https://github.com/0-V-linuxdo/X-Cleaner/issues
+// @updateURL    https://raw.githubusercontent.com/0-V-linuxdo/X-Cleaner/main/dist/X%20Cleaner.meta.js
+// @downloadURL  https://raw.githubusercontent.com/0-V-linuxdo/X-Cleaner/main/dist/X%20Cleaner.user.js
 // ==/UserScript==
 
 (() => {
@@ -788,7 +792,7 @@
       Settings.core.knownPlugins = known;
   }
 
-  // xc-css:/home/claude/work/x-cleaner/src/ui/base.css
+  // xc-css:/home/claude/x-cleaner/src/ui/base.css
   var base_default = `:root {
     --xc-bg: #ffffff;
     --xc-bg-2: #f7f9f9;
@@ -1056,6 +1060,7 @@
     tombstone: '[data-testid="tombstone"]',
     quote: '[data-testid="quoteTweet"], [data-testid="tweetQuote"], [data-testid="quotedTweet"], [data-testid="card.wrapper"]',
     caret: '[data-testid="caret"]',
+    userActions: '[data-testid="userActions"]',
     profileLink: 'a[data-testid="AppTabBar_Profile_Link"][href]',
     accountSwitcher: '[data-testid="SideNav_AccountSwitcher_Button"]',
     grokDrawer: '#layers [data-testid="GrokDrawer"]'
@@ -1615,6 +1620,7 @@ ${TOOLTIP_CSS}`,
     refresh: icon('<path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/>'),
     link: icon('<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>'),
     clock: icon('<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>'),
+    download: icon('<path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/>'),
     widen: icon('<path d="M21 12H3"/><path d="m7 8-4 4 4 4"/><path d="m17 8 4 4-4 4"/>'),
     heartPulse: icon('<path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/><path d="M3.22 12H9.5l.5-1 2 4.5 2-7 1.5 3.5h5.27"/>'),
     menu: icon('<path d="M4 12h16"/><path d="M4 18h16"/><path d="M4 6h16"/>'),
@@ -2332,7 +2338,7 @@ ${TOOLTIP_CSS}`,
     const hint = h("span", { class: "xc-pm-hint", tabindex: "0" }, svgIcon(Icons.info, 14));
     const hintTip = attachTooltip(hint, () => TABS.find((t) => t.id === activeId)?.description ?? "", "bottom");
     const body = h("div", { class: "xc-pm-body" });
-    const version = h("div", { class: "xc-pm-version" }, h("div", null, "X Cleaner · ", "0.1.0.202610240210"), h("div", null, "正式版", " · 用户脚本"));
+    const version = h("div", { class: "xc-pm-version" }, h("div", null, "X Cleaner · ", "0.1.0.202610240411"), h("div", null, "正式版", " · 用户脚本"), h("div", null, h("a", { href: "https://raw.githubusercontent.com/0-V-linuxdo/X-Cleaner/main/dist/X%20Cleaner.user.js", target: "_blank", rel: "noopener" }, "检查更新"), " · ", h("a", { href: `${"https://github.com/0-V-linuxdo/X-Cleaner"}/commits/main`, target: "_blank", rel: "noopener" }, "更新记录")));
     const content = h("div", { class: "xc-pm-shell" }, h("aside", { class: "xc-pm-sidebar" }, nav, version), h("section", { class: "xc-pm-main" }, h("header", { class: "xc-pm-header" }, heading, hint, closeButton(() => close())), body));
     const show = (id, plugin) => {
       activeId = id;
@@ -2360,7 +2366,7 @@ ${TOOLTIP_CSS}`,
     return close;
   }
 
-  // xc-css:/home/claude/work/x-cleaner/src/plugins/_core/settings/styles.css
+  // xc-css:/home/claude/x-cleaner/src/plugins/_core/settings/styles.css
   var styles_default = `.xc-pm-overlay { position: fixed; inset: 0; z-index: 2147483100; display: flex; align-items: center; justify-content: center; padding: 1rem; background: rgb(0 0 0 / 55%); }
 .xc-pm-overlay.is-nested { background: transparent; }
 .xc-pm-overlay, .xc-pm-overlay * { box-sizing: border-box; }
@@ -2374,6 +2380,7 @@ ${TOOLTIP_CSS}`,
 .xc-pm-nav-item:hover { background: var(--xc-bg-3); color: var(--xc-fg); }
 .xc-pm-nav-item.is-active { background: var(--xc-bg-3); color: var(--xc-fg); }
 .xc-pm-version { position: absolute; left: 0; right: 0; bottom: 0; padding: 0.75rem; font-size: 0.625rem; line-height: 1rem; color: var(--xc-fg-2); opacity: 0.5; user-select: text; }
+.xc-pm-version a { color: inherit; text-decoration: underline; }
 .xc-pm-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .xc-pm-header { display: flex; align-items: center; gap: 0.375rem; padding: 1rem 1.25rem 0.75rem; }
 .xc-pm-title { margin: 0; font-size: 1.125rem; font-weight: 600; }
@@ -3552,7 +3559,18 @@ ${TOOLTIP_CSS}`,
   var WAIT_MS = 1500;
   var STRIP = ["id", "data-testid", "href", "aria-describedby", "aria-labelledby", "aria-controls", "aria-haspopup", "aria-expanded"];
   var registry2 = new Map;
-  var registeredItems = () => [...registry2.values()].flat().toSorted((a, b) => (a.order ?? 100) - (b.order ?? 100));
+  var profileRegistry = new Map;
+  var sorted = (m) => [...m.values()].flat().toSorted((a, b) => (a.order ?? 100) - (b.order ?? 100));
+  var registeredItems = () => sorted(registry2);
+  var registeredProfileItems = () => sorted(profileRegistry);
+  function contextForProfileButton(button) {
+    if (!button.closest(SEL.primaryColumn))
+      return null;
+    const handle = profilePathHandle(location.pathname);
+    if (!handle)
+      return null;
+    return { handle, profileUrl: new URL(`/${handle}`, location.origin).href };
+  }
   function contextForCaret(caret) {
     const article = caret.closest(SEL.tweet);
     if (!article)
@@ -3606,6 +3624,12 @@ ${TOOLTIP_CSS}`,
     return rows.find((r) => r.tagName !== "A" && !r.querySelector("a")) ?? rows[0] ?? null;
   }
   function fillMenu(menu, ctx) {
+    return fillMenuWith(menu, registeredItems(), ctx);
+  }
+  function fillProfileMenu(menu, ctx) {
+    return fillMenuWith(menu, registeredProfileItems(), ctx);
+  }
+  function fillMenuWith(menu, items, ctx) {
     if (menu.querySelector(`[${ITEM_ATTR}]`))
       return [];
     const tpl = template(menu);
@@ -3613,7 +3637,7 @@ ${TOOLTIP_CSS}`,
     if (!tpl || !host)
       return [];
     const added = [];
-    for (const item of registeredItems()) {
+    for (const item of items) {
       let label;
       try {
         if (item.visible && !item.visible(ctx))
@@ -3655,25 +3679,26 @@ ${TOOLTIP_CSS}`,
     const menu = document.querySelector(MENU_SEL);
     if (!menu || !template(menu))
       return;
-    const { ctx } = pending2;
+    const { fill } = pending2;
     pending2 = null;
-    fillMenu(menu, ctx);
+    fill(menu);
   }
   function onClick(e) {
-    if (!registry2.size)
-      return;
-    const caret = e.target?.closest?.(SEL.caret);
-    if (!caret)
-      return;
-    const ctx = contextForCaret(caret);
-    if (!ctx)
-      return;
-    pending2 = { ctx, at: Date.now() };
-    queueMicrotask(tryFill);
+    const target = e.target;
+    const caret = registry2.size ? target?.closest?.(SEL.caret) : null;
+    const ctx = caret && contextForCaret(caret);
+    if (ctx)
+      pending2 = { fill: (menu) => fillMenu(menu, ctx), at: Date.now() };
+    const profileButton = profileRegistry.size ? target?.closest?.(SEL.userActions) : null;
+    const profile = profileButton && contextForProfileButton(profileButton);
+    if (profile)
+      pending2 = { fill: (menu) => fillProfileMenu(menu, profile), at: Date.now() };
+    if (pending2)
+      queueMicrotask(tryFill);
   }
   var postMenu_default = definePlugin({
     name: "PostMenuAPI",
-    description: "Lets plugins add items to the 「…」 menu of a post.",
+    description: "Lets plugins add items to the 「…」 menu of a post or a profile.",
     tags: ["core"],
     hidden: true,
     start() {
@@ -3698,6 +3723,13 @@ ${TOOLTIP_CSS}`,
     attach(plugin, items) {
       registry2.set(plugin.name, items);
       return () => registry2.delete(plugin.name);
+    }
+  });
+  defineHook("profileMenuItems", {
+    provider: "PostMenuAPI",
+    attach(plugin, items) {
+      profileRegistry.set(plugin.name, items);
+      return () => profileRegistry.delete(plugin.name);
     }
   });
 
@@ -4675,6 +4707,62 @@ ${TOOLTIP_CSS}`,
     sync();
     return Object.assign(row, { sync });
   }
+  function bulkSelection(noun, actions) {
+    const selected = new Set;
+    let visible = [];
+    const boxes = new Map;
+    const count = h("span", { class: "xc-bulk-count" });
+    const refresh = () => {
+      bar.hidden = selected.size === 0;
+      count.textContent = `已选 ${selected.size} 个${noun}`;
+      for (const [key, box] of boxes)
+        box.checked = selected.has(key);
+    };
+    const bar = h("div", { class: "xc-bulk-bar", role: "toolbar", "aria-label": `批量操作${noun}` }, count, h("div", { class: "xc-bulk-actions" }, button("全选", () => {
+      for (const k of visible)
+        selected.add(k);
+      refresh();
+    }, { small: true }), button("取消选择", () => {
+      selected.clear();
+      refresh();
+    }, { small: true }), ...actions.map((a) => button(a.label, () => {
+      const keys = [...selected];
+      if (!keys.length || a.confirm && !confirm(a.confirm(keys.length)))
+        return;
+      if (a.run(keys) === false)
+        return;
+      selected.clear();
+      refresh();
+    }, { small: true, kind: a.kind ?? "" }))));
+    refresh();
+    return {
+      bar,
+      box(key, label) {
+        const box = h("input", { type: "checkbox", class: "xc-bulk-box", "aria-label": `选择 ${label}` });
+        box.checked = selected.has(key);
+        box.addEventListener("click", (e) => e.stopPropagation());
+        box.addEventListener("keydown", (e) => e.stopPropagation());
+        box.addEventListener("change", () => {
+          if (box.checked)
+            selected.add(key);
+          else
+            selected.delete(key);
+          refresh();
+        });
+        boxes.set(key, box);
+        return box;
+      },
+      sync(existing, shown) {
+        const keep = new Set(existing);
+        for (const k of [...selected])
+          if (!keep.has(k))
+            selected.delete(k);
+        visible = shown;
+        boxes.clear();
+        refresh();
+      }
+    };
+  }
 
   // src/x/health.ts
   var NAV = 'header[role="banner"] nav[role="navigation"]';
@@ -4699,6 +4787,21 @@ ${TOOLTIP_CSS}`,
   }
   function isFilterActive() {
     return !!controller?.active;
+  }
+  function eligibleReplyContext(article) {
+    if (!isFilterActive())
+      return null;
+    const c = getController();
+    if (!c.config.enabled || !c.route.isStatusRoute || !c.selfHandle || !article.isConnected)
+      return null;
+    const ctx = c.extract(article);
+    if (!ctx || !ctx.opIdentityKnown || ctx.isPromoted)
+      return null;
+    if (c.isProtected(ctx))
+      return null;
+    if (!c.inScope(ctx, "manual"))
+      return null;
+    return ctx;
   }
   var LEVELS = [["conservative", "保守"], ["balanced", "均衡"], ["aggressive", "激进"]];
   function createRunPage(ctx) {
@@ -4856,7 +4959,7 @@ time[${ABS_ATTR}]::after { content: attr(${ABS_ATTR}); font-size: var(--xc-ts-si
       controller.unrestore(handle);
     controller.configurationChanged();
   }
-  var blacklistMenuItem = {
+  var blacklistItem = {
     id: "account-blacklist",
     order: 10,
     icon: Icons.ban,
@@ -4883,7 +4986,7 @@ time[${ABS_ATTR}]::after { content: attr(${ABS_ATTR}); font-size: var(--xc-ts-si
       showToast(`${handle} 已加入账号黑名单，TA 的回复会被隐藏。`, { type: "success" });
     }
   };
-  var allowListMenuItem = {
+  var allowListItem = {
     id: "allow-list",
     order: 20,
     icon: Icons.shield,
@@ -4906,6 +5009,10 @@ time[${ABS_ATTR}]::after { content: attr(${ABS_ATTR}); font-size: var(--xc-ts-si
       showToast(`${handle} 已加入白名单，TA 的回复不会再被隐藏。`, { type: "success" });
     }
   };
+  var blacklistMenuItem = blacklistItem;
+  var allowListMenuItem = allowListItem;
+  var blacklistProfileItem = blacklistItem;
+  var allowListProfileItem = allowListItem;
 
   // src/rules/classifier.ts
   var CATEGORY_LABELS = { adult: "成人引流", crypto: "加密货币引流", "promotional-name": "推广用户名" };
@@ -5119,7 +5226,38 @@ time[${ABS_ATTR}]::after { content: attr(${ABS_ATTR}); font-size: var(--xc-ts-si
     }, { small: true });
     const listArea = h("div");
     const header = pageHeader("账号", () => ctx.store.config.blacklists.accounts.map((a) => `account:${a.handle}`), () => renderList());
-    const el = h("div", { class: "xc-page" }, header.el, section("账号", clearAuto), form, listArea);
+    const bulk = bulkSelection("账号", [
+      {
+        label: "移到白名单",
+        confirm: (n) => `把 ${n} 个账号从黑名单移到白名单？TA 们的回复不会再被隐藏。`,
+        run: (keys) => {
+          const move = new Set(keys);
+          if (new Set([...ctx.store.config.allowHandles, ...keys]).size > LIMITS.allowHandles) {
+            showToast(`白名单最多 ${LIMITS.allowHandles} 个账号。`, { type: "error" });
+            return false;
+          }
+          return ctx.commit((c) => {
+            c.blacklists.accounts = c.blacklists.accounts.filter((a) => !move.has(a.handle));
+            c.allowHandles = [...c.allowHandles.filter((x) => !move.has(x)), ...keys];
+          });
+        }
+      },
+      {
+        label: "移除所选",
+        kind: "danger",
+        confirm: (n) => `从账号黑名单移除 ${n} 个账号？`,
+        run: (keys) => {
+          const drop = new Set(keys);
+          const ok = ctx.commit((c) => {
+            c.blacklists.accounts = c.blacklists.accounts.filter((a) => !drop.has(a.handle));
+          });
+          if (ok && editing && drop.has(editing.handle))
+            stopEditing();
+          return ok;
+        }
+      }
+    ]);
+    const el = h("div", { class: "xc-page" }, header.el, section("账号", clearAuto), form, bulk.bar, listArea);
     const label = h("span", { class: "xc-footer-label" });
     const footer = h("div", { class: "xc-review-bar" }, label, h("div", { class: "xc-footer-actions" }, button("编辑", () => {
       const entry = ctx.store.findAccount(selected ?? "");
@@ -5186,6 +5324,7 @@ time[${ABS_ATTR}]::after { content: attr(${ABS_ATTR}); font-size: var(--xc-ts-si
       const items = [...accounts].reverse().filter((a) => matches(q, a.handle, a.reason, SOURCE_LABELS[a.source]));
       if (!items.some((a) => a.handle === selected))
         selected = items[0]?.handle ?? null;
+      bulk.sync(accounts.map((a) => a.handle), items.map((a) => a.handle));
       listArea.replaceChildren(listbox({
         label: "账号黑名单",
         items,
@@ -5200,7 +5339,7 @@ time[${ABS_ATTR}]::after { content: attr(${ABS_ATTR}); font-size: var(--xc-ts-si
             queueMicrotask(() => listArea.querySelector(`[data-key="${CSS.escape(k)}"]`)?.focus());
         },
         render: (a) => [
-          h("div", { class: "xc-item-head" }, h("strong", null, a.handle), hitPill(`account:${a.handle}`), pill(SOURCE_LABELS[a.source], a.source === "manual" ? "" : "accent")),
+          h("div", { class: "xc-item-head" }, bulk.box(a.handle, a.handle), h("strong", null, a.handle), hitPill(`account:${a.handle}`), pill(SOURCE_LABELS[a.source], a.source === "manual" ? "" : "accent")),
           a.reason ? h("div", { class: "xc-rec-reason" }, a.reason) : null,
           h("div", { class: "xc-item-meta xc-muted" }, meta(a))
         ].filter(Boolean)
@@ -5228,6 +5367,7 @@ time[${ABS_ATTR}]::after { content: attr(${ABS_ATTR}); font-size: var(--xc-ts-si
     tags: ["filters", "moderation"],
     enabledByDefault: true,
     postMenuItems: [blacklistMenuItem],
+    profileMenuItems: [blacklistProfileItem],
     panelPages: [{ tab: "blacklist", id: "accounts", label: "账号", order: 40, isDefault: true, create: createAccountsPage }],
     replyJudges: [
       {
@@ -5505,6 +5645,22 @@ ${target}
     });
     return true;
   }
+  var aiReviewMenuItem = {
+    id: "ai-review",
+    order: 40,
+    icon: Icons.sparkles,
+    label: () => "AI 复核这条回复",
+    visible: (ctx) => isAiReady() && !getAiQueue().has(ctx.tweetId) && !!eligibleReplyContext(ctx.article),
+    run(ctx) {
+      const reply = eligibleReplyContext(ctx.article);
+      if (!reply || !requestAiReview(serializeContext(reply))) {
+        showToast("AI 未启用、已达本对话上限，或该回复已在复核中。", { type: "error" });
+        return;
+      }
+      getController().setAiStatus(reply.tweetId, "pending");
+      showToast("AI 复核已排队。", { type: "success" });
+    }
+  };
   var aiReview_default = definePlugin({
     name: "AiReview",
     description: "AI 复核：本地分类器处于临界分数、或带图且有语义信号的回复，送到你配置的 OpenAI 兼容服务复核。需要在设置中确认发送范围后才会启用。",
@@ -5513,6 +5669,7 @@ ${target}
     enabledByDefault: true,
     dependencies: ["AiClient", "ReplyFilter"],
     panelPages: [{ tab: "settings", id: "ai", label: "AI", order: 30, create: createAiSettingsPage }],
+    postMenuItems: [aiReviewMenuItem],
     reviewActions: [{
       id: "ai-review",
       order: 40,
@@ -5540,7 +5697,18 @@ ${target}
     const msg = errorLine();
     const form = h("form", { class: "xc-form" }, h("div", { class: "xc-row" }, input, h("button", { class: "xc-btn xc-btn-primary", type: "submit" }, "添加")), msg);
     const list = h("div", { class: "xc-items", role: "list", "aria-label": "精确账号白名单" });
-    const el = h("div", { class: "xc-page" }, section("精确账号白名单"), form, list);
+    const bulk = bulkSelection("账号", [{
+      label: "移出白名单",
+      kind: "danger",
+      confirm: (n) => `把 ${n} 个账号移出白名单？`,
+      run: (keys) => {
+        const drop = new Set(keys);
+        return ctx.commit((c) => {
+          c.allowHandles = c.allowHandles.filter((x) => !drop.has(x));
+        });
+      }
+    }]);
+    const el = h("div", { class: "xc-page" }, section("精确账号白名单"), form, bulk.bar, list);
     form.addEventListener("submit", (e) => {
       e.preventDefault();
       const handle = toConfigHandle(input.value);
@@ -5561,11 +5729,12 @@ ${target}
     });
     const render = () => {
       const handles = ctx.store.config.allowHandles;
+      bulk.sync(handles, handles);
       if (!handles.length) {
         list.replaceChildren(h("div", { class: "xc-empty" }, "暂无白名单账号。"));
         return;
       }
-      list.replaceChildren(...[...handles].reverse().map((handle) => h("div", { class: "xc-item", role: "listitem" }, h("div", { class: "xc-item-main" }, h("div", { class: "xc-item-head" }, h("strong", null, handle), pill("最高优先级", "success"))), h("div", { class: "xc-item-actions" }, button("移除", () => ctx.commit((c) => {
+      list.replaceChildren(...[...handles].reverse().map((handle) => h("div", { class: "xc-item", role: "listitem" }, bulk.box(handle, handle), h("div", { class: "xc-item-main" }, h("div", { class: "xc-item-head" }, h("strong", null, handle), pill("最高优先级", "success"))), h("div", { class: "xc-item-actions" }, button("移除", () => ctx.commit((c) => {
         c.allowHandles = c.allowHandles.filter((x) => x !== handle);
       }), { small: true, kind: "danger" })))));
     };
@@ -5583,6 +5752,7 @@ ${target}
     tags: ["filters"],
     enabledByDefault: true,
     postMenuItems: [allowListMenuItem],
+    profileMenuItems: [allowListProfileItem],
     panelPages: [{ tab: "allowlist", id: "handles", label: "白名单", order: 0, create: createAllowPage }],
     replyJudges: [{
       id: "allowlist",
@@ -5931,7 +6101,19 @@ ${target}
       const form = h("form", { class: "xc-form" }, opts.description ? h("p", { class: "xc-muted" }, opts.description) : null, h("div", { class: "xc-row" }, input, submit, cancel), msg);
       const list = h("div", { class: "xc-items", role: "list", "aria-label": opts.label });
       const header = pageHeader(opts.label, () => opts.get(ctx.store.config).map((v) => `${opts.statsPrefix}:${v}`), () => renderList());
-      const el = h("div", { class: "xc-page" }, header.el, form, list);
+      const bulk = bulkSelection("条目", [{
+        label: "移除所选",
+        kind: "danger",
+        confirm: (n) => `从${opts.label}中移除 ${n} 个条目？`,
+        run: (keys) => {
+          const drop = new Set(keys);
+          const ok = ctx.commit((c) => opts.set(c, opts.get(c).filter((x) => !drop.has(x))));
+          if (ok && editing !== null && drop.has(editing))
+            stopEditing();
+          return ok;
+        }
+      }]);
+      const el = h("div", { class: "xc-page" }, header.el, form, bulk.bar, list);
       const stopEditing = () => {
         editing = null;
         input.value = "";
@@ -5978,13 +6160,15 @@ ${target}
       });
       const renderList = () => {
         const q = header.query();
-        const items = opts.get(ctx.store.config).filter((v) => matches(q, v));
+        const all = opts.get(ctx.store.config);
+        const items = all.filter((v) => matches(q, v));
         header.update();
+        bulk.sync(all, items);
         if (!items.length) {
           list.replaceChildren(h("div", { class: "xc-empty" }, q ? "没有匹配的条目。" : `暂无${opts.label}。`));
           return;
         }
-        list.replaceChildren(...items.map((v) => h("div", { class: "xc-item", role: "listitem" }, h("div", { class: "xc-item-main" }, h("div", { class: "xc-item-head" }, h("span", null, v), hitPill(`${opts.statsPrefix}:${v}`))), h("div", { class: "xc-item-actions" }, button("编辑", () => {
+        list.replaceChildren(...items.map((v) => h("div", { class: "xc-item", role: "listitem" }, bulk.box(v, v), h("div", { class: "xc-item-main" }, h("div", { class: "xc-item-head" }, h("span", null, v), hitPill(`${opts.statsPrefix}:${v}`))), h("div", { class: "xc-item-actions" }, button("编辑", () => {
           editing = v;
           input.value = v;
           renderForm();
@@ -6048,6 +6232,85 @@ ${target}
         return { action: "hide", source: "domain", category: "域名黑名单", reason, match: { kind: "domain", value: hit.domain }, statsKey: `domain:${hit.domain}`, autoEntry: { source: "local-auto", category: "域名黑名单", reason } };
       }
     }]
+  });
+
+  // src/plugins/exportThread/index.ts
+  function timeOf(article, tweetId) {
+    for (const t of article.querySelectorAll("time[datetime]")) {
+      if (t.closest("a")?.getAttribute("href")?.includes(`/status/${tweetId}`))
+        return t.getAttribute("datetime");
+    }
+    return null;
+  }
+  function collectThread(doc = document) {
+    const route = parseRoute(doc.location?.href ?? location.href);
+    const records = isFilterActive() ? getController().records : null;
+    const posts = [];
+    const seen = new Set;
+    for (const article of listTopLevelTweets(findPrimaryColumn(doc))) {
+      const ctx = extractReplyContext(article, { route });
+      if (!ctx || seen.has(ctx.tweetId))
+        continue;
+      seen.add(ctx.tweetId);
+      const { identityComplete: _i, ...rest } = serializeContext(ctx);
+      const rec = records?.get(ctx.tweetId);
+      posts.push({ ...rest, time: timeOf(article, ctx.tweetId), hidden: !!rec?.hidden, hiddenReason: rec?.hidden ? rec.reason : null });
+    }
+    return { url: route.pathname ? new URL(route.pathname, location.origin).href : location.href, exportedAt: new Date().toISOString(), posts };
+  }
+  var quote = (text) => text.split(`
+`).map((l) => `> ${l}`).join(`
+`);
+  function toMarkdown(data) {
+    const out = [`# ${data.url}`, "", `导出时间：${data.exportedAt}，共 ${data.posts.length} 条（只含页面上已加载的内容）。`, ""];
+    for (const p of data.posts) {
+      const who = p.displayName ? `${p.displayName} (@${p.authorHandle})` : `@${p.authorHandle}`;
+      const tags = [p.isRoot ? "主帖" : "", p.isOp && !p.isRoot ? "楼主" : "", p.hidden ? `已隐藏：${p.hiddenReason ?? ""}` : ""].filter(Boolean);
+      out.push(`## ${who}${tags.length ? ` · ${tags.join(" · ")}` : ""}`, "", `${p.time ?? ""} · ${p.statusUrl}`.replace(/^ · /, ""), "");
+      if (p.bodyText)
+        out.push(quote(p.bodyText), "");
+      for (const u of p.visibleUrls)
+        out.push(`- 链接：${u}`);
+      for (const m of p.mediaUrls)
+        out.push(`- 图片：${m}`);
+      if (p.visibleUrls.length || p.mediaUrls.length)
+        out.push("");
+    }
+    return out.join(`
+`);
+  }
+  function download(name, content, type) {
+    const url = URL.createObjectURL(new Blob([content], { type }));
+    const a = Object.assign(document.createElement("a"), { href: url, download: name });
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+  function exportAs(format, ctx) {
+    const data = collectThread();
+    if (!data.posts.length) {
+      showToast("页面上没有可导出的帖子。", { type: "error" });
+      return;
+    }
+    const name = `x-${ctx.handle}-${ctx.tweetId}-${data.exportedAt.slice(0, 10)}.${format}`;
+    if (format === "md")
+      download(name, toMarkdown(data), "text/markdown;charset=utf-8");
+    else
+      download(name, JSON.stringify(data, null, 2), "application/json");
+    showToast(`已导出 ${data.posts.length} 条帖子。`, { type: "success" });
+  }
+  var onStatusPage2 = () => parseRoute().isStatusRoute;
+  var exportMenuItems = [
+    { id: "export-md", order: 60, icon: Icons.download, label: () => "导出本页帖子和回复（Markdown）", visible: onStatusPage2, run: (ctx) => exportAs("md", ctx) },
+    { id: "export-json", order: 61, icon: Icons.download, label: () => "导出本页帖子和回复（JSON）", visible: onStatusPage2, run: (ctx) => exportAs("json", ctx) }
+  ];
+  var exportThread_default = definePlugin({
+    name: "ExportThread",
+    description: "导出帖子：在帖子页的「…」菜单里，把主帖和已加载的回复导出为 Markdown 或 JSON，并标出 X Cleaner 隐藏了哪些回复、原因是什么。只导出页面上已有的内容。",
+    icon: Icons.download,
+    tags: ["replies", "moderation"],
+    postMenuItems: exportMenuItems
   });
 
   // src/plugins/moreMenuEntry/index.ts
@@ -6723,7 +6986,7 @@ ${target}
     };
   }
 
-  // xc-css:/home/claude/work/x-cleaner/src/plugins/panel/styles.css
+  // xc-css:/home/claude/x-cleaner/src/plugins/panel/styles.css
   var styles_default2 = `#x-cleaner-ui { position: static; z-index: 0; }
 #x-cleaner-ui .xc-fab {
     position: fixed; z-index: 0; right: max(18px, env(safe-area-inset-right)); bottom: calc(env(safe-area-inset-bottom) + 224px);
@@ -6815,6 +7078,10 @@ ${target}
     #x-cleaner-ui .xc-drawer { width: 100%; border-left: 0; }
     .xc-footer-actions { display: grid; grid-template-columns: 1fr 1fr; }
 }
+.xc-bulk-bar { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; padding: 8px 12px; margin-bottom: 8px; border-radius: 10px; background: var(--xc-bg-3); font-size: 13px; }
+.xc-bulk-bar[hidden] { display: none; }
+.xc-bulk-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+.xc-bulk-box { flex: none; margin: 0; width: 16px; height: 16px; accent-color: var(--xc-accent, #1d9bf0); cursor: pointer; }
 `;
 
   // src/plugins/panel/index.ts
@@ -8417,7 +8684,7 @@ ${RESPONSE_FORMAT}` }
     }
   }
 
-  // xc-css:/home/claude/work/x-cleaner/src/plugins/ruleDraft/styles.css
+  // xc-css:/home/claude/x-cleaner/src/plugins/ruleDraft/styles.css
   var styles_default3 = `.xc-rule-dialog-backdrop { position: fixed; inset: 0; z-index: 2147483646; background: rgba(0,0,0,.55); display: flex; align-items: center; justify-content: center; padding: 18px; }
 .xc-rd-dialog {
     width: min(560px, 100%); max-height: min(760px, calc(100vh - 36px)); display: flex; flex-direction: column; overflow: hidden;
@@ -8472,6 +8739,22 @@ ${RESPONSE_FORMAT}` }
   function draftFor(target) {
     return openRuleDraft(target, (ctx) => synthesizeLocalRule(ctx) ?? exactFallback(fieldValues(ctx), undefined, INITIAL_REASON));
   }
+  var ruleDraftMenuItem = {
+    id: "rule-draft",
+    order: 30,
+    icon: Icons.regex,
+    label: () => "用这条回复生成屏蔽规则",
+    visible: (ctx) => !!eligibleReplyContext(ctx.article),
+    run(ctx) {
+      const reply = eligibleReplyContext(ctx.article);
+      if (!reply) {
+        showToast("这条回复已不在可处理范围内。", { type: "error" });
+        return;
+      }
+      const target = { routeKey: getController().route.routeKey, tweetId: reply.tweetId, handle: reply.authorHandle, signature: contextSignature(reply) };
+      draftFor(target)?.catch((err) => showToast(err instanceof Error ? err.message : "无法生成屏蔽规则。", { type: "error" }));
+    }
+  };
   var ruleDraft_default = definePlugin({
     name: "RuleDraft",
     description: "规则草稿弹窗：从一条回复生成正则规则，支持划词、本地模板、AI 生成与追问，保存前在 Worker 中做安全校验。",
@@ -8480,6 +8763,7 @@ ${RESPONSE_FORMAT}` }
     enabledByDefault: true,
     dependencies: ["AiClient", "ReplyFilter"],
     managedStyle: styles_default3,
+    postMenuItems: [ruleDraftMenuItem],
     stop() {
       closeActiveDraft();
     }
@@ -8525,22 +8809,7 @@ ${RESPONSE_FORMAT}` }
     }
     return found.length === 1 ? found[0] : null;
   }
-  function eligibleContext(article) {
-    if (!isFilterActive())
-      return null;
-    const controller = getController();
-    const config = controller.config;
-    if (!config.enabled || !controller.route.isStatusRoute || !controller.selfHandle || !article.isConnected)
-      return null;
-    const ctx = controller.extract(article);
-    if (!ctx || !ctx.opIdentityKnown || ctx.isPromoted)
-      return null;
-    if (controller.isProtected(ctx))
-      return null;
-    if (!controller.inScope(ctx, "manual"))
-      return null;
-    return ctx;
-  }
+  var eligibleContext = eligibleReplyContext;
   function buildButton(native, slotTemplate) {
     const slot = slotTemplate === native ? document.createElement("div") : slotTemplate.cloneNode(false);
     const button = native.tagName === "BUTTON" ? native.cloneNode(false) : document.createElement("button");
@@ -8924,14 +9193,14 @@ ${RESPONSE_FORMAT}` }
   var HIDE_HINTS = {
     "tid:AppTabBar_More_Menu": "隐藏后侧栏里就没有 X 的「设置和隐私」入口了。"
   };
-  var quote = (v) => JSON.stringify(v);
+  var quote2 = (v) => JSON.stringify(v);
   function describeEntry(el) {
     const tid = el.getAttribute("data-testid");
     let key;
     let selector;
     if (tid) {
       key = `tid:${tid}`;
-      selector = `[data-testid=${quote(tid)}]`;
+      selector = `[data-testid=${quote2(tid)}]`;
     } else {
       const href = el.getAttribute("href");
       if (!href || !href.startsWith("/"))
@@ -8940,10 +9209,10 @@ ${RESPONSE_FORMAT}` }
       const own = path.match(/^\/[^/]+\/(lists|communities|articles|creator-studio)$/);
       if (own && !path.startsWith("/i/")) {
         key = `href:/~/${own[1]}`;
-        selector = `[href$=${quote(`/${own[1]}`)}]`;
+        selector = `[href$=${quote2(`/${own[1]}`)}]`;
       } else {
         key = `href:${path}`;
-        selector = `[href=${quote(path)}]`;
+        selector = `[href=${quote2(path)}]`;
       }
     }
     const text = (el.getAttribute("aria-label") || el.innerText || el.textContent || "").trim().split(`
@@ -9085,7 +9354,7 @@ ${RESPONSE_FORMAT}` }
     return h("div", { class: "xc-sbe" }, list);
   }
 
-  // xc-css:/home/claude/work/x-cleaner/src/plugins/sidebarEntries/styles.css
+  // xc-css:/home/claude/x-cleaner/src/plugins/sidebarEntries/styles.css
   var styles_default4 = `.xc-sbe-list { display: flex; flex-direction: column; gap: 6px; }
 .xc-sbe-row {
     display: flex; align-items: center; gap: 10px; padding: 8px 10px;
@@ -9178,29 +9447,68 @@ ${RESPONSE_FORMAT}` }
     ownAvatars: { type: "boolean" /* BOOLEAN */, label: "自己的头像", description: "页面其他位置（发帖框、自己的帖子）出现的你的头像。", default: true },
     dmNames: { type: "boolean" /* BOOLEAN */, label: "私信列表", description: "私信页里对话的头像和名字。", default: false },
     revealOnHover: { type: "boolean" /* BOOLEAN */, label: "悬停时显示", description: "鼠标移上去时暂时取消模糊。", default: true },
-    blur: { type: "slider" /* SLIDER */, label: "模糊程度", description: "", min: 2, max: 16, step: 1, default: 8, unit: "px" }
+    blur: { type: "slider" /* SLIDER */, label: "模糊程度", description: "", min: 2, max: 16, step: 1, default: 8, unit: "px" },
+    alias: { type: "string" /* STRING */, label: "显示别名", description: "填写后，左下角账号菜单里的昵称换成这段文字，认证徽标和 @handle 隐藏，不再模糊。留空则按上面的设置模糊。", default: "", placeholder: "例如：观众朋友们好" }
   });
+  var ALIAS_ATTR = "data-xc-alias";
+  var ALIAS_HIDE_ATTR = "data-xc-alias-hide";
   var escapeAttr = (v) => v.replace(/["\\]/g, "\\$&");
   function buildCss4(opts, self) {
     const targets = [];
+    const alias = opts.alias?.trim();
     if (opts.accountAvatar)
       targets.push(`${SEL.accountSwitcher} [data-testid^="UserAvatar-Container-"]`);
-    if (opts.accountName)
+    if (opts.accountName && !alias)
       targets.push(`${SEL.accountSwitcher} [dir]:not(${SEL.accountSwitcher} [dir] [dir])`);
     if (opts.ownAvatars && self)
       targets.push(`[data-testid="UserAvatar-Container-${escapeAttr(self)}" i]`);
     if (opts.dmNames)
       targets.push('[data-testid="conversation"] [data-testid^="UserAvatar-Container-"]', '[data-testid="conversation"] [dir]:not([data-testid="conversation"] [dir] [dir])');
-    if (!targets.length)
-      return "";
-    const list = targets.join(`,
+    const rules = [];
+    if (targets.length) {
+      rules.push(`${targets.join(`,
+`)} { filter: blur(${opts.blur ?? 8}px) !important; transition: filter .15s ease; }`);
+      if (opts.revealOnHover)
+        rules.push(`${targets.map((t) => `${t}:hover`).join(`,
+`)} { filter: none !important; }`);
+    }
+    if (alias) {
+      rules.push(`${SEL.accountSwitcher} [${ALIAS_ATTR}] > * { display: none !important; }`);
+      rules.push(`${SEL.accountSwitcher} [${ALIAS_ATTR}]::after { content: attr(${ALIAS_ATTR}); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }`);
+      rules.push(`${SEL.accountSwitcher} [${ALIAS_HIDE_ATTR}] { display: none !important; }`);
+    }
+    return rules.join(`
 `);
-    let css = `${list} { filter: blur(${opts.blur ?? 8}px) !important; transition: filter .15s ease; }`;
-    if (opts.revealOnHover)
-      css += `
-${targets.map((t) => `${t}:hover`).join(`,
-`)} { filter: none !important; }`;
-    return css;
+  }
+  function markAlias(switcher, alias) {
+    const rows = [...switcher.querySelectorAll("[dir]")].filter((d) => !d.parentElement?.closest(`${SEL.accountSwitcher} [dir]`));
+    for (const r of rows) {
+      r.removeAttribute(ALIAS_ATTR);
+      r.removeAttribute(ALIAS_HIDE_ATTR);
+    }
+    if (!alias || !rows.length)
+      return;
+    const [name, ...rest] = rows;
+    if (name.getAttribute(ALIAS_ATTR) !== alias)
+      name.setAttribute(ALIAS_ATTR, alias);
+    for (const r of rest)
+      r.setAttribute(ALIAS_HIDE_ATTR, "");
+  }
+  var aliasObservers = new Map;
+  function watchAlias(switcher) {
+    const sync = () => {
+      observer.disconnect();
+      markAlias(switcher, settings6.store.alias.trim());
+      observer.observe(switcher, { childList: true, subtree: true, characterData: true });
+    };
+    const observer = new MutationObserver(sync);
+    aliasObservers.set(switcher, observer);
+    sync();
+    return () => {
+      observer.disconnect();
+      aliasObservers.delete(switcher);
+      markAlias(switcher, "");
+    };
   }
   var self = "";
   var retry;
@@ -9211,14 +9519,19 @@ ${targets.map((t) => `${t}:hover`).join(`,
       registerStyle(STYLE4, css);
     else
       unregisterStyle(STYLE4);
+    for (const sw of aliasObservers.keys())
+      markAlias(sw, settings6.store.alias.trim());
   }
   var streamerMode_default = definePlugin({
     name: "StreamerMode",
-    description: "主播模式：模糊你自己的头像、昵称和 @handle，可选模糊私信列表，截图和录屏时不暴露账号。",
+    description: "主播模式：模糊你自己的头像、昵称和 @handle，可选模糊私信列表，也可以把账号菜单里的名字换成别名，截图和录屏时不暴露账号。",
     icon: Icons.eyeOff,
     tags: ["privacy"],
     settings: settings6,
     healthChecks: [CHECKS.accountSwitcher],
+    elements: {
+      [SEL.accountSwitcher]: watchAlias
+    },
     start() {
       apply4();
       let tries = 0;
@@ -9316,7 +9629,7 @@ ${targets.map((t) => `${t}:hover`).join(`,
   });
 
   // src/generated/plugins.ts
-  var plugins_default = { [coreUI_default.name]: coreUI_default, [settings_default.name]: settings_default, [themes_default.name]: themes_default, [aiClient_default.name]: aiClient_default, [blockerConfig_default.name]: blockerConfig_default, [domObserver_default.name]: domObserver_default, [navigation_default.name]: navigation_default, [postMenu_default.name]: postMenu_default, [replyFilter_default.name]: replyFilter_default, [absoluteTimestamps_default.name]: absoluteTimestamps_default, [accountBlacklist_default.name]: accountBlacklist_default, [aiReview_default.name]: aiReview_default, [allowList_default.name]: allowList_default, [autoBlacklist_default.name]: autoBlacklist_default, [betterLinks_default.name]: betterLinks_default, [builtinClassifier_default.name]: builtinClassifier_default, [declutter_default.name]: declutter_default, [domainBlacklist_default.name]: domainBlacklist_default, [moreMenuEntry_default.name]: moreMenuEntry_default, [nativeBlock_default.name]: nativeBlock_default, [panel_default.name]: panel_default, [phraseBlacklist_default.name]: phraseBlacklist_default, [regexBlacklist_default.name]: regexBlacklist_default, [replyShield_default.name]: replyShield_default, [ruleDraft_default.name]: ruleDraft_default, [ruleStats_default.name]: ruleStats_default, [selectorHealth_default.name]: selectorHealth_default, [sidebarEntries_default.name]: sidebarEntries_default, [streamerMode_default.name]: streamerMode_default, [tombstoneFilter_default.name]: tombstoneFilter_default, [widerTimeline_default.name]: widerTimeline_default };
+  var plugins_default = { [coreUI_default.name]: coreUI_default, [settings_default.name]: settings_default, [themes_default.name]: themes_default, [aiClient_default.name]: aiClient_default, [blockerConfig_default.name]: blockerConfig_default, [domObserver_default.name]: domObserver_default, [navigation_default.name]: navigation_default, [postMenu_default.name]: postMenu_default, [replyFilter_default.name]: replyFilter_default, [absoluteTimestamps_default.name]: absoluteTimestamps_default, [accountBlacklist_default.name]: accountBlacklist_default, [aiReview_default.name]: aiReview_default, [allowList_default.name]: allowList_default, [autoBlacklist_default.name]: autoBlacklist_default, [betterLinks_default.name]: betterLinks_default, [builtinClassifier_default.name]: builtinClassifier_default, [declutter_default.name]: declutter_default, [domainBlacklist_default.name]: domainBlacklist_default, [exportThread_default.name]: exportThread_default, [moreMenuEntry_default.name]: moreMenuEntry_default, [nativeBlock_default.name]: nativeBlock_default, [panel_default.name]: panel_default, [phraseBlacklist_default.name]: phraseBlacklist_default, [regexBlacklist_default.name]: regexBlacklist_default, [replyShield_default.name]: replyShield_default, [ruleDraft_default.name]: ruleDraft_default, [ruleStats_default.name]: ruleStats_default, [selectorHealth_default.name]: selectorHealth_default, [sidebarEntries_default.name]: sidebarEntries_default, [streamerMode_default.name]: streamerMode_default, [tombstoneFilter_default.name]: tombstoneFilter_default, [widerTimeline_default.name]: widerTimeline_default };
 
   // src/XCleaner.ts
   var logger17 = new Logger("Core", "#1d9bf0");
@@ -9337,7 +9650,7 @@ ${targets.map((t) => `${t}:hover`).join(`,
     else
       onReady();
     addEventListener("pagehide", () => settingsStore.flush());
-    logger17.info(`${"0.1.0.202610240210"} started with ${Object.keys(plugins_default).length} plugins`);
+    logger17.info(`${"0.1.0.202610240411"} started with ${Object.keys(plugins_default).length} plugins`);
   }
 
   // src/index.ts

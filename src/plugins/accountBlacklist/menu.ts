@@ -6,7 +6,7 @@
 
 // 「…」 menu entries for the account lists, so an author can be listed without going through the review page.
 
-import type { PostMenuContext, PostMenuItem } from "@plugins/_api/postMenu";
+import type { MenuItem, PostMenuItem, ProfileMenuItem } from "@plugins/_api/postMenu";
 import { Icons } from "@ui/icons";
 import { showToast } from "@ui/toast";
 import { detectSelfHandle } from "@x/dom";
@@ -15,8 +15,8 @@ import { toConfigHandle } from "@x/text";
 import { getConfigStore } from "../_api/blockerConfig";
 import { getController, isFilterActive } from "../_api/replyFilter";
 
-const handleOf = (ctx: PostMenuContext) => toConfigHandle(ctx.handle);
-const notSelf = (ctx: PostMenuContext) => !!handleOf(ctx) && toConfigHandle(detectSelfHandle()) !== handleOf(ctx);
+const handleOf = (ctx: { handle: string }) => toConfigHandle(ctx.handle);
+const notSelf = (ctx: { handle: string }) => !!handleOf(ctx) && toConfigHandle(detectSelfHandle()) !== handleOf(ctx);
 
 function refilter(handle: string, restore: boolean) {
     if (!isFilterActive()) return;
@@ -26,7 +26,7 @@ function refilter(handle: string, restore: boolean) {
     controller.configurationChanged();
 }
 
-export const blacklistMenuItem: PostMenuItem = {
+const blacklistItem: MenuItem<{ handle: string }> = {
     id: "account-blacklist",
     order: 10,
     icon: Icons.ban,
@@ -54,7 +54,7 @@ export const blacklistMenuItem: PostMenuItem = {
     },
 };
 
-export const allowListMenuItem: PostMenuItem = {
+const allowListItem: MenuItem<{ handle: string }> = {
     id: "allow-list",
     order: 20,
     icon: Icons.shield,
@@ -77,3 +77,9 @@ export const allowListMenuItem: PostMenuItem = {
         showToast(`${handle} 已加入白名单，TA 的回复不会再被隐藏。`, { type: "success" });
     },
 };
+
+// The same rows serve the post menu and the profile header menu; both contexts carry the author's handle.
+export const blacklistMenuItem: PostMenuItem = blacklistItem;
+export const allowListMenuItem: PostMenuItem = allowListItem;
+export const blacklistProfileItem: ProfileMenuItem = blacklistItem;
+export const allowListProfileItem: ProfileMenuItem = allowListItem;

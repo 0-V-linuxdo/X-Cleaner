@@ -11,7 +11,7 @@ import { Logger } from "@utils/Logger";
 import definePlugin, { StartAt } from "@utils/types";
 import { contextSignature, findPrimaryColumn, isInNestedStatusCard, listTopLevelTweets, OWNED_ATTR, type ReplyContext, SEL } from "@x/dom";
 
-import { getController, isFilterActive } from "../_api/replyFilter";
+import { eligibleReplyContext, getController, isFilterActive } from "../_api/replyFilter";
 import { draftFor, type DraftTarget } from "../ruleDraft";
 import { CHECKS } from "@x/health";
 
@@ -68,17 +68,7 @@ export function findAnchor(article: HTMLElement, tweetId: string): { row: HTMLEl
     return found.length === 1 ? found[0] : null;
 }
 
-function eligibleContext(article: HTMLElement): ReplyContext | null {
-    if (!isFilterActive()) return null;
-    const controller = getController();
-    const config = controller.config;
-    if (!config.enabled || !controller.route.isStatusRoute || !controller.selfHandle || !article.isConnected) return null;
-    const ctx = controller.extract(article);
-    if (!ctx || !ctx.opIdentityKnown || ctx.isPromoted) return null;
-    if (controller.isProtected(ctx)) return null;
-    if (!controller.inScope(ctx, "manual")) return null;
-    return ctx;
-}
+const eligibleContext = eligibleReplyContext;
 
 function buildButton(native: HTMLElement, slotTemplate: HTMLElement): { slot: HTMLElement; button: HTMLButtonElement } {
     const slot = slotTemplate === native ? document.createElement("div") : slotTemplate.cloneNode(false) as HTMLElement;

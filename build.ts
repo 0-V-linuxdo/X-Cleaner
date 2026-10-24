@@ -7,6 +7,12 @@ const VERSION_DATE = new Date().toISOString().slice(0, 16).replace(/[-T:]/g, "")
 const version = `${pkg.version}.${VERSION_DATE}`;
 const pluginRoot = resolve("src/plugins");
 
+// The built script is committed under dist/, so script managers can update straight from the repository.
+export const REPO_URL = "https://github.com/0-V-linuxdo/X-Cleaner";
+const RAW_URL = "https://raw.githubusercontent.com/0-V-linuxdo/X-Cleaner/main/dist";
+export const DOWNLOAD_URL = `${RAW_URL}/X%20Cleaner.user.js`;
+const UPDATE_URL = `${RAW_URL}/X%20Cleaner.meta.js`;
+
 export const HEADER = `// ==UserScript==
 // @name         X Cleaner
 // @namespace    https://github.com/0-V-linuxdo/x-cleaner
@@ -33,6 +39,10 @@ export const HEADER = `// ==UserScript==
 // @grant        GM_info
 // @connect      *
 // @license      GPL-3.0-or-later
+// @homepageURL  ${REPO_URL}
+// @supportURL   ${REPO_URL}/issues
+// @updateURL    ${UPDATE_URL}
+// @downloadURL  ${DOWNLOAD_URL}
 // ==/UserScript==
 `;
 
@@ -90,7 +100,7 @@ if (import.meta.main) {
         target: "browser",
         format: "iife",
         minify: false,
-        define: { IS_DEV: JSON.stringify(isDev), VERSION: JSON.stringify(version) },
+        define: { IS_DEV: JSON.stringify(isDev), VERSION: JSON.stringify(version), REPO_URL: JSON.stringify(REPO_URL), DOWNLOAD_URL: JSON.stringify(DOWNLOAD_URL) },
         plugins: bunPlugins,
     });
     if (!result.success) {
@@ -101,5 +111,7 @@ if (import.meta.main) {
     mkdirSync("dist", { recursive: true });
     const out = "dist/X Cleaner.user.js";
     writeFileSync(out, `${HEADER}\n${code}`);
+    // The script manager polls this small file and only downloads the full script when @version grows.
+    writeFileSync("dist/X Cleaner.meta.js", HEADER);
     console.log(`Built ${out} (${(code.length / 1024).toFixed(1)} KB)`);
 }

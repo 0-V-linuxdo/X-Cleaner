@@ -16,7 +16,8 @@ import { type SerializableContext, serializeContext } from "@x/dom";
 
 import { getAiQueue, isAiReady } from "../_api/aiClient";
 import { getConfigStore } from "../_api/blockerConfig";
-import { getController } from "../_api/replyFilter";
+import { eligibleReplyContext, getController } from "../_api/replyFilter";
+import type { PostMenuItem } from "../_api/postMenu";
 import { createAiSettingsPage } from "./settingsPage";
 
 const logger = new Logger("AiReview");
@@ -61,6 +62,23 @@ export function requestAiReview(ctx: SerializableContext): boolean {
     return true;
 }
 
+export const aiReviewMenuItem: PostMenuItem = {
+    id: "ai-review",
+    order: 40,
+    icon: Icons.sparkles,
+    label: () => "AI 复核这条回复",
+    visible: ctx => isAiReady() && !getAiQueue().has(ctx.tweetId) && !!eligibleReplyContext(ctx.article),
+    run(ctx) {
+        const reply = eligibleReplyContext(ctx.article);
+        if (!reply || !requestAiReview(serializeContext(reply))) {
+            showToast("AI 未启用、已达本对话上限，或该回复已在复核中。", { type: "error" });
+            return;
+        }
+        getController().setAiStatus(reply.tweetId, "pending");
+        showToast("AI 复核已排队。", { type: "success" });
+    },
+};
+
 export default definePlugin({
     name: "AiReview",
     description: "AI 复核：本地分类器处于临界分数、或带图且有语义信号的回复，送到你配置的 OpenAI 兼容服务复核。需要在设置中确认发送范围后才会启用。",
@@ -69,6 +87,7 @@ export default definePlugin({
     enabledByDefault: true,
     dependencies: ["AiClient", "ReplyFilter"],
     panelPages: [{ tab: "settings", id: "ai", label: "AI", order: 30, create: createAiSettingsPage }],
+    postMenuItems: [aiReviewMenuItem],
     reviewActions: [{
         id: "ai-review",
         order: 40,

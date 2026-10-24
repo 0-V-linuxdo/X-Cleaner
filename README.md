@@ -6,7 +6,8 @@ X Cleaner 是 x.com 的用户脚本，在帖子详情页隐藏成人引流、加
 
 ## 安装与构建
 
-- 安装：把 `dist/X Cleaner.user.js` 拖进 Tampermonkey / Violentmonkey（Helium 同样适用）。
+- 安装：打开 <https://raw.githubusercontent.com/0-V-linuxdo/X-Cleaner/main/dist/X%20Cleaner.user.js>，在 Tampermonkey / Violentmonkey 里确认安装（Helium 同样适用）。
+- 更新：脚本头带 `@updateURL` / `@downloadURL`，脚本管理器会从仓库 `main` 分支自动检查新版本；插件管理左下角的「检查更新」可以立即检查。每次改动都要把 `dist/` 下的构建产物一起提交。
 - 构建：`bun install && bun run build`，产物在 `dist/`。
 - 测试：`bun test`（happy-dom 单元与集成测试），`bunx tsc --noEmit`（类型检查）。
 - 浏览器冒烟：`URL=https://x.com/op/status/100 ACTIONS=$PWD/scripts/smoke-extra.mjs node scripts/smoke.mjs test/fixtures/x-status.html`。
@@ -50,11 +51,12 @@ X Cleaner 是 x.com 的用户脚本，在帖子详情页隐藏成人引流、加
 | `NativeBlock` | 复查页「在 X 中拉黑」，只打开 X 原生确认框 | §20 |
 | `SidebarEntries` | X 左侧栏入口管理：每个入口可显示 / 隐藏、可排序（拖动或箭头），纯 CSS 实现，不改 X 的 DOM | — |
 | `_core/UserStyles` | 应用「主题」（https 链接或本地 .css）与「快速 CSS」；插件管理器对应两个标签页 | — |
-| `_api/PostMenuAPI` | 帖子「…」菜单钩子 `postMenuItems`：克隆 X 原生行插入自定义项（黑名单 / 白名单已接入） | — |
+| `_api/PostMenuAPI` | 帖子和主页「…」菜单钩子 `postMenuItems` / `profileMenuItems`：克隆 X 原生行插入自定义项（黑名单、白名单、生成规则、AI 复核、导出已接入） | — |
+| `ExportThread` | 帖子页「…」菜单导出主帖和已加载的回复（Markdown / JSON），标出被隐藏的回复和原因 | — |
 | `MoreMenuEntry` | X 左侧「更多」菜单里的「X Cleaner 插件管理」入口，及星标插件的快捷开关 | — |
 | `SelectorHealth` | 选择器健康检查：页面结构变化导致插件找不到元素时，在插件卡片和顶部通知条提示 | — |
 | `Declutter` | 隐藏 Premium 推销、推广帖、推荐关注、趋势、Grok 按钮、浏览量等（逐项开关） | — |
-| `StreamerMode` | 直播 / 截图模式：模糊自己的头像、名字和私信列表名字，可悬停显示 | — |
+| `StreamerMode` | 直播 / 截图模式：模糊自己的头像、名字和私信列表名字，可悬停显示；可把账号菜单里的名字换成别名 | — |
 | `WiderTimeline` | 加宽时间线（600–1200px），可隐藏右侧栏 | — |
 | `AbsoluteTimestamps` | 把「3 小时」之类相对时间换成绝对时间（智能 / 完整 / 精确到秒） | — |
 | `BetterLinks` | 悬停时把 t.co 换成真实链接、显示完整 URL、自定义链接颜色 | — |

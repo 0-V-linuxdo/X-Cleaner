@@ -9,7 +9,7 @@ import { h } from "@ui/h";
 import { showToast } from "@ui/toast";
 
 import { button } from "./components";
-import { errorLine, hitPill, matches, type MsgKind, pageHeader } from "./kit";
+import { bulkSelection, errorLine, hitPill, matches, type MsgKind, pageHeader } from "./kit";
 import type { PageInstance, PanelContext } from "./types";
 
 export interface StringListOptions {
@@ -39,7 +39,18 @@ export function stringListPage(opts: StringListOptions) {
         const form = h("form", { class: "xc-form" }, opts.description ? h("p", { class: "xc-muted" }, opts.description) : null, h("div", { class: "xc-row" }, input, submit, cancel), msg);
         const list = h("div", { class: "xc-items", role: "list", "aria-label": opts.label });
         const header = pageHeader(opts.label, () => opts.get(ctx.store.config).map(v => `${opts.statsPrefix}:${v}`), () => renderList());
-        const el = h("div", { class: "xc-page" }, header.el, form, list);
+        const bulk = bulkSelection("条目", [{
+            label: "移除所选",
+            kind: "danger",
+            confirm: n => `从${opts.label}中移除 ${n} 个条目？`,
+            run: keys => {
+                const drop = new Set(keys);
+                const ok = ctx.commit(c => opts.set(c, opts.get(c).filter(x => !drop.has(x))));
+                if (ok && editing !== null && drop.has(editing)) stopEditing();
+                return ok;
+            },
+        }]);
+        const el = h("div", { class: "xc-page" }, header.el, form, bulk.bar, list);
 
         const stopEditing = () => {
             editing = null;
@@ -86,13 +97,16 @@ export function stringListPage(opts: StringListOptions) {
 
         const renderList = () => {
             const q = header.query();
-            const items = opts.get(ctx.store.config).filter(v => matches(q, v));
+            const all = opts.get(ctx.store.config);
+            const items = all.filter(v => matches(q, v));
             header.update();
+            bulk.sync(all, items);
             if (!items.length) {
                 list.replaceChildren(h("div", { class: "xc-empty" }, q ? "没有匹配的条目。" : `暂无${opts.label}。`));
                 return;
             }
             list.replaceChildren(...items.map(v => h("div", { class: "xc-item", role: "listitem" },
+                bulk.box(v, v),
                 h("div", { class: "xc-item-main" }, h("div", { class: "xc-item-head" }, h("span", null, v), hitPill(`${opts.statsPrefix}:${v}`))),
                 h("div", { class: "xc-item-actions" },
                     button("编辑", () => {

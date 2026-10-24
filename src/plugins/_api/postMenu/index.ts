@@ -4,14 +4,15 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-// Void++'s ContextMenu API for X: plugins declare `postMenuItems` and they show up at the end of
-// the 「…」 menu X opens from a post. Items are cloned from X's own menu rows so they look native.
+// Void++'s ContextMenu API for X: plugins declare `postMenuItems` / `profileMenuItems` and they show up
+// at the end of the 「…」 menu X opens from a post or a profile. Items are cloned from X's own menu rows
+// so they look native.
 
 import { defineHook } from "@api/PluginManager";
 import { svgIcon } from "@ui/h";
 import { Logger } from "@utils/Logger";
 import definePlugin from "@utils/types";
-import { findIdentityLink, isInNestedStatusCard, OWNED_ATTR, SEL } from "@x/dom";
+import { findIdentityLink, isInNestedStatusCard, OWNED_ATTR, profilePathHandle, SEL } from "@x/dom";
 
 const logger = new Logger("PostMenu");
 
@@ -22,20 +23,29 @@ export interface PostMenuContext {
     statusUrl: string;
 }
 
-export interface PostMenuItem {
+export interface ProfileMenuContext {
+    handle: string;
+    profileUrl: string;
+}
+
+export interface MenuItem<C> {
     id: string;
-    label(ctx: PostMenuContext): string;
+    label(ctx: C): string;
     /** SVG markup, as in Icons. */
     icon?: string;
     order?: number;
     danger?: boolean;
-    visible?(ctx: PostMenuContext): boolean;
-    run(ctx: PostMenuContext): void | Promise<void>;
+    visible?(ctx: C): boolean;
+    run(ctx: C): void | Promise<void>;
 }
+
+export type PostMenuItem = MenuItem<PostMenuContext>;
+export type ProfileMenuItem = MenuItem<ProfileMenuContext>;
 
 declare module "@utils/types" {
     interface PluginHooks {
         postMenuItems?: PostMenuItem[];
+        profileMenuItems?: ProfileMenuItem[];
     }
 }
 
@@ -45,8 +55,19 @@ const WAIT_MS = 1500;
 const STRIP = ["id", "data-testid", "href", "aria-describedby", "aria-labelledby", "aria-controls", "aria-haspopup", "aria-expanded"];
 
 const registry = new Map<string, PostMenuItem[]>();
+const profileRegistry = new Map<string, ProfileMenuItem[]>();
 
-export const registeredItems = (): PostMenuItem[] => [...registry.values()].flat().toSorted((a, b) => (a.order ?? 100) - (b.order ?? 100));
+const sorted = <T extends { order?: number }>(m: Map<string, T[]>): T[] => [...m.values()].flat().toSorted((a, b) => (a.order ?? 100) - (b.order ?? 100));
+export const registeredItems = (): PostMenuItem[] => sorted(registry);
+export const registeredProfileItems = (): ProfileMenuItem[] => sorted(profileRegistry);
+
+/** The profile whose header 「…」 button was pressed; only on a /<handle> page, never on your own. */
+export function contextForProfileButton(button: Element): ProfileMenuContext | null {
+    if (!button.closest(SEL.primaryColumn)) return null;
+    const handle = profilePathHandle(location.pathname);
+    if (!handle) return null;
+    return { handle, profileUrl: new URL(`/${handle}`, location.origin).href };
+}
 
 /** The post whose own caret was pressed; null for carets that aren't a post's (trends, quoted cards). */
 export function contextForCaret(caret: Element): PostMenuContext | null {
@@ -99,12 +120,20 @@ function template(menu: Element): HTMLElement | null {
 }
 
 export function fillMenu(menu: Element, ctx: PostMenuContext): HTMLElement[] {
+    return fillMenuWith(menu, registeredItems(), ctx);
+}
+
+export function fillProfileMenu(menu: Element, ctx: ProfileMenuContext): HTMLElement[] {
+    return fillMenuWith(menu, registeredProfileItems(), ctx);
+}
+
+function fillMenuWith<C>(menu: Element, items: MenuItem<C>[], ctx: C): HTMLElement[] {
     if (menu.querySelector(`[${ITEM_ATTR}]`)) return [];
     const tpl = template(menu);
     const host = tpl?.parentElement;
     if (!tpl || !host) return [];
     const added: HTMLElement[] = [];
-    for (const item of registeredItems()) {
+    for (const item of items) {
         let label: string;
         try {
             if (item.visible && !item.visible(ctx)) continue;
@@ -130,7 +159,7 @@ export function fillMenu(menu: Element, ctx: PostMenuContext): HTMLElement[] {
     return added;
 }
 
-let pending: { ctx: PostMenuContext; at: number } | null = null;
+let pending: { fill(menu: Element): void; at: number } | null = null;
 let observer: MutationObserver | null = null;
 
 function tryFill() {
@@ -138,24 +167,25 @@ function tryFill() {
     if (Date.now() - pending.at > WAIT_MS) { pending = null; return; }
     const menu = document.querySelector(MENU_SEL);
     if (!menu || !template(menu)) return;
-    const { ctx } = pending;
+    const { fill } = pending;
     pending = null;
-    fillMenu(menu, ctx);
+    fill(menu);
 }
 
 function onClick(e: MouseEvent) {
-    if (!registry.size) return;
-    const caret = (e.target as Element | null)?.closest?.(SEL.caret);
-    if (!caret) return;
-    const ctx = contextForCaret(caret);
-    if (!ctx) return;
-    pending = { ctx, at: Date.now() };
-    queueMicrotask(tryFill);
+    const target = e.target as Element | null;
+    const caret = registry.size ? target?.closest?.(SEL.caret) : null;
+    const ctx = caret && contextForCaret(caret);
+    if (ctx) pending = { fill: menu => fillMenu(menu, ctx), at: Date.now() };
+    const profileButton = profileRegistry.size ? target?.closest?.(SEL.userActions) : null;
+    const profile = profileButton && contextForProfileButton(profileButton);
+    if (profile) pending = { fill: menu => fillProfileMenu(menu, profile), at: Date.now() };
+    if (pending) queueMicrotask(tryFill);
 }
 
 export default definePlugin({
     name: "PostMenuAPI",
-    description: "Lets plugins add items to the 「…」 menu of a post.",
+    description: "Lets plugins add items to the 「…」 menu of a post or a profile.",
     tags: ["core"],
     hidden: true,
 
@@ -179,5 +209,13 @@ defineHook("postMenuItems", {
     attach(plugin, items) {
         registry.set(plugin.name, items);
         return () => registry.delete(plugin.name);
+    },
+});
+
+defineHook("profileMenuItems", {
+    provider: "PostMenuAPI",
+    attach(plugin, items) {
+        profileRegistry.set(plugin.name, items);
+        return () => profileRegistry.delete(plugin.name);
     },
 });

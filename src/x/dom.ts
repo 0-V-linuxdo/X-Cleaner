@@ -17,6 +17,7 @@ export const SEL = {
     tombstone: '[data-testid="tombstone"]',
     quote: '[data-testid="quoteTweet"], [data-testid="tweetQuote"], [data-testid="quotedTweet"], [data-testid="card.wrapper"]',
     caret: '[data-testid="caret"]',
+    userActions: '[data-testid="userActions"]',
     profileLink: 'a[data-testid="AppTabBar_Profile_Link"][href]',
     accountSwitcher: '[data-testid="SideNav_AccountSwitcher_Button"]',
     grokDrawer: '#layers [data-testid="GrokDrawer"]',
@@ -120,7 +121,7 @@ export function findIdentityLink(article: Element): { handle: string; tweetId: s
     return null;
 }
 
-function profilePathHandle(href: string | null): string {
+export function profilePathHandle(href: string | null): string {
     if (!href) return "";
     let url: URL;
     try { url = new URL(href, location.origin); } catch { return ""; }

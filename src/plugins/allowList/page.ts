@@ -6,7 +6,7 @@
 
 import { LIMITS } from "@config/config";
 import { button, pill } from "@plugins/panel/components";
-import { errorLine, section } from "@plugins/panel/kit";
+import { bulkSelection, errorLine, section } from "@plugins/panel/kit";
 import type { PageInstance, PanelContext } from "@plugins/panel/types";
 import { h } from "@ui/h";
 import { showToast } from "@ui/toast";
@@ -17,7 +17,16 @@ export function createAllowPage(ctx: PanelContext): PageInstance {
     const msg = errorLine();
     const form = h("form", { class: "xc-form" }, h("div", { class: "xc-row" }, input, h("button", { class: "xc-btn xc-btn-primary", type: "submit" }, "添加")), msg);
     const list = h("div", { class: "xc-items", role: "list", "aria-label": "精确账号白名单" });
-    const el = h("div", { class: "xc-page" }, section("精确账号白名单"), form, list);
+    const bulk = bulkSelection("账号", [{
+        label: "移出白名单",
+        kind: "danger",
+        confirm: n => `把 ${n} 个账号移出白名单？`,
+        run: keys => {
+            const drop = new Set(keys);
+            return ctx.commit(c => { c.allowHandles = c.allowHandles.filter(x => !drop.has(x)); });
+        },
+    }]);
+    const el = h("div", { class: "xc-page" }, section("精确账号白名单"), form, bulk.bar, list);
 
     form.addEventListener("submit", e => {
         e.preventDefault();
@@ -37,11 +46,13 @@ export function createAllowPage(ctx: PanelContext): PageInstance {
 
     const render = () => {
         const handles = ctx.store.config.allowHandles;
+        bulk.sync(handles, handles);
         if (!handles.length) {
             list.replaceChildren(h("div", { class: "xc-empty" }, "暂无白名单账号。"));
             return;
         }
         list.replaceChildren(...[...handles].reverse().map(handle => h("div", { class: "xc-item", role: "listitem" },
+            bulk.box(handle, handle),
             h("div", { class: "xc-item-main" }, h("div", { class: "xc-item-head" }, h("strong", null, handle), pill("最高优先级", "success"))),
             h("div", { class: "xc-item-actions" }, button("移除", () => ctx.commit(c => { c.allowHandles = c.allowHandles.filter(x => x !== handle); }), { small: true, kind: "danger" })),
         )));

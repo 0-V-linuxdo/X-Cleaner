@@ -8,7 +8,7 @@ import { isAllowed } from "@rules/lists";
 import { Icons } from "@ui/icons";
 import definePlugin from "@utils/types";
 
-import { allowListMenuItem } from "../accountBlacklist/menu";
+import { allowListMenuItem, allowListProfileItem } from "../accountBlacklist/menu";
 import { createAllowPage } from "./page";
 
 export default definePlugin({
@@ -18,6 +18,7 @@ export default definePlugin({
     tags: ["filters"],
     enabledByDefault: true,
     postMenuItems: [allowListMenuItem],
+    profileMenuItems: [allowListProfileItem],
     panelPages: [{ tab: "allowlist", id: "handles", label: "白名单", order: 0, create: createAllowPage }],
     replyJudges: [{
         id: "allowlist",

@@ -88,3 +88,68 @@ export function checkRow(label: string, get: () => boolean, set: (v: boolean) =>
     sync();
     return Object.assign(row, { sync });
 }
+
+export interface BulkAction {
+    label: string;
+    kind?: "danger";
+    /** Shown in a confirm() before running; omit to run straight away. */
+    confirm?(count: number): string;
+    /** Returns false when nothing was saved, so the selection is kept. */
+    run(keys: string[]): boolean;
+}
+
+export interface BulkSelection {
+    bar: HTMLElement;
+    /** A checkbox for one row; clicks on it never reach the row underneath. */
+    box(key: string, label: string): HTMLInputElement;
+    /** Drops keys that no longer exist and remembers which rows are on screen for 「全选」. */
+    sync(existing: string[], visible: string[]): void;
+}
+
+/** Void++ SelectionUI for the list pages: tick rows, then act on all of them at once. */
+export function bulkSelection(noun: string, actions: BulkAction[]): BulkSelection {
+    const selected = new Set<string>();
+    let visible: string[] = [];
+    const boxes = new Map<string, HTMLInputElement>();
+    const count = h("span", { class: "xc-bulk-count" });
+    const refresh = () => {
+        bar.hidden = selected.size === 0;
+        count.textContent = `已选 ${selected.size} 个${noun}`;
+        for (const [key, box] of boxes) box.checked = selected.has(key);
+    };
+    const bar: HTMLElement = h("div", { class: "xc-bulk-bar", role: "toolbar", "aria-label": `批量操作${noun}` }, count,
+        h("div", { class: "xc-bulk-actions" },
+            button("全选", () => { for (const k of visible) selected.add(k); refresh(); }, { small: true }),
+            button("取消选择", () => { selected.clear(); refresh(); }, { small: true }),
+            ...actions.map(a => button(a.label, () => {
+                const keys = [...selected];
+                if (!keys.length || (a.confirm && !confirm(a.confirm(keys.length)))) return;
+                if (a.run(keys) === false) return;
+                selected.clear();
+                refresh();
+            }, { small: true, kind: a.kind ?? "" }))));
+    refresh();
+    return {
+        bar,
+        box(key, label) {
+            const box = h("input", { type: "checkbox", class: "xc-bulk-box", "aria-label": `选择 ${label}` });
+            box.checked = selected.has(key);
+            box.addEventListener("click", e => e.stopPropagation());
+            box.addEventListener("keydown", e => e.stopPropagation());
+            box.addEventListener("change", () => {
+                if (box.checked) selected.add(key);
+                else selected.delete(key);
+                refresh();
+            });
+            boxes.set(key, box);
+            return box;
+        },
+        sync(existing, shown) {
+            const keep = new Set(existing);
+            for (const k of [...selected]) if (!keep.has(k)) selected.delete(k);
+            visible = shown;
+            boxes.clear();
+            refresh();
+        },
+    };
+}

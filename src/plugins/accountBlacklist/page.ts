@@ -6,7 +6,8 @@
 
 import type { AccountEntry, AccountSource } from "@config/config";
 import { button, formatTime, listbox, pill } from "@plugins/panel/components";
-import { errorLine, hitPill, matches, pageHeader, section } from "@plugins/panel/kit";
+import { bulkSelection, errorLine, hitPill, matches, pageHeader, section } from "@plugins/panel/kit";
+import { LIMITS } from "@config/config";
 import type { PageInstance, PanelContext } from "@plugins/panel/types";
 import { CATEGORY_LABELS, type CategoryId } from "@rules/classifier";
 import { h } from "@ui/h";
@@ -38,7 +39,35 @@ export function createAccountsPage(ctx: PanelContext): PageInstance {
     }, { small: true });
     const listArea = h("div");
     const header = pageHeader("账号", () => ctx.store.config.blacklists.accounts.map(a => `account:${a.handle}`), () => renderList());
-    const el = h("div", { class: "xc-page" }, header.el, section("账号", clearAuto), form, listArea);
+    const bulk = bulkSelection("账号", [
+        {
+            label: "移到白名单",
+            confirm: n => `把 ${n} 个账号从黑名单移到白名单？TA 们的回复不会再被隐藏。`,
+            run: keys => {
+                const move = new Set(keys);
+                if (new Set([...ctx.store.config.allowHandles, ...keys]).size > LIMITS.allowHandles) {
+                    showToast(`白名单最多 ${LIMITS.allowHandles} 个账号。`, { type: "error" });
+                    return false;
+                }
+                return ctx.commit(c => {
+                    c.blacklists.accounts = c.blacklists.accounts.filter(a => !move.has(a.handle));
+                    c.allowHandles = [...c.allowHandles.filter(x => !move.has(x)), ...keys];
+                });
+            },
+        },
+        {
+            label: "移除所选",
+            kind: "danger",
+            confirm: n => `从账号黑名单移除 ${n} 个账号？`,
+            run: keys => {
+                const drop = new Set(keys);
+                const ok = ctx.commit(c => { c.blacklists.accounts = c.blacklists.accounts.filter(a => !drop.has(a.handle)); });
+                if (ok && editing && drop.has(editing.handle)) stopEditing();
+                return ok;
+            },
+        },
+    ]);
+    const el = h("div", { class: "xc-page" }, header.el, section("账号", clearAuto), form, bulk.bar, listArea);
 
     const label = h("span", { class: "xc-footer-label" });
     const footer = h("div", { class: "xc-review-bar" }, label, h("div", { class: "xc-footer-actions" },
@@ -102,6 +131,7 @@ export function createAccountsPage(ctx: PanelContext): PageInstance {
         const q = header.query();
         const items = [...accounts].reverse().filter(a => matches(q, a.handle, a.reason, SOURCE_LABELS[a.source]));
         if (!items.some(a => a.handle === selected)) selected = items[0]?.handle ?? null;
+        bulk.sync(accounts.map(a => a.handle), items.map(a => a.handle));
         listArea.replaceChildren(listbox({
             label: "账号黑名单",
             items,
@@ -115,7 +145,7 @@ export function createAccountsPage(ctx: PanelContext): PageInstance {
                 if (hadFocus) queueMicrotask(() => listArea.querySelector<HTMLElement>(`[data-key="${CSS.escape(k)}"]`)?.focus());
             },
             render: a => [
-                h("div", { class: "xc-item-head" }, h("strong", null, a.handle), hitPill(`account:${a.handle}`), pill(SOURCE_LABELS[a.source], a.source === "manual" ? "" : "accent")),
+                h("div", { class: "xc-item-head" }, bulk.box(a.handle, a.handle), h("strong", null, a.handle), hitPill(`account:${a.handle}`), pill(SOURCE_LABELS[a.source], a.source === "manual" ? "" : "accent")),
                 a.reason ? h("div", { class: "xc-rec-reason" }, a.reason) : null,
                 h("div", { class: "xc-item-meta xc-muted" }, meta(a)),
             ].filter(Boolean) as Node[],

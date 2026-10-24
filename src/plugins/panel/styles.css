@@ -89,3 +89,7 @@
     #x-cleaner-ui .xc-drawer { width: 100%; border-left: 0; }
     .xc-footer-actions { display: grid; grid-template-columns: 1fr 1fr; }
 }
+.xc-bulk-bar { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; padding: 8px 12px; margin-bottom: 8px; border-radius: 10px; background: var(--xc-bg-3); font-size: 13px; }
+.xc-bulk-bar[hidden] { display: none; }
+.xc-bulk-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+.xc-bulk-box { flex: none; margin: 0; width: 16px; height: 16px; accent-color: var(--xc-accent, #1d9bf0); cursor: pointer; }
