@@ -5,9 +5,10 @@
  */
 
 import { switchEl } from "@ui/fields";
-import { h } from "@ui/h";
+import { h, svgIcon } from "@ui/h";
 
 import { HIDE_HINTS, type Layout, mergeOrder, NAV, type SidebarEntry } from "./entries";
+import type { MoreItem } from "./pins";
 
 interface EditorCtx {
     get(): Layout;
@@ -20,7 +21,7 @@ const isLive = (key: string, entries: SidebarEntry[]) => {
     return !!(nav && entry && nav.querySelector(`:scope > ${entry.selector}`));
 };
 
-export function renderEditor(ctx: EditorCtx, getEntries: () => SidebarEntry[]): HTMLElement {
+export function renderEditor(ctx: EditorCtx, getEntries: () => SidebarEntry[]): { el: HTMLElement; refresh(): void } {
     const list = h("div", { class: "xc-sbe-list", role: "list", "aria-label": "侧栏入口" });
     let dragKey: string | null = null;
 
@@ -101,5 +102,66 @@ export function renderEditor(ctx: EditorCtx, getEntries: () => SidebarEntry[]): 
     };
 
     render();
-    return h("div", { class: "xc-sbe" }, list);
+    return { el: h("div", { class: "xc-sbe" }, list), refresh: render };
+}
+
+interface PinEditorCtx {
+    items(): MoreItem[];
+    pinned(): string[];
+    setPinned(keys: string[]): void;
+    rescan(): Promise<boolean>;
+}
+
+/** The rows of X's 「更多」 menu, each with a switch that pins it into the sidebar above 「更多」. */
+export function renderPinEditor(ctx: PinEditorCtx): HTMLElement {
+    const list = h("div", { class: "xc-sbe-list", role: "list", "aria-label": "「更多」菜单里的项目" });
+    const status = h("span", { class: "xc-sbe-hint" });
+    let scanning = false;
+
+    const rescan = async () => {
+        if (scanning) return;
+        scanning = true;
+        status.textContent = "正在读取「更多」菜单…";
+        const ok = await ctx.rescan();
+        scanning = false;
+        if (!list.isConnected) return;
+        status.textContent = ok ? "" : "没能打开「更多」菜单。在 x.com 的桌面版页面上点一下侧栏的「更多」，再回来这里。";
+        render();
+    };
+
+    const render = () => {
+        const items = ctx.items();
+        const pinned = ctx.pinned();
+        if (!items.length) {
+            list.replaceChildren(h("div", { class: "xc-empty" }, "还没有读到「更多」菜单的项目。点「读取」，或在侧栏点一下「更多」。"));
+            return;
+        }
+        list.replaceChildren(...items.map(item => {
+            const on = pinned.includes(item.key);
+            return h("div", { class: "xc-sbe-row", role: "listitem", dataset: { key: item.key } },
+                item.icon ? h("span", { class: "xc-sbe-icon" }, svgIcon(item.icon, 18)) : null,
+                h("div", { class: "xc-sbe-main" }, h("strong", null, item.label)),
+                h("div", { class: "xc-sbe-actions" },
+                    switchEl(on, next => {
+                        const rest = ctx.pinned().filter(k => k !== item.key);
+                        ctx.setPinned(next ? [...rest, item.key] : rest);
+                    }, `固定 ${item.label} 到侧栏`),
+                ),
+            );
+        }));
+    };
+
+    render();
+    if (!ctx.items().length) void rescan();
+    return h("div", { class: "xc-sbe xc-sbe-pins" },
+        h("div", { class: "xc-sbe-head" },
+            h("div", { class: "xc-sbe-main" },
+                h("strong", null, "固定「更多」菜单里的项目"),
+                h("span", { class: "xc-sbe-hint" }, "打开的项目会出现在侧栏「更多」的正上方，侧栏收起成图标时也一样。固定后可以在上面的列表里调整位置。"),
+            ),
+            h("button", { type: "button", class: "xc-btn xc-btn-sm", onclick: () => void rescan() }, "读取"),
+        ),
+        status,
+        list,
+    );
 }

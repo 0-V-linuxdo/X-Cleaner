@@ -7,6 +7,9 @@
 /** X's left sidebar; its entries are the direct children of this flex column. */
 export const NAV = 'header[role="banner"] nav[role="navigation"]';
 
+/** Marks the copies of 「更多」 menu rows pinned into the sidebar; the value is the row's key. */
+export const PIN_ATTR = "data-xc-pin";
+
 export interface SidebarEntry {
     key: string;
     selector: string;
@@ -46,9 +49,13 @@ const quote = (v: string) => JSON.stringify(v);
 /** Stable identity for one sidebar child: its data-testid, else its link path (per-user paths use `~`). */
 export function describeEntry(el: Element): SidebarEntry | null {
     const tid = el.getAttribute("data-testid");
+    const pin = el.getAttribute(PIN_ATTR);
     let key: string;
     let selector: string;
-    if (tid) {
+    if (pin) {
+        key = `pin:${pin}`;
+        selector = `[${PIN_ATTR}=${quote(pin)}]`;
+    } else if (tid) {
         key = `tid:${tid}`;
         selector = `[data-testid=${quote(tid)}]`;
     } else {
@@ -65,7 +72,8 @@ export function describeEntry(el: Element): SidebarEntry | null {
         }
     }
     const text = (el.getAttribute("aria-label") || (el as HTMLElement).innerText || el.textContent || "").trim().split("\n")[0];
-    return { key, selector, label: LABELS[key] ?? (text || key.replace(/^\w+:/, "")) };
+    const label = LABELS[key] ?? (text || key.replace(/^\w+:/, ""));
+    return { key, selector, label: pin ? `${label}（来自「更多」）` : label };
 }
 
 export function readEntries(nav: Element): SidebarEntry[] {

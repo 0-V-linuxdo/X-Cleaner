@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         X Cleaner
 // @namespace    https://github.com/0-V-linuxdo/x-cleaner
-// @version      0.1.0.202610240648
+// @version      0.1.0.202610240655
 // @description  A plugin-based cleaner for x.com: hide adult promotion, crypto funnels and promotional reply accounts. Includes review, lists, safe regex rules and optional AI-assisted rule drafts.
 // @author       X Cleaner Contributors
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z'/%3E%3Cpath d='m4.5 4.5 15 15'/%3E%3C/svg%3E
@@ -2340,7 +2340,7 @@ ${TOOLTIP_CSS}`,
     const hint = h("span", { class: "xc-pm-hint", tabindex: "0" }, svgIcon(Icons.info, 14));
     const hintTip = attachTooltip(hint, () => TABS.find((t) => t.id === activeId)?.description ?? "", "bottom");
     const body = h("div", { class: "xc-pm-body" });
-    const version = h("div", { class: "xc-pm-version" }, h("div", null, "X Cleaner · ", "0.1.0.202610240648"), h("div", null, "正式版", " · 用户脚本"), h("div", null, h("a", { href: "https://raw.githubusercontent.com/0-V-linuxdo/X-Cleaner/main/dist/X%20Cleaner.user.js", target: "_blank", rel: "noopener" }, "检查更新"), " · ", h("a", { href: `${"https://github.com/0-V-linuxdo/X-Cleaner"}/commits/main`, target: "_blank", rel: "noopener" }, "更新记录")));
+    const version = h("div", { class: "xc-pm-version" }, h("div", null, "X Cleaner · ", "0.1.0.202610240655"), h("div", null, "正式版", " · 用户脚本"), h("div", null, h("a", { href: "https://raw.githubusercontent.com/0-V-linuxdo/X-Cleaner/main/dist/X%20Cleaner.user.js", target: "_blank", rel: "noopener" }, "检查更新"), " · ", h("a", { href: `${"https://github.com/0-V-linuxdo/X-Cleaner"}/commits/main`, target: "_blank", rel: "noopener" }, "更新记录")));
     const content = h("div", { class: "xc-pm-shell" }, h("aside", { class: "xc-pm-sidebar" }, nav, version), h("section", { class: "xc-pm-main" }, h("header", { class: "xc-pm-header" }, heading, hint, closeButton(() => close())), body));
     const show = (id, plugin) => {
       activeId = id;
@@ -9229,6 +9229,7 @@ ${RESPONSE_FORMAT}` }
 
   // src/plugins/sidebarEntries/entries.ts
   var NAV2 = 'header[role="banner"] nav[role="navigation"]';
+  var PIN_ATTR = "data-xc-pin";
   var LABELS = {
     "tid:AppTabBar_Home_Link": "主页",
     "tid:AppTabBar_Explore_Link": "探索",
@@ -9252,9 +9253,13 @@ ${RESPONSE_FORMAT}` }
   var quote2 = (v) => JSON.stringify(v);
   function describeEntry(el) {
     const tid = el.getAttribute("data-testid");
+    const pin = el.getAttribute(PIN_ATTR);
     let key;
     let selector;
-    if (tid) {
+    if (pin) {
+      key = `pin:${pin}`;
+      selector = `[${PIN_ATTR}=${quote2(pin)}]`;
+    } else if (tid) {
       key = `tid:${tid}`;
       selector = `[data-testid=${quote2(tid)}]`;
     } else {
@@ -9273,7 +9278,8 @@ ${RESPONSE_FORMAT}` }
     }
     const text = (el.getAttribute("aria-label") || el.innerText || el.textContent || "").trim().split(`
 `)[0];
-    return { key, selector, label: LABELS[key] ?? (text || key.replace(/^\w+:/, "")) };
+    const label = LABELS[key] ?? (text || key.replace(/^\w+:/, ""));
+    return { key, selector, label: pin ? `${label}（来自「更多」）` : label };
   }
   function readEntries(nav) {
     const seen = new Set;
@@ -9407,7 +9413,279 @@ ${RESPONSE_FORMAT}` }
       }));
     };
     render();
-    return h("div", { class: "xc-sbe" }, list);
+    return { el: h("div", { class: "xc-sbe" }, list), refresh: render };
+  }
+  function renderPinEditor(ctx) {
+    const list = h("div", { class: "xc-sbe-list", role: "list", "aria-label": "「更多」菜单里的项目" });
+    const status = h("span", { class: "xc-sbe-hint" });
+    let scanning = false;
+    const rescan = async () => {
+      if (scanning)
+        return;
+      scanning = true;
+      status.textContent = "正在读取「更多」菜单…";
+      const ok = await ctx.rescan();
+      scanning = false;
+      if (!list.isConnected)
+        return;
+      status.textContent = ok ? "" : "没能打开「更多」菜单。在 x.com 的桌面版页面上点一下侧栏的「更多」，再回来这里。";
+      render();
+    };
+    const render = () => {
+      const items = ctx.items();
+      const pinned = ctx.pinned();
+      if (!items.length) {
+        list.replaceChildren(h("div", { class: "xc-empty" }, "还没有读到「更多」菜单的项目。点「读取」，或在侧栏点一下「更多」。"));
+        return;
+      }
+      list.replaceChildren(...items.map((item) => {
+        const on = pinned.includes(item.key);
+        return h("div", { class: "xc-sbe-row", role: "listitem", dataset: { key: item.key } }, item.icon ? h("span", { class: "xc-sbe-icon" }, svgIcon(item.icon, 18)) : null, h("div", { class: "xc-sbe-main" }, h("strong", null, item.label)), h("div", { class: "xc-sbe-actions" }, switchEl(on, (next) => {
+          const rest = ctx.pinned().filter((k) => k !== item.key);
+          ctx.setPinned(next ? [...rest, item.key] : rest);
+        }, `固定 ${item.label} 到侧栏`)));
+      }));
+    };
+    render();
+    if (!ctx.items().length)
+      rescan();
+    return h("div", { class: "xc-sbe xc-sbe-pins" }, h("div", { class: "xc-sbe-head" }, h("div", { class: "xc-sbe-main" }, h("strong", null, "固定「更多」菜单里的项目"), h("span", { class: "xc-sbe-hint" }, "打开的项目会出现在侧栏「更多」的正上方，侧栏收起成图标时也一样。固定后可以在上面的列表里调整位置。")), h("button", { type: "button", class: "xc-btn xc-btn-sm", onclick: () => void rescan() }, "读取")), status, list);
+  }
+
+  // src/plugins/sidebarEntries/pins.ts
+  var MORE_BUTTON2 = '[data-testid="AppTabBar_More_Menu"]';
+  var MENU_SEL2 = '#layers [role="menu"]';
+  var HIDE_STYLE = "sidebarEntries:menuReplay";
+  var WAIT_MS4 = 1500;
+  var STRIP3 = ["id", "data-testid", "aria-current", "aria-describedby", "aria-labelledby", "aria-controls", "aria-haspopup", "aria-expanded", "aria-selected"];
+  var TEMPLATES = ["AppTabBar_Explore_Link", "AppTabBar_Profile_Link", "AppTabBar_Home_Link"];
+  var isExternal = (href) => /^https?:\/\//i.test(href) && !href.startsWith(location.origin);
+  function moreItemKey(href, tid, label) {
+    if (href) {
+      if (isExternal(href)) {
+        try {
+          const u = new URL(href);
+          return `url:${u.host}${u.pathname.replace(/\/$/, "")}`;
+        } catch {}
+      } else {
+        const path = new URL(href, location.origin).pathname;
+        const own = path.match(/^\/[^/]+\/(lists|communities|articles|creator-studio)$/);
+        return own && !path.startsWith("/i/") ? `href:/~/${own[1]}` : `href:${path}`;
+      }
+    }
+    if (tid)
+      return `tid:${tid}`;
+    return `text:${label}`;
+  }
+  var firstLine = (el) => (el.innerText || el.textContent || "").trim().split(`
+`)[0].trim();
+  function menuRows(menu) {
+    const all = [...menu.querySelectorAll('a[href], [role="menuitem"]')].filter((el) => !el.closest(`[${OWNED_ATTR}]`) && !el.closest("[data-xc-more-entry]"));
+    return all.filter((el) => !all.some((other) => other !== el && other.contains(el)));
+  }
+  function describeMoreRow(row) {
+    const label = firstLine(row);
+    if (!label)
+      return null;
+    const link = row.matches("a[href]") ? row : row.querySelector("a[href]");
+    const href = link?.getAttribute("href") ?? undefined;
+    const tid = row.getAttribute("data-testid") ?? link?.getAttribute("data-testid") ?? null;
+    const svg = row.querySelector("svg");
+    let icon;
+    if (svg) {
+      const copy = svg.cloneNode(true);
+      for (const a of ["class", "style", "width", "height", "id"])
+        copy.removeAttribute(a);
+      icon = copy.outerHTML.length < 8000 ? copy.outerHTML : undefined;
+    }
+    return { key: moreItemKey(href ?? null, tid, label), label, href, icon };
+  }
+  function readMoreMenu(menu) {
+    const seen = new Set;
+    const out = [];
+    for (const row of menuRows(menu)) {
+      const item = describeMoreRow(row);
+      if (!item || seen.has(item.key))
+        continue;
+      seen.add(item.key);
+      out.push(item);
+    }
+    return out;
+  }
+  function isMoreMenu(menu) {
+    return !!menu.querySelector('a[href="/settings"]') || document.querySelector(MORE_BUTTON2)?.getAttribute("aria-expanded") === "true";
+  }
+  function templateLink(nav) {
+    const links = [...nav.querySelectorAll(":scope > a[href]")].filter((a) => !a.hasAttribute(PIN_ATTR));
+    const here = location.pathname;
+    const idle = (a) => {
+      const path = a.getAttribute("href").split(/[?#]/)[0];
+      return path !== here && !(path.length > 1 && here.startsWith(`${path}/`)) && a.getAttribute("aria-current") !== "page";
+    };
+    for (const tid of TEMPLATES) {
+      const a = links.find((l) => l.getAttribute("data-testid") === tid);
+      if (a && idle(a))
+        return a;
+    }
+    return links.find(idle) ?? links[0] ?? null;
+  }
+  var showsLabels = (link) => [...link.querySelectorAll("span")].some((s) => !s.childElementCount && s.textContent?.trim());
+  function iconFrom(markup, like) {
+    const withNs = /<svg[^>]*\sxmlns=/.test(markup) ? markup : markup.replace("<svg", '<svg xmlns="http://www.w3.org/2000/svg"');
+    const doc = new DOMParser().parseFromString(withNs, "image/svg+xml");
+    if (doc.documentElement.nodeName.toLowerCase() !== "svg")
+      return null;
+    const svg = document.importNode(doc.documentElement, true);
+    for (const s of svg.querySelectorAll("script, foreignObject"))
+      s.remove();
+    for (const el of [svg, ...svg.querySelectorAll("*")])
+      for (const a of [...el.attributes])
+        if (/^on/i.test(a.name))
+          el.removeAttribute(a.name);
+    const cls = like?.getAttribute("class");
+    if (cls)
+      svg.setAttribute("class", cls);
+    svg.setAttribute("aria-hidden", "true");
+    return svg;
+  }
+  function buildPin(template, item, onActivate) {
+    const pin = template.cloneNode(true);
+    for (const el of [pin, ...pin.querySelectorAll("*")])
+      for (const a of STRIP3)
+        el.removeAttribute(a);
+    pin.setAttribute(PIN_ATTR, item.key);
+    pin.setAttribute(OWNED_ATTR, "");
+    pin.setAttribute("aria-label", item.label);
+    pin.setAttribute("title", item.label);
+    if (item.href) {
+      pin.setAttribute("href", item.href);
+      pin.setAttribute("role", "link");
+      if (isExternal(item.href)) {
+        pin.setAttribute("target", "_blank");
+        pin.setAttribute("rel", "noopener noreferrer");
+      }
+    } else {
+      pin.removeAttribute("href");
+      pin.setAttribute("role", "button");
+      pin.setAttribute("tabindex", "0");
+      pin.style.cursor = "pointer";
+    }
+    const svgs = [...pin.querySelectorAll("svg")];
+    const native = svgs[0] ?? null;
+    for (const extra of svgs.slice(1))
+      extra.remove();
+    const icon = item.icon ? iconFrom(item.icon, native) : null;
+    if (native && icon)
+      native.replaceWith(icon);
+    for (const badge of pin.querySelectorAll('[aria-live], [data-testid*="badge" i]'))
+      badge.remove();
+    const spans = [...pin.querySelectorAll("span")].filter((s) => !s.childElementCount && s.textContent?.trim());
+    if (spans.length) {
+      spans.at(-1).textContent = item.label;
+      for (const s of spans.slice(0, -1))
+        s.remove();
+    }
+    pin.addEventListener("click", (e) => {
+      if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey)
+        return;
+      if (item.href && isExternal(item.href))
+        return;
+      e.preventDefault();
+      e.stopPropagation();
+      onActivate(item, e);
+    });
+    pin.addEventListener("keydown", (e) => {
+      if (!item.href && (e.key === "Enter" || e.key === " ")) {
+        e.preventDefault();
+        onActivate(item, e);
+      }
+    });
+    return pin;
+  }
+  function syncPins(nav, items, onActivate) {
+    const existing = [...nav.querySelectorAll(`:scope > [${PIN_ATTR}]`)];
+    const more = nav.querySelector(`:scope > ${MORE_BUTTON2}`);
+    const template = more && items.length ? templateLink(nav) : null;
+    if (!more || !template) {
+      if (!existing.length)
+        return false;
+      for (const p of existing)
+        p.remove();
+      return true;
+    }
+    const wide = showsLabels(template);
+    const inPlace = existing.length === items.length && existing.every((p, i) => p.getAttribute(PIN_ATTR) === items[i].key && p.dataset.xcWide === String(wide)) && existing.every((p, i) => p.nextElementSibling === (existing[i + 1] ?? more));
+    if (inPlace)
+      return false;
+    for (const p of existing)
+      p.remove();
+    for (const item of items) {
+      const pin = buildPin(template, item, onActivate);
+      pin.dataset.xcWide = String(wide);
+      nav.insertBefore(pin, more);
+    }
+    return true;
+  }
+  function waitFor(find, ms = WAIT_MS4) {
+    return new Promise((resolve) => {
+      const found = find();
+      if (found)
+        return resolve(found);
+      const start = Date.now();
+      const observer = new MutationObserver(() => {
+        const hit = find();
+        if (hit || Date.now() - start > ms) {
+          observer.disconnect();
+          clearTimeout(timer);
+          resolve(hit);
+        }
+      });
+      const timer = setTimeout(() => {
+        observer.disconnect();
+        resolve(find());
+      }, ms);
+      observer.observe(document.documentElement, { childList: true, subtree: true });
+    });
+  }
+  var closeMenu2 = (menu) => {
+    const backdrop = [...menu.parentElement?.children ?? []].find((s) => s !== menu && s instanceof HTMLElement && s.getBoundingClientRect().height > 100);
+    if (backdrop)
+      backdrop.click();
+    else
+      document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", code: "Escape", bubbles: true }));
+  };
+  async function withHiddenMoreMenu(use) {
+    const button = document.querySelector(`${NAV2} ${MORE_BUTTON2}`) ?? document.querySelector(MORE_BUTTON2);
+    if (!button)
+      return false;
+    registerStyle(HIDE_STYLE, `${MENU_SEL2}{opacity:0 !important}`);
+    try {
+      if (!document.querySelector(MENU_SEL2))
+        button.click();
+      const menu = await waitFor(() => {
+        const m = document.querySelector(MENU_SEL2);
+        return m && menuRows(m).length ? m : null;
+      });
+      if (!menu)
+        return false;
+      const done = use(menu) !== false;
+      if (!done && menu.isConnected)
+        closeMenu2(menu);
+      return done;
+    } finally {
+      setTimeout(() => unregisterStyle(HIDE_STYLE), 150);
+    }
+  }
+  async function activatePin(item) {
+    const clicked = await withHiddenMoreMenu((menu) => {
+      const row = menuRows(menu).find((r) => describeMoreRow(r)?.key === item.key);
+      if (!row)
+        return false;
+      row.click();
+      return true;
+    });
+    if (!clicked && item.href)
+      location.assign(item.href);
   }
 
   // xc-css:/home/claude/x-cleaner/src/plugins/sidebarEntries/styles.css
@@ -9426,6 +9704,11 @@ ${RESPONSE_FORMAT}` }
 .xc-sbe-main { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .xc-sbe-hint { color: var(--xc-fg-2); font-size: 12.5px; }
 .xc-sbe-actions { display: flex; align-items: center; gap: 6px; flex: none; }
+.xc-sbe-wrap { display: flex; flex-direction: column; gap: 18px; }
+.xc-sbe-pins { display: flex; flex-direction: column; gap: 8px; }
+.xc-sbe-head { display: flex; align-items: flex-start; gap: 10px; }
+.xc-sbe-icon { display: inline-flex; color: var(--xc-fg-2); flex: none; }
+.xc-sbe-icon svg { fill: currentColor; }
 `;
 
   // src/plugins/sidebarEntries/index.ts
@@ -9436,15 +9719,61 @@ ${RESPONSE_FORMAT}` }
       label: "侧栏入口",
       description: "拖动或用箭头调整顺序，开关控制是否显示。没出现在当前页面的入口会保留你的设置。",
       default: { order: [], hidden: [] },
-      render: (ctx) => renderEditor(ctx, entriesForEditor)
+      render: (ctx) => {
+        const editor = renderEditor(ctx, entriesForEditor);
+        const pins = renderPinEditor({
+          items: () => settings6.plain.moreItems ?? [],
+          pinned: pinnedKeys,
+          setPinned(keys) {
+            settings6.store.pinned = keys;
+            const nav = document.querySelector(NAV2);
+            if (nav)
+              record(nav);
+            editor.refresh();
+          },
+          rescan: scanMoreMenu
+        });
+        return h("div", { class: "xc-sbe-wrap" }, editor.el, pins);
+      }
     }
   }).withPrivateSettings();
   var known = () => settings6.plain.known ?? [];
+  var pinnedKeys = () => Array.isArray(settings6.plain.pinned) ? settings6.plain.pinned : [];
+  function pinnedItems() {
+    const byKey = new Map((settings6.plain.moreItems ?? []).map((i) => [i.key, i]));
+    return pinnedKeys().map((k) => byKey.get(k)).filter((i) => !!i);
+  }
+  function recordMoreItems(live) {
+    const plain = settings6.plain;
+    if (!live.length || !plain)
+      return;
+    const prev = plain.moreItems ?? [];
+    const byKey = new Map(prev.map((i) => [i.key, i]));
+    for (const i of live)
+      byKey.set(i.key, i);
+    const next = mergeOrder(live.map((i) => i.key), prev.map((i) => i.key)).map((k) => byKey.get(k));
+    if (JSON.stringify(next) === JSON.stringify(prev))
+      return;
+    settings6.store.moreItems = next;
+  }
+  async function scanMoreMenu() {
+    return withHiddenMoreMenu((menu) => {
+      recordMoreItems(readMoreMenu(menu));
+      return false;
+    });
+  }
+  var onPinActivate = (item) => void activatePin(item);
+  function syncNav() {
+    const nav = document.querySelector(NAV2);
+    if (nav)
+      syncPins(nav, pinnedItems(), onPinActivate);
+  }
   function layout() {
     const l = settings6.plain.layout;
     return { order: Array.isArray(l?.order) ? l.order : [], hidden: Array.isArray(l?.hidden) ? l.hidden : [] };
   }
   function apply4() {
+    syncNav();
     const text = buildCss4(known(), layout());
     if (text)
       registerStyle(STYLE4, text);
@@ -9469,11 +9798,12 @@ ${RESPONSE_FORMAT}` }
     const nav = document.querySelector(NAV2);
     if (nav)
       record(nav);
-    return known();
+    const pinned = new Set(pinnedKeys().map((k) => `pin:${k}`));
+    return known().filter((e) => !e.key.startsWith("pin:") || pinned.has(e.key));
   }
   var sidebarEntries_default = definePlugin({
     name: "SidebarEntries",
-    description: "管理 X 左侧栏的入口：选择显示哪些、按什么顺序排列。",
+    description: "管理 X 左侧栏的入口：选择显示哪些、按什么顺序排列，还能把「更多」菜单里的项目固定到侧栏。",
     icon: Icons.list,
     tags: ["appearance", "declutter"],
     enabledByDefault: true,
@@ -9482,15 +9812,32 @@ ${RESPONSE_FORMAT}` }
     healthChecks: [CHECKS.sideNav],
     elements: {
       [NAV2](nav) {
-        record(nav);
-        const observer = new MutationObserver(() => record(nav));
-        observer.observe(nav, { childList: true });
+        const update = () => {
+          syncPins(nav, pinnedItems(), onPinActivate);
+          record(nav);
+        };
+        update();
+        const observer = new MutationObserver(update);
+        observer.observe(nav, { childList: true, subtree: true });
+        return () => observer.disconnect();
+      },
+      [MENU_SEL2](menu) {
+        const read = () => {
+          if (isMoreMenu(menu))
+            recordMoreItems(readMoreMenu(menu));
+        };
+        read();
+        const observer = new MutationObserver(read);
+        observer.observe(menu, { childList: true, subtree: true });
         return () => observer.disconnect();
       }
     },
     start: apply4,
     stop() {
       unregisterStyle(STYLE4);
+      const nav = document.querySelector(NAV2);
+      if (nav)
+        syncPins(nav, [], onPinActivate);
     },
     onSettingsChange: apply4
   });
@@ -9706,7 +10053,7 @@ ${RESPONSE_FORMAT}` }
     else
       onReady();
     addEventListener("pagehide", () => settingsStore.flush());
-    logger17.info(`${"0.1.0.202610240648"} started with ${Object.keys(plugins_default).length} plugins`);
+    logger17.info(`${"0.1.0.202610240655"} started with ${Object.keys(plugins_default).length} plugins`);
   }
 
   // src/index.ts
