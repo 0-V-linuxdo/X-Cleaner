@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         X Cleaner
 // @namespace    https://github.com/0-V-linuxdo/x-cleaner
-// @version      0.1.0.202610241151
+// @version      0.1.0.202610241204
 // @description  A plugin-based cleaner for x.com: hide adult promotion, crypto funnels and promotional reply accounts. Includes review, lists, safe regex rules and optional AI-assisted rule drafts.
 // @author       X Cleaner Contributors
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z'/%3E%3Cpath d='m4.5 4.5 15 15'/%3E%3C/svg%3E
@@ -1106,10 +1106,25 @@ Continue?`,
     "悬停时显示": "Reveal on hover",
     "鼠标移上去时暂时取消模糊。": "Temporarily removes the blur while the mouse is over it.",
     "模糊程度": "Blur amount",
-    "显示别名": "Display alias",
-    "填写后，左下角账号菜单里的昵称换成这段文字，认证徽标和 @handle 隐藏，不再模糊。留空则按上面的设置模糊。": "When set, the name in the account menu at the bottom left is replaced with this text, and the verified badge and @handle are hidden instead of blurred. Leave empty to blur them as set above.",
-    "例如：观众朋友们好": "E.g. Hello, viewers",
-    "主播模式：模糊你自己的头像、昵称和 @handle，可选模糊私信列表，也可以把账号菜单里的名字换成别名，截图和录屏时不暴露账号。": "Streamer mode: blurs your own avatar, name and @handle, optionally the message list too, and can swap the name in the account menu for an alias, so screenshots and recordings don't reveal your account.",
+    "主播模式：模糊你自己的头像、昵称和 @handle，可选模糊私信列表，截图和录屏时不暴露账号。": "Streamer mode: blurs your own avatar, name and @handle, optionally the message list too, so screenshots and recordings don't reveal your account.",
+    "自定义身份：把左下角账号按钮里的头像、名字和 @用户名换成你自己设定的，头像支持粘贴图片和裁剪。只改你看到的样子，不会改动 X 上的资料。": "Custom identity: swaps the avatar, name and @username in the account button at the bottom left for your own. Paste or crop a picture for the avatar. Only changes what you see; your X profile stays as it is.",
+    "显示名称": "Display name",
+    "左下角账号按钮里显示的名字，认证徽标随之隐藏。留空保留原来的名字。": "The name shown in the account button at the bottom left; the verified badge is hidden with it. Leave empty to keep your real name.",
+    "显示在侧栏头像旁边": "Shown next to the sidebar avatar",
+    "显示用户名": "Display username",
+    "名字下面的 @用户名，不用输入 @。留空保留原来的用户名。": "The @username under the name, without the @. Leave empty to keep your real username.",
+    "例如：someone": "E.g. someone",
+    "头像": "Avatar",
+    "图片链接、data:image…，也可以直接粘贴或拖入图片，然后拖动圆圈选裁剪范围。留空保留原来的头像。": "An image link or data:image…, or paste or drop a picture, then drag the circle to pick the crop. Leave empty to keep your real avatar.",
+    "头像大小": "Avatar size",
+    "侧栏展开时账号按钮里头像的直径，X 默认 40。侧栏收起成图标时保持 40。": "Diameter of the avatar in the account button while the sidebar is expanded. X's default is 40. The icon-only sidebar stays at 40.",
+    "账号菜单": "Account menu",
+    "同时替换账号菜单顶部当前账号的头像和名字（登录了多个账号时才有这一行）。": "Also replace the avatar and name of the current account at the top of the account menu (that row only shows when you're signed in to several accounts).",
+    "无法读取这个链接的图片。可以把图片粘贴或拖到这里。": "Couldn't load an image from this link. Paste or drop the picture here instead.",
+    "已使用粘贴的图片。拖动圆圈调整裁剪，或输入链接替换。": "Using a pasted picture. Drag the circle to adjust the crop, or type a link to replace it.",
+    "粘贴图片，或输入 https://…": "Paste a picture, or type https://…",
+    "缩放": "Zoom",
+    "拖动平移，滚轮缩放。圆圈就是侧栏里显示的范围。": "Drag to pan, scroll to zoom. The circle is what the sidebar shows.",
     "Premium 推销": "Premium upsells",
     "侧栏的「订阅 Premium」卡片和各处的升级提示。": "The “Subscribe to Premium” card in the sidebar and upgrade prompts elsewhere.",
     "推广帖": "Promoted posts",
@@ -1273,6 +1288,11 @@ Continue?`,
     }
     if (plugin.oldNames?.length)
       migratePluginSettings(plugin.name, ...plugin.oldNames);
+    try {
+      plugin.migrate?.();
+    } catch (e) {
+      logger4.error(`Migration failed for ${plugin.name}`, e);
+    }
     plugin.started = false;
     plugins[plugin.name] = plugin;
     if (plugin.settings)
@@ -2272,6 +2292,7 @@ ${TOOLTIP_CSS}`,
     filter: icon('<polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>'),
     sparkles: icon('<path d="M9.94 15.5A2 2 0 0 0 8.5 14.06l-6.13-1.58a.5.5 0 0 1 0-.96L8.5 9.94A2 2 0 0 0 9.94 8.5l1.58-6.13a.5.5 0 0 1 .96 0L14.06 8.5A2 2 0 0 0 15.5 9.94l6.13 1.58a.5.5 0 0 1 0 .96L15.5 14.06a2 2 0 0 0-1.44 1.44l-1.58 6.13a.5.5 0 0 1-.96 0z"/>'),
     ban: icon('<circle cx="12" cy="12" r="10"/><path d="m4.9 4.9 14.2 14.2"/>'),
+    userPen: icon('<path d="M2 21a8 8 0 0 1 10.434-7.62"/><circle cx="10" cy="8" r="5"/><path d="M21.378 16.626a1 1 0 0 0-3.004-3.004l-4.01 4.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z"/>'),
     eyeOff: icon('<path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.53 13.53 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/>'),
     message: icon('<path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/>'),
     list: icon('<path d="M3 12h.01"/><path d="M3 18h.01"/><path d="M3 6h.01"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M8 6h13"/>'),
@@ -3039,7 +3060,7 @@ ${TOOLTIP_CSS}`,
     const hint = h("span", { class: "xc-pm-hint", tabindex: "0" }, svgIcon(Icons.info, 14));
     const hintTip = attachTooltip(hint, () => t(TABS.find((tab) => tab.id === activeId)?.description ?? ""), "bottom");
     const body = h("div", { class: "xc-pm-body" });
-    const version = h("div", { class: "xc-pm-version" }, h("div", null, "X Cleaner · ", "0.1.0.202610241151"), h("div", null, t("正式版"), " · ", t("用户脚本")), h("div", null, h("a", { href: "https://raw.githubusercontent.com/0-V-linuxdo/X-Cleaner/main/dist/X%20Cleaner.user.js", target: "_blank", rel: "noopener" }, t("检查更新")), " · ", h("a", { href: `${"https://github.com/0-V-linuxdo/X-Cleaner"}/commits/main`, target: "_blank", rel: "noopener" }, t("更新记录"))));
+    const version = h("div", { class: "xc-pm-version" }, h("div", null, "X Cleaner · ", "0.1.0.202610241204"), h("div", null, t("正式版"), " · ", t("用户脚本")), h("div", null, h("a", { href: "https://raw.githubusercontent.com/0-V-linuxdo/X-Cleaner/main/dist/X%20Cleaner.user.js", target: "_blank", rel: "noopener" }, t("检查更新")), " · ", h("a", { href: `${"https://github.com/0-V-linuxdo/X-Cleaner"}/commits/main`, target: "_blank", rel: "noopener" }, t("更新记录"))));
     const content = h("div", { class: "xc-pm-shell" }, h("aside", { class: "xc-pm-sidebar" }, nav, version), h("section", { class: "xc-pm-main" }, h("header", { class: "xc-pm-header" }, heading, hint, closeButton(() => close())), body));
     const show = (id, plugin) => {
       activeId = id;
@@ -6726,12 +6747,573 @@ Write reason in ${aiLanguageName()}.` },
     }]
   });
 
+  // src/plugins/customSidebarIdentity/avatar.ts
+  var SOURCE_PX = 1024;
+  var AVATAR_PX = 256;
+  var ZOOM_MIN = 1;
+  var ZOOM_MAX = 4;
+  var clamp = (v, min, max) => Math.min(max, Math.max(min, v));
+  var num = (v, fallback) => typeof v === "number" && Number.isFinite(v) ? v : fallback;
+  function cropRect(w, h, zoom, cx, cy) {
+    const z = clamp(zoom, ZOOM_MIN, ZOOM_MAX);
+    const side = Math.min(w, h) / z;
+    const x = clamp(cx, side / 2, Math.max(side / 2, w - side / 2));
+    const y = clamp(cy, side / 2, Math.max(side / 2, h - side / 2));
+    return { z, side, x, y };
+  }
+  function fetchBlob(url) {
+    if (url.startsWith("data:") || typeof GM_xmlhttpRequest !== "function") {
+      return fetch(url, url.startsWith("data:") ? undefined : { mode: "cors", credentials: "omit", referrerPolicy: "no-referrer" }).then((r) => r.ok ? r.blob() : null).catch(() => null);
+    }
+    return new Promise((resolve) => {
+      GM_xmlhttpRequest({
+        method: "GET",
+        url,
+        responseType: "blob",
+        timeout: 20000,
+        onload: (r) => resolve(r.status >= 200 && r.status < 300 && r.response instanceof Blob ? r.response : null),
+        onerror: () => resolve(null),
+        ontimeout: () => resolve(null)
+      });
+    });
+  }
+  async function bitmap(blob) {
+    if (!blob)
+      return null;
+    try {
+      return await createImageBitmap(blob);
+    } catch {
+      return null;
+    }
+  }
+  function draw(w, hgt, paint) {
+    const canvas = document.createElement("canvas");
+    canvas.width = w;
+    canvas.height = hgt;
+    const ctx = canvas.getContext("2d");
+    if (!ctx)
+      return null;
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = "high";
+    paint(ctx);
+    const url = canvas.toDataURL("image/png");
+    return url.startsWith("data:image/") ? url : null;
+  }
+  function capped(bmp) {
+    const scale = Math.min(1, SOURCE_PX / Math.max(bmp.width, bmp.height));
+    const w = Math.max(1, Math.round(bmp.width * scale));
+    const hgt = Math.max(1, Math.round(bmp.height * scale));
+    return draw(w, hgt, (ctx) => ctx.drawImage(bmp, 0, 0, w, hgt));
+  }
+  async function sourceFrom(input) {
+    const bmp = await bitmap(typeof input === "string" ? await fetchBlob(input) : input);
+    if (!bmp)
+      return null;
+    const url = capped(bmp);
+    bmp.close();
+    return url;
+  }
+  async function bake(src, cropX, cropY, zoom) {
+    const bmp = await bitmap(await fetchBlob(src));
+    if (!bmp)
+      return null;
+    const { side, x, y } = cropRect(bmp.width, bmp.height, zoom, cropX * bmp.width, cropY * bmp.height);
+    const url = draw(AVATAR_PX, AVATAR_PX, (ctx) => ctx.drawImage(bmp, x - side / 2, y - side / 2, side, side, 0, 0, AVATAR_PX, AVATAR_PX));
+    bmp.close();
+    return url;
+  }
+  function imageFile(data) {
+    if (!data)
+      return null;
+    for (const file of data.files)
+      if (file.type.startsWith("image/"))
+        return file;
+    for (const item of data.items ?? [])
+      if (item.kind === "file" && item.type.startsWith("image/"))
+        return item.getAsFile();
+    return null;
+  }
+  function renderAvatarField(store) {
+    let adoptGen = 0;
+    let urlTimer;
+    let remoteFail = false;
+    const resetCrop = () => {
+      store.cropX = 0.5;
+      store.cropY = 0.5;
+      store.cropZoom = 1;
+    };
+    const clearAvatar = () => {
+      store.avatarUrl = "";
+      store.avatarSource = "";
+      resetCrop();
+    };
+    async function adopt(src) {
+      const gen = ++adoptGen;
+      resetCrop();
+      store.avatarSource = src;
+      const baked = await bake(src, 0.5, 0.5, 1);
+      if (gen !== adoptGen)
+        return;
+      if (baked)
+        store.avatarUrl = baked;
+      render();
+    }
+    async function take(data) {
+      const file = imageFile(data);
+      if (!file)
+        return;
+      remoteFail = false;
+      const src = await sourceFrom(file);
+      if (src)
+        await adopt(src);
+    }
+    const cropSrc = () => {
+      const source = String(store.avatarSource ?? "");
+      const raw = String(store.avatarUrl ?? "");
+      return source.startsWith("data:image/") ? source : raw.startsWith("data:image/") ? raw : "";
+    };
+    const preview = h("img", { class: "xc-csi-preview", alt: "", referrerPolicy: "no-referrer" });
+    const input = h("input", { class: "xc-input xc-csi-url", type: "text" });
+    const clear = h("button", { class: "xc-btn xc-btn-sm", type: "button", onclick: () => {
+      ++adoptGen;
+      clearAvatar();
+      remoteFail = false;
+      input.value = "";
+      render();
+    } }, t("清除"));
+    const row = h("div", { class: "xc-csi-avatar" }, preview, input, clear);
+    const stageSlot = h("div");
+    const failHint = h("div", { class: "xc-field-desc", hidden: true }, t("无法读取这个链接的图片。可以把图片粘贴或拖到这里。"));
+    const onPaste = (e) => {
+      if (!imageFile(e.clipboardData))
+        return;
+      e.preventDefault();
+      take(e.clipboardData);
+    };
+    row.addEventListener("paste", onPaste);
+    row.addEventListener("dragover", (e) => {
+      if (imageFile(e.dataTransfer))
+        e.preventDefault();
+    });
+    row.addEventListener("drop", (e) => {
+      if (!imageFile(e.dataTransfer))
+        return;
+      e.preventDefault();
+      take(e.dataTransfer);
+    });
+    input.addEventListener("input", () => {
+      const value = input.value;
+      const trimmed = value.trim();
+      clearTimeout(urlTimer);
+      ++adoptGen;
+      remoteFail = false;
+      store.avatarUrl = value;
+      store.avatarSource = "";
+      if (!trimmed) {
+        resetCrop();
+        render();
+        return;
+      }
+      if (!/^(data:image\/|https?:\/\/)/.test(trimmed)) {
+        render();
+        return;
+      }
+      urlTimer = setTimeout(async () => {
+        const src = await sourceFrom(trimmed);
+        if (src)
+          await adopt(src);
+        else {
+          remoteFail = true;
+          render();
+        }
+      }, trimmed.startsWith("data:") ? 80 : 400);
+      render(false);
+    });
+    input.addEventListener("keydown", (e) => {
+      if (cropSrc() && !input.value && (e.key === "Backspace" || e.key === "Delete")) {
+        ++adoptGen;
+        clearAvatar();
+        render();
+      }
+    });
+    let stageFor = "";
+    function render(syncInput = true) {
+      const raw = String(store.avatarUrl ?? "");
+      const src = cropSrc();
+      preview.hidden = !raw;
+      const shown = raw.startsWith("data:image/") ? raw : src || raw;
+      if (raw && preview.getAttribute("src") !== shown)
+        preview.src = shown;
+      if (syncInput)
+        input.value = src ? "" : raw;
+      input.placeholder = src ? t("已使用粘贴的图片。拖动圆圈调整裁剪，或输入链接替换。") : t("粘贴图片，或输入 https://…");
+      clear.hidden = !raw;
+      failHint.hidden = !(remoteFail && !src);
+      if (src !== stageFor) {
+        stageFor = src;
+        stageSlot.replaceChildren(...src ? [cropStage(store, src, () => render(false))] : []);
+      }
+    }
+    render();
+    return h("div", { class: "xc-csi-field" }, row, stageSlot, failHint);
+  }
+  function cropStage(store, src, onBaked) {
+    let nat = null;
+    let pos = { x: num(store.cropX, 0.5), y: num(store.cropY, 0.5), zoom: num(store.cropZoom, 1) };
+    let drag = null;
+    let bakeTimer;
+    const img = h("img", { class: "xc-csi-stage-img", alt: "", draggable: false });
+    const stage = h("div", { class: "xc-csi-stage" }, img);
+    const zoom = h("input", { type: "range", class: "xc-csi-zoom", min: ZOOM_MIN, max: ZOOM_MAX, step: 0.05, "aria-label": t("缩放") });
+    const zoomVal = h("span", { class: "xc-badge xc-csi-zoom-val" });
+    function paint() {
+      zoom.value = String(pos.zoom);
+      zoomVal.textContent = `${Math.round(pos.zoom * 100)}%`;
+      if (!nat)
+        return;
+      const r = cropRect(nat.w, nat.h, pos.zoom, pos.x * nat.w, pos.y * nat.h);
+      Object.assign(img.style, {
+        width: `${nat.w / r.side * 100}%`,
+        height: `${nat.h / r.side * 100}%`,
+        left: `${(0.5 - r.x / r.side) * 100}%`,
+        top: `${(0.5 - r.y / r.side) * 100}%`
+      });
+    }
+    function place(nx, ny, nz) {
+      if (!nat)
+        pos = { x: nx, y: ny, zoom: clamp(nz, ZOOM_MIN, ZOOM_MAX) };
+      else {
+        const r = cropRect(nat.w, nat.h, nz, nx * nat.w, ny * nat.h);
+        pos = { x: r.x / nat.w, y: r.y / nat.h, zoom: r.z };
+      }
+      paint();
+    }
+    function commit(nx, ny, nz, immediate = false) {
+      place(nx, ny, nz);
+      const next = { ...pos };
+      const run = () => {
+        store.cropX = next.x;
+        store.cropY = next.y;
+        store.cropZoom = next.zoom;
+        bake(src, next.x, next.y, next.zoom).then((url) => {
+          if (url) {
+            store.avatarUrl = url;
+            onBaked();
+          }
+        });
+      };
+      clearTimeout(bakeTimer);
+      if (immediate)
+        run();
+      else
+        bakeTimer = setTimeout(run, 80);
+    }
+    img.onload = () => {
+      nat = { w: img.naturalWidth, h: img.naturalHeight };
+      place(pos.x, pos.y, pos.zoom);
+    };
+    img.src = src;
+    stage.addEventListener("pointerdown", (e) => {
+      if (e.button !== 0)
+        return;
+      stage.setPointerCapture?.(e.pointerId);
+      drag = { px: e.clientX, py: e.clientY, x: pos.x, y: pos.y };
+    });
+    stage.addEventListener("pointermove", (e) => {
+      if (!drag || !nat)
+        return;
+      const size = stage.clientWidth;
+      if (!size)
+        return;
+      const { side } = cropRect(nat.w, nat.h, pos.zoom, drag.x * nat.w, drag.y * nat.h);
+      place(drag.x - (e.clientX - drag.px) * (side / size) / nat.w, drag.y - (e.clientY - drag.py) * (side / size) / nat.h, pos.zoom);
+    });
+    stage.addEventListener("pointerup", () => {
+      if (!drag)
+        return;
+      drag = null;
+      commit(pos.x, pos.y, pos.zoom, true);
+    });
+    stage.addEventListener("pointercancel", () => {
+      drag = null;
+    });
+    stage.addEventListener("wheel", (e) => {
+      e.preventDefault();
+      commit(pos.x, pos.y, clamp(pos.zoom * (e.deltaY < 0 ? 1.08 : 1 / 1.08), ZOOM_MIN, ZOOM_MAX));
+    }, { passive: false });
+    zoom.addEventListener("input", () => commit(pos.x, pos.y, Number(zoom.value)));
+    paint();
+    return h("div", { class: "xc-csi-crop" }, stage, h("div", { class: "xc-csi-zoom-row" }, zoom, zoomVal, h("button", { class: "xc-btn xc-btn-sm", type: "button", onclick: () => commit(0.5, 0.5, 1, true) }, t("重置"))), h("div", { class: "xc-field-desc" }, t("拖动平移，滚轮缩放。圆圈就是侧栏里显示的范围。")));
+  }
+
+  // xc-css:/home/claude/x-cleaner/src/plugins/customSidebarIdentity/styles.css
+  var styles_default2 = `/* Account button rows: X's own text is hidden and the custom text drawn at the inherited size. */
+[data-xc-csi-name] > *, [data-xc-csi-handle] > * { display: none !important; }
+[data-xc-csi-name]::after, [data-xc-csi-handle]::after {
+    display: block; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+[data-xc-csi-name]::after { content: attr(data-xc-csi-name); font-weight: 700; }
+[data-xc-csi-handle]::after { content: attr(data-xc-csi-handle); }
+[data-xc-csi-hide] { display: none !important; }
+
+/* Settings field */
+.xc-csi-field { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.xc-csi-avatar { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.xc-csi-preview { width: 40px; height: 40px; flex: none; border-radius: 999px; object-fit: cover; background: var(--xc-bg-3); }
+.xc-csi-url { flex: 1 1 auto; min-width: 0; }
+.xc-csi-crop { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.xc-csi-stage {
+    position: relative; width: 160px; height: 160px; flex: none; align-self: center; overflow: hidden;
+    border-radius: 999px; cursor: grab; touch-action: none; user-select: none; background: var(--xc-bg-3);
+    box-shadow: inset 0 0 0 1px var(--xc-border);
+}
+.xc-csi-stage:active { cursor: grabbing; }
+.xc-csi-stage-img { position: absolute; max-width: none; pointer-events: none; user-select: none; }
+.xc-csi-zoom-row { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.xc-csi-zoom { flex: 1 1 auto; min-width: 0; accent-color: var(--xc-accent); }
+.xc-csi-zoom-val { flex: none; min-width: 44px; text-align: center; }
+`;
+
+  // src/plugins/customSidebarIdentity/index.ts
+  var STYLE2 = "customSidebarIdentity:rules";
+  var SIZE_MIN = 24;
+  var SIZE_MAX = 64;
+  var SIZE_DEFAULT = 40;
+  var NAME_ATTR = "data-xc-csi-name";
+  var HANDLE_ATTR = "data-xc-csi-handle";
+  var HIDE_ATTR = "data-xc-csi-hide";
+  var MENU = '#layers [data-testid="HoverCard"]';
+  var AVATAR = '[data-testid^="UserAvatar-Container-"]';
+  var settings3 = definePluginSettings({
+    displayName: {
+      type: "string" /* STRING */,
+      label: N_("显示名称"),
+      description: N_("左下角账号按钮里显示的名字，认证徽标随之隐藏。留空保留原来的名字。"),
+      default: "",
+      placeholder: N_("显示在侧栏头像旁边")
+    },
+    displayHandle: {
+      type: "string" /* STRING */,
+      label: N_("显示用户名"),
+      description: N_("名字下面的 @用户名，不用输入 @。留空保留原来的用户名。"),
+      default: "",
+      placeholder: N_("例如：someone")
+    },
+    avatarUrl: {
+      type: "custom" /* CUSTOM */,
+      label: N_("头像"),
+      description: N_("图片链接、data:image…，也可以直接粘贴或拖入图片，然后拖动圆圈选裁剪范围。留空保留原来的头像。"),
+      default: "",
+      render: () => renderAvatarField(settings3.store)
+    },
+    avatarSize: {
+      type: "slider" /* SLIDER */,
+      label: N_("头像大小"),
+      description: N_("侧栏展开时账号按钮里头像的直径，X 默认 40。侧栏收起成图标时保持 40。"),
+      min: SIZE_MIN,
+      max: SIZE_MAX,
+      step: 1,
+      default: SIZE_DEFAULT,
+      unit: "px"
+    },
+    applyToMenu: {
+      type: "boolean" /* BOOLEAN */,
+      label: N_("账号菜单"),
+      description: N_("同时替换账号菜单顶部当前账号的头像和名字（登录了多个账号时才有这一行）。"),
+      default: true
+    }
+  }).withPrivateSettings();
+  function avatarSrc(raw) {
+    const url = String(raw ?? "").trim();
+    if (url.startsWith("data:image/"))
+      return url;
+    try {
+      const { protocol } = new URL(url);
+      return protocol === "https:" || protocol === "http:" ? url : "";
+    } catch {
+      return "";
+    }
+  }
+  var cssUrl = (url) => `url("${url.replace(/["\\\n\r]/g, (c) => encodeURIComponent(c))}")`;
+  function buildCss2(opts, self, avatarReady = true) {
+    const rules = [];
+    const size = clamp(Math.round(num(opts.avatarSize, SIZE_DEFAULT)), SIZE_MIN, SIZE_MAX);
+    if (size !== SIZE_DEFAULT) {
+      rules.push(`${SEL.accountSwitcher}:has([dir]) ${AVATAR} { width: ${size}px !important; height: ${size}px !important; flex-shrink: 0 !important; }`);
+    }
+    const url = avatarSrc(opts.avatarUrl);
+    if (url && avatarReady) {
+      const scopes = [`${SEL.accountSwitcher} ${AVATAR}`];
+      if (opts.applyToMenu && self)
+        scopes.push(`${MENU} [data-testid="UserAvatar-Container-${self.replace(/["\\]/g, "\\$&")}" i]`);
+      rules.push(`${scopes.map((s) => `${s} [style*="background-image"]`).join(`,
+`)} { background-image: ${cssUrl(url)} !important; background-size: cover !important; background-position: center !important; }`);
+      rules.push(`${scopes.map((s) => `${s} img`).join(`,
+`)} { content: ${cssUrl(url)} !important; object-fit: cover !important; }`);
+    }
+    return rules.join(`
+`);
+  }
+  function rowsOf(root) {
+    const rows = [...root.querySelectorAll("[dir]")];
+    return rows.filter((r) => !rows.some((o) => o !== r && o.contains(r)));
+  }
+  function clearMarks(root) {
+    for (const el of root.querySelectorAll(`[${NAME_ATTR}], [${HANDLE_ATTR}], [${HIDE_ATTR}]`)) {
+      el.removeAttribute(NAME_ATTR);
+      el.removeAttribute(HANDLE_ATTR);
+      el.removeAttribute(HIDE_ATTR);
+    }
+  }
+  var setAttr = (el, name, value) => {
+    if (el.getAttribute(name) !== value)
+      el.setAttribute(name, value);
+  };
+  function markIdentity(root, name, handle) {
+    const rows = rowsOf(root);
+    const isHandle = (r) => /^@\w/.test(r.textContent?.trim() ?? "");
+    const isBadge = (r) => !r.textContent?.trim() && !!r.querySelector("svg");
+    for (const r of rows) {
+      const wantName = !!name && r === rows.find((x) => !isHandle(x) && !isBadge(x));
+      const wantHandle = !!handle && isHandle(r);
+      const wantHide = !!name && isBadge(r);
+      if (wantName)
+        setAttr(r, NAME_ATTR, name);
+      else
+        r.removeAttribute(NAME_ATTR);
+      if (wantHandle)
+        setAttr(r, HANDLE_ATTR, `@${handle}`);
+      else
+        r.removeAttribute(HANDLE_ATTR);
+      if (wantHide)
+        setAttr(r, HIDE_ATTR, "");
+      else
+        r.removeAttribute(HIDE_ATTR);
+    }
+  }
+  var trimmed = (v) => String(v ?? "").trim();
+  var handleValue = () => trimmed(settings3.store.displayHandle).replace(/^@+/, "");
+  function selfFrom(switcher) {
+    const id = switcher?.querySelector(AVATAR)?.getAttribute("data-testid") ?? "";
+    return id.slice("UserAvatar-Container-".length);
+  }
+  function menuIdentity(menu, self) {
+    if (!self || !menu.querySelector('[data-testid^="AccountSwitcher_"]'))
+      return null;
+    const id = `useravatar-container-${self.toLowerCase()}`;
+    const avatar = [...menu.querySelectorAll(AVATAR)].find((a) => a.getAttribute("data-testid")?.toLowerCase() === id);
+    for (let el = avatar?.parentElement;el && el !== menu; el = el.parentElement) {
+      if (el.textContent?.toLowerCase().includes(`@${self.toLowerCase()}`))
+        return el;
+    }
+    return null;
+  }
+  var self = "";
+  var ready = "";
+  var probing = "";
+  var watched = new Map;
+  function paintCss() {
+    const url = avatarSrc(settings3.store.avatarUrl);
+    if (url && url !== ready && url !== probing) {
+      probing = url;
+      const img = new Image;
+      img.onload = () => {
+        if (probing === url) {
+          ready = url;
+          probing = "";
+          paintCss();
+        }
+      };
+      img.onerror = () => {
+        if (probing === url)
+          probing = "";
+      };
+      img.referrerPolicy = "no-referrer";
+      img.src = url;
+    }
+    const rules = buildCss2(settings3.store, self, !!url && ready === url);
+    if (rules)
+      registerStyle(STYLE2, rules);
+    else
+      unregisterStyle(STYLE2);
+  }
+  function apply2() {
+    paintCss();
+    for (const sync of watched.values())
+      sync();
+  }
+  function watch(root, target) {
+    const sync = () => {
+      observer.disconnect();
+      const el = target();
+      clearMarks(root);
+      if (el)
+        markIdentity(el, trimmed(settings3.store.displayName), handleValue());
+      observer.observe(root, { childList: true, subtree: true, characterData: true });
+    };
+    const observer = new MutationObserver(sync);
+    watched.set(root, sync);
+    sync();
+    return () => {
+      observer.disconnect();
+      watched.delete(root);
+      clearMarks(root);
+    };
+  }
+  function migrateAlias() {
+    const alias = trimmed(PlainSettings.plugins.StreamerMode?.alias);
+    migrateSettingsToPlugin("CustomSidebarIdentity", "StreamerMode", "alias");
+    migratePluginSetting("CustomSidebarIdentity", "displayName", "alias");
+    const bag = PlainSettings.plugins.CustomSidebarIdentity;
+    if (bag && "alias" in bag) {
+      delete bag.alias;
+      settingsStore.markAsChanged();
+    }
+    if (alias && bag && bag.displayName === alias && bag.enabled === undefined) {
+      bag.enabled = PlainSettings.plugins.StreamerMode?.enabled === true;
+      settingsStore.markAsChanged();
+    }
+  }
+  var customSidebarIdentity_default = definePlugin({
+    name: "CustomSidebarIdentity",
+    description: N_("自定义身份：把左下角账号按钮里的头像、名字和 @用户名换成你自己设定的，头像支持粘贴图片和裁剪。只改你看到的样子，不会改动 X 上的资料。"),
+    icon: Icons.userPen,
+    tags: ["appearance", "privacy"],
+    settings: settings3,
+    managedStyle: styles_default2,
+    migrate: migrateAlias,
+    healthChecks: [CHECKS.accountSwitcher],
+    elements: {
+      [SEL.accountSwitcher](sw) {
+        const handle = selfFrom(sw);
+        if (handle && handle !== self) {
+          self = handle;
+          paintCss();
+        }
+        return watch(sw, () => sw);
+      },
+      [MENU](menu) {
+        return watch(menu, () => settings3.store.applyToMenu ? menuIdentity(menu, self) : null);
+      }
+    },
+    start() {
+      self = selfFrom(document.querySelector(SEL.accountSwitcher));
+      apply2();
+    },
+    stop() {
+      unregisterStyle(STYLE2);
+      ready = "";
+      probing = "";
+    },
+    onSettingsChange: apply2
+  });
+
   // src/plugins/declutter/index.ts
-  var STYLE2 = "declutter:rules";
+  var STYLE3 = "declutter:rules";
   var AD_ATTR = "data-xc-ad";
   var SIDE = '[data-testid="sidebarColumn"]';
   var opt = (label, description, def) => ({ type: "boolean" /* BOOLEAN */, label, description, default: def });
-  var settings3 = definePluginSettings({
+  var settings4 = definePluginSettings({
     hidePremiumUpsell: opt(N_("Premium 推销"), N_("侧栏的「订阅 Premium」卡片和各处的升级提示。"), true),
     hidePromoted: opt(N_("推广帖"), N_("时间线和回复里标着「广告 / Promoted」的帖子。"), true),
     hideGrokButtons: opt(N_("帖子上的 Grok 按钮"), N_("每条帖子右上角的 Grok 按钮。回复盾牌仍会正常显示。"), false),
@@ -6754,7 +7336,7 @@ Write reason in ${aiLanguageName()}.` },
     hideMessagesDrawer: '[data-testid="chat-drawer-root"]',
     hideViewCounts: `${SEL.tweet} [role="group"] > div:has(> a[href$="/analytics"])`
   };
-  function buildCss2(values) {
+  function buildCss3(values) {
     return Object.keys(RULES).filter((k) => values[k]).map((k) => `${RULES[k]} { display: none !important; }`).join(`
 `);
   }
@@ -6775,7 +7357,7 @@ Write reason in ${aiLanguageName()}.` },
   var stripTitleCount = (title) => title.replace(/^\(\d+\+?\)\s*/, "");
   var titleObserver = null;
   function syncTitleWatch() {
-    const want = !!settings3.store.hideTitleCount;
+    const want = !!settings4.store.hideTitleCount;
     if (!want) {
       titleObserver?.disconnect();
       titleObserver = null;
@@ -6792,12 +7374,12 @@ Write reason in ${aiLanguageName()}.` },
     titleObserver = new MutationObserver(fix);
     titleObserver.observe(document.head ?? document.documentElement, { subtree: true, childList: true, characterData: true });
   }
-  function apply2() {
-    const css = buildCss2(settings3.store);
+  function apply3() {
+    const css = buildCss3(settings4.store);
     if (css)
-      registerStyle(STYLE2, css);
+      registerStyle(STYLE3, css);
     else
-      unregisterStyle(STYLE2);
+      unregisterStyle(STYLE3);
     syncTitleWatch();
   }
   var declutter_default = definePlugin({
@@ -6805,7 +7387,7 @@ Write reason in ${aiLanguageName()}.` },
     description: N_("精简 X 的页面：分别隐藏 Premium 推销、推广帖、Grok 按钮和浮窗、浏览量等干扰元素。右侧栏的趋势、推荐关注和页脚见 RightSidebarCleaner。"),
     icon: Icons.broom,
     tags: ["declutter", "timeline"],
-    settings: settings3,
+    settings: settings4,
     elements: {
       [SEL.tweet](article) {
         if (!isAdTweet(article))
@@ -6815,15 +7397,15 @@ Write reason in ${aiLanguageName()}.` },
         return () => cell?.removeAttribute(AD_ATTR);
       }
     },
-    start: apply2,
+    start: apply3,
     stop() {
-      unregisterStyle(STYLE2);
+      unregisterStyle(STYLE3);
       titleObserver?.disconnect();
       titleObserver = null;
       for (const el of document.querySelectorAll(`[${AD_ATTR}]`))
         el.removeAttribute(AD_ATTR);
     },
-    onSettingsChange: apply2
+    onSettingsChange: apply3
   });
 
   // src/plugins/panel/stringList.ts
@@ -7053,9 +7635,9 @@ Write reason in ${aiLanguageName()}.` },
   });
 
   // src/plugins/hidePostEntries/index.ts
-  var STYLE3 = "hidePostEntries:rules";
+  var STYLE4 = "hidePostEntries:rules";
   var opt2 = (label, description) => ({ type: "boolean" /* BOOLEAN */, label, description, default: true });
-  var settings4 = definePluginSettings({
+  var settings5 = definePluginSettings({
     hideHomeComposer: opt2(N_("首页发帖框"), N_("主页时间线顶部的「有什么新鲜事？」发帖框。帖子页的回复框不受影响。")),
     hideSideNavButton: opt2(N_("侧栏发帖按钮"), N_("左侧栏的「发帖」按钮，侧栏收起时的图标按钮也算。"))
   });
@@ -7063,16 +7645,16 @@ Write reason in ${aiLanguageName()}.` },
     hideHomeComposer: '[data-testid="primaryColumn"] > div > div:has([data-testid="tweetTextarea_0"]):not(:has([data-testid="cellInnerDiv"]))',
     hideSideNavButton: 'header div:has(> [data-testid="SideNav_NewTweet_Button"])'
   };
-  function buildCss3(values) {
+  function buildCss4(values) {
     return Object.keys(RULES2).filter((k) => values[k]).map((k) => `${RULES2[k]} { display: none !important; }`).join(`
 `);
   }
-  function apply3() {
-    const css = buildCss3(settings4.store);
+  function apply4() {
+    const css = buildCss4(settings5.store);
     if (css)
-      registerStyle(STYLE3, css);
+      registerStyle(STYLE4, css);
     else
-      unregisterStyle(STYLE3);
+      unregisterStyle(STYLE4);
   }
   var hidePostEntries_default = definePlugin({
     name: "HidePostEntries",
@@ -7080,19 +7662,19 @@ Write reason in ${aiLanguageName()}.` },
     icon: Icons.eyeOff,
     tags: ["appearance", "declutter"],
     enabledByDefault: true,
-    settings: settings4,
-    start: apply3,
+    settings: settings5,
+    start: apply4,
     stop() {
-      unregisterStyle(STYLE3);
+      unregisterStyle(STYLE4);
     },
-    onSettingsChange: apply3
+    onSettingsChange: apply4
   });
 
   // src/plugins/moreMenuEntry/index.ts
   var MORE_BUTTON = '[data-testid="AppTabBar_More_Menu"]';
   var ENTRY_ATTR = "data-xc-more-entry";
   var WAIT_MS2 = 1500;
-  var settings5 = definePluginSettings({
+  var settings6 = definePluginSettings({
     showStarred: { type: "boolean" /* BOOLEAN */, label: N_("显示收藏的插件"), description: N_("在入口下面列出你收藏的插件，点一下就能开关。"), default: true }
   });
   function templateRow(menu) {
@@ -7133,7 +7715,7 @@ Write reason in ${aiLanguageName()}.` },
       rows.push(row);
     };
     add("manager", t("X Cleaner 插件管理"), Icons.broom, openPanel);
-    if (settings5.store.showStarred) {
+    if (settings6.store.showStarred) {
       for (const name of starredPlugins()) {
         const on = isPluginEnabled(name);
         add(`plugin:${name}`, on ? t("停用 {name}", { name }) : t("启用 {name}", { name }), on ? Icons.check : Icons.plug, () => {
@@ -7173,7 +7755,7 @@ Write reason in ${aiLanguageName()}.` },
     icon: Icons.menu,
     tags: ["core", "appearance"],
     enabledByDefault: true,
-    settings: settings5,
+    settings: settings6,
     healthChecks: [CHECKS.moreMenuButton],
     start() {
       document.addEventListener("click", onClick2, true);
@@ -7762,7 +8344,7 @@ Write reason in ${aiLanguageName()}.` },
   }
 
   // xc-css:/home/claude/x-cleaner/src/plugins/panel/styles.css
-  var styles_default2 = `#x-cleaner-ui { position: static; z-index: 0; }
+  var styles_default3 = `#x-cleaner-ui { position: static; z-index: 0; }
 #x-cleaner-ui .xc-fab {
     position: fixed; z-index: 0; right: max(18px, env(safe-area-inset-right)); bottom: calc(env(safe-area-inset-bottom) + 224px);
     width: 56px; height: 56px; border-radius: 18px; border: 1px solid rgb(255 255 255 / 18%); background: #000; color: #e7e9ea;
@@ -7942,7 +8524,7 @@ Write reason in ${aiLanguageName()}.` },
     enabledByDefault: true,
     startAt: "DOMContentLoaded" /* DOMContentLoaded */,
     dependencies: ["BlockerConfig", "ReplyFilter"],
-    managedStyle: styles_default2,
+    managedStyle: styles_default3,
     panelTabs: TABS2,
     panelPages: PAGES,
     reviewActions: BASE_ACTIONS,
@@ -9465,7 +10047,7 @@ Write rule.name and reason in ${aiLanguageName()}.` }
   }
 
   // xc-css:/home/claude/x-cleaner/src/plugins/ruleDraft/styles.css
-  var styles_default3 = `.xc-rule-dialog-backdrop { position: fixed; inset: 0; z-index: 2147483646; background: rgba(0,0,0,.55); display: flex; align-items: center; justify-content: center; padding: 18px; }
+  var styles_default4 = `.xc-rule-dialog-backdrop { position: fixed; inset: 0; z-index: 2147483646; background: rgba(0,0,0,.55); display: flex; align-items: center; justify-content: center; padding: 18px; }
 .xc-rd-dialog {
     width: min(560px, 100%); max-height: min(760px, calc(100vh - 36px)); display: flex; flex-direction: column; overflow: hidden;
     background: var(--xc-bg); color: var(--xc-fg); border: 1px solid var(--xc-border); border-radius: 16px; box-shadow: var(--xc-shadow);
@@ -9542,7 +10124,7 @@ Write rule.name and reason in ${aiLanguageName()}.` }
     tags: ["filters", "ai"],
     enabledByDefault: true,
     dependencies: ["AiClient", "ReplyFilter"],
-    managedStyle: styles_default3,
+    managedStyle: styles_default4,
     postMenuItems: [ruleDraftMenuItem],
     stop() {
       closeActiveDraft();
@@ -9803,10 +10385,10 @@ Write rule.name and reason in ${aiLanguageName()}.` }
   });
 
   // src/plugins/rightSidebarCleaner/index.ts
-  var STYLE4 = "rightSidebarCleaner:rules";
+  var STYLE5 = "rightSidebarCleaner:rules";
   var SIDE2 = '[data-testid="sidebarColumn"]';
   var opt3 = (label, description) => ({ type: "boolean" /* BOOLEAN */, label, description, default: true });
-  var settings6 = definePluginSettings({
+  var settings7 = definePluginSettings({
     hideTrends: opt3(N_("有什么新鲜事"), N_("「What's happening」趋势卡片。")),
     hideWhoToFollow: opt3(N_("推荐关注"), N_("「Who to follow」卡片，帖子页的「相关用户」也算。")),
     hideFooter: opt3(N_("页脚链接"), N_("服务条款、隐私政策、Cookie、© X Corp. 那一排链接。"))
@@ -9817,19 +10399,19 @@ Write rule.name and reason in ${aiLanguageName()}.` }
     hideFooter: `${SIDE2} div:has(> nav[role="navigation"])`
   };
   var DIVIDER = `${SIDE2} div:has(> div > nav[role="navigation"]) > div:empty:not(div:has(form[role="search"]) + div)`;
-  function buildCss4(values) {
+  function buildCss5(values) {
     const hidden = Object.keys(RULES3).filter((k) => values[k]).map((k) => RULES3[k]);
     if (!hidden.length)
       return "";
     return [...hidden, DIVIDER].map((sel) => `${sel} { display: none !important; }`).join(`
 `);
   }
-  function apply4() {
-    const css = buildCss4(settings6.store);
+  function apply5() {
+    const css = buildCss5(settings7.store);
     if (css)
-      registerStyle(STYLE4, css);
+      registerStyle(STYLE5, css);
     else
-      unregisterStyle(STYLE4);
+      unregisterStyle(STYLE5);
   }
   var rightSidebarCleaner_default = definePlugin({
     name: "RightSidebarCleaner",
@@ -9838,12 +10420,12 @@ Write rule.name and reason in ${aiLanguageName()}.` }
     icon: Icons.eyeOff,
     tags: ["appearance", "declutter"],
     enabledByDefault: true,
-    settings: settings6,
-    start: apply4,
+    settings: settings7,
+    start: apply5,
     stop() {
-      unregisterStyle(STYLE4);
+      unregisterStyle(STYLE5);
     },
-    onSettingsChange: apply4
+    onSettingsChange: apply5
   });
 
   // src/ui/notice.ts
@@ -10079,7 +10661,7 @@ Write rule.name and reason in ${aiLanguageName()}.` }
     }
     return out;
   }
-  function buildCss5(entries, layout) {
+  function buildCss6(entries, layout) {
     const natural = entries.map((e) => e.key);
     const bySelector = new Map(entries.map((e) => [e.key, e.selector]));
     const rules = [];
@@ -10472,7 +11054,7 @@ Write rule.name and reason in ${aiLanguageName()}.` }
   }
 
   // xc-css:/home/claude/x-cleaner/src/plugins/sidebarEntries/styles.css
-  var styles_default4 = `.xc-sbe-list { display: flex; flex-direction: column; gap: 6px; }
+  var styles_default5 = `.xc-sbe-list { display: flex; flex-direction: column; gap: 6px; }
 .xc-sbe-row {
     display: flex; align-items: center; gap: 10px; padding: 8px 10px;
     border: 1px solid var(--xc-border); border-radius: 12px; background: var(--xc-bg);
@@ -10500,8 +11082,8 @@ body[style*="255, 255, 255"] [data-xc-pin]:hover > div, body[style*="255, 255, 2
 `;
 
   // src/plugins/sidebarEntries/index.ts
-  var STYLE5 = "sidebarEntries:layout";
-  var settings7 = definePluginSettings({
+  var STYLE6 = "sidebarEntries:layout";
+  var settings8 = definePluginSettings({
     layout: {
       type: "custom" /* CUSTOM */,
       label: N_("侧栏入口"),
@@ -10510,14 +11092,14 @@ body[style*="255, 255, 255"] [data-xc-pin]:hover > div, body[style*="255, 255, 2
       render: (ctx) => {
         const editor = renderEditor(ctx, entriesForEditor);
         const pins = renderPinEditor({
-          items: () => settings7.plain.moreItems ?? [],
+          items: () => settings8.plain.moreItems ?? [],
           pinned: pinnedKeys,
           hidden: menuHiddenKeys,
           setHidden(keys) {
-            settings7.store.menuHidden = keys;
+            settings8.store.menuHidden = keys;
           },
           setPinned(keys) {
-            settings7.store.pinned = keys;
+            settings8.store.pinned = keys;
             const nav = document.querySelector(NAV2);
             if (nav)
               record(nav);
@@ -10529,15 +11111,15 @@ body[style*="255, 255, 255"] [data-xc-pin]:hover > div, body[style*="255, 255, 2
       }
     }
   }).withPrivateSettings();
-  var known = () => settings7.plain.known ?? [];
-  var pinnedKeys = () => Array.isArray(settings7.plain.pinned) ? settings7.plain.pinned : [];
-  var menuHiddenKeys = () => Array.isArray(settings7.plain?.menuHidden) ? settings7.plain.menuHidden : [];
+  var known = () => settings8.plain.known ?? [];
+  var pinnedKeys = () => Array.isArray(settings8.plain.pinned) ? settings8.plain.pinned : [];
+  var menuHiddenKeys = () => Array.isArray(settings8.plain?.menuHidden) ? settings8.plain.menuHidden : [];
   function pinnedItems() {
-    const byKey = new Map((settings7.plain.moreItems ?? []).map((i) => [i.key, i]));
+    const byKey = new Map((settings8.plain.moreItems ?? []).map((i) => [i.key, i]));
     return pinnedKeys().map((k) => byKey.get(k)).filter((i) => !!i);
   }
   function recordMoreItems(live) {
-    const plain = settings7.plain;
+    const plain = settings8.plain;
     if (!live.length || !plain)
       return;
     const prev = plain.moreItems ?? [];
@@ -10547,7 +11129,7 @@ body[style*="255, 255, 255"] [data-xc-pin]:hover > div, body[style*="255, 255, 2
     const next = mergeOrder(live.map((i) => i.key), prev.map((i) => i.key)).map((k) => byKey.get(k));
     if (JSON.stringify(next) === JSON.stringify(prev))
       return;
-    settings7.store.moreItems = next;
+    settings8.store.moreItems = next;
   }
   async function scanMoreMenu() {
     return withHiddenMoreMenu((menu) => {
@@ -10562,16 +11144,16 @@ body[style*="255, 255, 255"] [data-xc-pin]:hover > div, body[style*="255, 255, 2
       syncPins(nav, pinnedItems(), onPinActivate);
   }
   function layout() {
-    const l = settings7.plain.layout;
+    const l = settings8.plain.layout;
     return { order: Array.isArray(l?.order) ? l.order : [], hidden: Array.isArray(l?.hidden) ? l.hidden : [] };
   }
-  function apply5() {
+  function apply6() {
     syncNav();
-    const text = buildCss5(known(), layout());
+    const text = buildCss6(known(), layout());
     if (text)
-      registerStyle(STYLE5, text);
+      registerStyle(STYLE6, text);
     else
-      unregisterStyle(STYLE5);
+      unregisterStyle(STYLE6);
   }
   function record(nav) {
     const live = readEntries(nav);
@@ -10585,7 +11167,7 @@ body[style*="255, 255, 255"] [data-xc-pin]:hover > div, body[style*="255, 255, 2
     const same = next.length === prev.length && next.every((e, i) => e.key === prev[i].key && e.label === prev[i].label && e.selector === prev[i].selector);
     if (same)
       return;
-    settings7.store.known = next;
+    settings8.store.known = next;
   }
   function entriesForEditor() {
     const nav = document.querySelector(NAV2);
@@ -10600,8 +11182,8 @@ body[style*="255, 255, 255"] [data-xc-pin]:hover > div, body[style*="255, 255, 2
     icon: Icons.list,
     tags: ["appearance", "declutter"],
     enabledByDefault: true,
-    settings: settings7,
-    managedStyle: styles_default4,
+    settings: settings8,
+    managedStyle: styles_default5,
     healthChecks: [CHECKS.sideNav],
     elements: {
       [NAV2](nav) {
@@ -10627,38 +11209,34 @@ body[style*="255, 255, 255"] [data-xc-pin]:hover > div, body[style*="255, 255, 2
         return () => observer.disconnect();
       }
     },
-    start: apply5,
+    start: apply6,
     stop() {
-      unregisterStyle(STYLE5);
+      unregisterStyle(STYLE6);
       const nav = document.querySelector(NAV2);
       if (nav)
         syncPins(nav, [], onPinActivate);
       for (const row of document.querySelectorAll(`[${MENU_HIDDEN_ATTR}]`))
         row.removeAttribute(MENU_HIDDEN_ATTR);
     },
-    onSettingsChange: apply5
+    onSettingsChange: apply6
   });
 
   // src/plugins/streamerMode/index.ts
-  var STYLE6 = "streamerMode:rules";
-  var settings8 = definePluginSettings({
+  var STYLE7 = "streamerMode:rules";
+  var settings9 = definePluginSettings({
     accountAvatar: { type: "boolean" /* BOOLEAN */, label: N_("账号菜单头像"), description: N_("左下角账号菜单里的头像。"), default: true },
     accountName: { type: "boolean" /* BOOLEAN */, label: N_("账号菜单名字"), description: N_("左下角账号菜单里的昵称和 @handle。"), default: true },
     ownAvatars: { type: "boolean" /* BOOLEAN */, label: N_("自己的头像"), description: N_("页面其他位置（发帖框、自己的帖子）出现的你的头像。"), default: true },
     dmNames: { type: "boolean" /* BOOLEAN */, label: N_("私信列表"), description: N_("私信页里对话的头像和名字。"), default: false },
     revealOnHover: { type: "boolean" /* BOOLEAN */, label: N_("悬停时显示"), description: N_("鼠标移上去时暂时取消模糊。"), default: true },
-    blur: { type: "slider" /* SLIDER */, label: N_("模糊程度"), description: "", min: 2, max: 16, step: 1, default: 8, unit: "px" },
-    alias: { type: "string" /* STRING */, label: N_("显示别名"), description: N_("填写后，左下角账号菜单里的昵称换成这段文字，认证徽标和 @handle 隐藏，不再模糊。留空则按上面的设置模糊。"), default: "", placeholder: N_("例如：观众朋友们好") }
+    blur: { type: "slider" /* SLIDER */, label: N_("模糊程度"), description: "", min: 2, max: 16, step: 1, default: 8, unit: "px" }
   });
-  var ALIAS_ATTR = "data-xc-alias";
-  var ALIAS_HIDE_ATTR = "data-xc-alias-hide";
   var escapeAttr = (v) => v.replace(/["\\]/g, "\\$&");
-  function buildCss6(opts, self) {
+  function buildCss7(opts, self) {
     const targets = [];
-    const alias = opts.alias?.trim();
     if (opts.accountAvatar)
       targets.push(`${SEL.accountSwitcher} [data-testid^="UserAvatar-Container-"]`);
-    if (opts.accountName && !alias)
+    if (opts.accountName)
       targets.push(`${SEL.accountSwitcher} [dir]:not(${SEL.accountSwitcher} [dir] [dir])`);
     if (opts.ownAvatars && self)
       targets.push(`[data-testid="UserAvatar-Container-${escapeAttr(self)}" i]`);
@@ -10672,83 +11250,43 @@ body[style*="255, 255, 255"] [data-xc-pin]:hover > div, body[style*="255, 255, 2
         rules.push(`${targets.map((t) => `${t}:hover`).join(`,
 `)} { filter: none !important; }`);
     }
-    if (alias) {
-      rules.push(`${SEL.accountSwitcher} [${ALIAS_ATTR}] > * { display: none !important; }`);
-      rules.push(`${SEL.accountSwitcher} [${ALIAS_ATTR}]::after { content: attr(${ALIAS_ATTR}); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }`);
-      rules.push(`${SEL.accountSwitcher} [${ALIAS_HIDE_ATTR}] { display: none !important; }`);
-    }
     return rules.join(`
 `);
   }
-  function markAlias(switcher, alias) {
-    const rows = [...switcher.querySelectorAll("[dir]")].filter((d) => !d.parentElement?.closest(`${SEL.accountSwitcher} [dir]`));
-    for (const r of rows) {
-      r.removeAttribute(ALIAS_ATTR);
-      r.removeAttribute(ALIAS_HIDE_ATTR);
-    }
-    if (!alias || !rows.length)
-      return;
-    const [name, ...rest] = rows;
-    if (name.getAttribute(ALIAS_ATTR) !== alias)
-      name.setAttribute(ALIAS_ATTR, alias);
-    for (const r of rest)
-      r.setAttribute(ALIAS_HIDE_ATTR, "");
-  }
-  var aliasObservers = new Map;
-  function watchAlias(switcher) {
-    const sync = () => {
-      observer.disconnect();
-      markAlias(switcher, settings8.store.alias.trim());
-      observer.observe(switcher, { childList: true, subtree: true, characterData: true });
-    };
-    const observer = new MutationObserver(sync);
-    aliasObservers.set(switcher, observer);
-    sync();
-    return () => {
-      observer.disconnect();
-      aliasObservers.delete(switcher);
-      markAlias(switcher, "");
-    };
-  }
-  var self = "";
+  var self2 = "";
   var retry;
-  function apply6() {
-    self = self || detectSelfHandle();
-    const css = buildCss6(settings8.store, self);
+  function apply7() {
+    self2 = self2 || detectSelfHandle();
+    const css = buildCss7(settings9.store, self2);
     if (css)
-      registerStyle(STYLE6, css);
+      registerStyle(STYLE7, css);
     else
-      unregisterStyle(STYLE6);
-    for (const sw of aliasObservers.keys())
-      markAlias(sw, settings8.store.alias.trim());
+      unregisterStyle(STYLE7);
   }
   var streamerMode_default = definePlugin({
     name: "StreamerMode",
-    description: N_("主播模式：模糊你自己的头像、昵称和 @handle，可选模糊私信列表，也可以把账号菜单里的名字换成别名，截图和录屏时不暴露账号。"),
+    description: N_("主播模式：模糊你自己的头像、昵称和 @handle，可选模糊私信列表，截图和录屏时不暴露账号。"),
     icon: Icons.eyeOff,
     tags: ["privacy"],
-    settings: settings8,
+    settings: settings9,
     healthChecks: [CHECKS.accountSwitcher],
-    elements: {
-      [SEL.accountSwitcher]: watchAlias
-    },
     start() {
-      apply6();
+      apply7();
       let tries = 0;
       retry = setInterval(() => {
-        if (self || ++tries > 30) {
+        if (self2 || ++tries > 30) {
           clearInterval(retry);
           return;
         }
         if (detectSelfHandle())
-          apply6();
+          apply7();
       }, 1000);
     },
     stop() {
       clearInterval(retry);
-      unregisterStyle(STYLE6);
+      unregisterStyle(STYLE7);
     },
-    onSettingsChange: apply6
+    onSettingsChange: apply7
   });
 
   // src/plugins/tombstoneFilter/index.ts
@@ -10795,13 +11333,13 @@ body[style*="255, 255, 255"] [data-xc-pin]:hover > div, body[style*="255, 255, 2
   });
 
   // src/plugins/widerTimeline/index.ts
-  var STYLE7 = "widerTimeline:rules";
+  var STYLE8 = "widerTimeline:rules";
   var SIDEBAR_SPACE = 390;
-  var settings9 = definePluginSettings({
+  var settings10 = definePluginSettings({
     width: { type: "slider" /* SLIDER */, label: N_("主栏宽度"), description: N_("X 默认是 600px。屏幕不够宽时会自动收窄。"), min: 600, max: 1200, step: 20, default: 800, unit: "px" },
     hideSidebar: { type: "boolean" /* BOOLEAN */, label: N_("隐藏右侧栏"), description: N_("去掉搜索、趋势所在的右侧栏，把空间都给主栏。"), default: false }
   });
-  function buildCss7(width, hideSidebar) {
+  function buildCss8(width, hideSidebar) {
     const row = hideSidebar ? width : width + SIDEBAR_SPACE;
     return [
       `main[role="main"] { min-width: 0 !important; }`,
@@ -10812,24 +11350,24 @@ body[style*="255, 255, 255"] [data-xc-pin]:hover > div, body[style*="255, 255, 2
     ].filter(Boolean).join(`
 `);
   }
-  function apply7() {
-    registerStyle(STYLE7, buildCss7(settings9.store.width, settings9.store.hideSidebar));
+  function apply8() {
+    registerStyle(STYLE8, buildCss8(settings10.store.width, settings10.store.hideSidebar));
   }
   var widerTimeline_default = definePlugin({
     name: "WiderTimeline",
     description: N_("加宽主栏：大屏幕上把 600px 的时间线和帖子页加宽，宽度可调，可选隐藏右侧栏。"),
     icon: Icons.widen,
     tags: ["appearance"],
-    settings: settings9,
-    start: apply7,
+    settings: settings10,
+    start: apply8,
     stop() {
-      unregisterStyle(STYLE7);
+      unregisterStyle(STYLE8);
     },
-    onSettingsChange: apply7
+    onSettingsChange: apply8
   });
 
   // src/generated/plugins.ts
-  var plugins_default = { [coreUI_default.name]: coreUI_default, [settings_default.name]: settings_default, [themes_default.name]: themes_default, [aiClient_default.name]: aiClient_default, [blockerConfig_default.name]: blockerConfig_default, [domObserver_default.name]: domObserver_default, [navigation_default.name]: navigation_default, [postMenu_default.name]: postMenu_default, [replyFilter_default.name]: replyFilter_default, [absoluteTimestamps_default.name]: absoluteTimestamps_default, [accountBlacklist_default.name]: accountBlacklist_default, [aiReview_default.name]: aiReview_default, [allowList_default.name]: allowList_default, [autoBlacklist_default.name]: autoBlacklist_default, [betterLinks_default.name]: betterLinks_default, [builtinClassifier_default.name]: builtinClassifier_default, [declutter_default.name]: declutter_default, [domainBlacklist_default.name]: domainBlacklist_default, [exportThread_default.name]: exportThread_default, [hidePostEntries_default.name]: hidePostEntries_default, [moreMenuEntry_default.name]: moreMenuEntry_default, [nativeBlock_default.name]: nativeBlock_default, [panel_default.name]: panel_default, [phraseBlacklist_default.name]: phraseBlacklist_default, [regexBlacklist_default.name]: regexBlacklist_default, [replyShield_default.name]: replyShield_default, [rightSidebarCleaner_default.name]: rightSidebarCleaner_default, [ruleDraft_default.name]: ruleDraft_default, [ruleStats_default.name]: ruleStats_default, [selectorHealth_default.name]: selectorHealth_default, [sidebarEntries_default.name]: sidebarEntries_default, [streamerMode_default.name]: streamerMode_default, [tombstoneFilter_default.name]: tombstoneFilter_default, [widerTimeline_default.name]: widerTimeline_default };
+  var plugins_default = { [coreUI_default.name]: coreUI_default, [settings_default.name]: settings_default, [themes_default.name]: themes_default, [aiClient_default.name]: aiClient_default, [blockerConfig_default.name]: blockerConfig_default, [domObserver_default.name]: domObserver_default, [navigation_default.name]: navigation_default, [postMenu_default.name]: postMenu_default, [replyFilter_default.name]: replyFilter_default, [absoluteTimestamps_default.name]: absoluteTimestamps_default, [accountBlacklist_default.name]: accountBlacklist_default, [aiReview_default.name]: aiReview_default, [allowList_default.name]: allowList_default, [autoBlacklist_default.name]: autoBlacklist_default, [betterLinks_default.name]: betterLinks_default, [builtinClassifier_default.name]: builtinClassifier_default, [customSidebarIdentity_default.name]: customSidebarIdentity_default, [declutter_default.name]: declutter_default, [domainBlacklist_default.name]: domainBlacklist_default, [exportThread_default.name]: exportThread_default, [hidePostEntries_default.name]: hidePostEntries_default, [moreMenuEntry_default.name]: moreMenuEntry_default, [nativeBlock_default.name]: nativeBlock_default, [panel_default.name]: panel_default, [phraseBlacklist_default.name]: phraseBlacklist_default, [regexBlacklist_default.name]: regexBlacklist_default, [replyShield_default.name]: replyShield_default, [rightSidebarCleaner_default.name]: rightSidebarCleaner_default, [ruleDraft_default.name]: ruleDraft_default, [ruleStats_default.name]: ruleStats_default, [selectorHealth_default.name]: selectorHealth_default, [sidebarEntries_default.name]: sidebarEntries_default, [streamerMode_default.name]: streamerMode_default, [tombstoneFilter_default.name]: tombstoneFilter_default, [widerTimeline_default.name]: widerTimeline_default };
 
   // src/XCleaner.ts
   var logger17 = new Logger("Core", "#1d9bf0");
@@ -10850,7 +11388,7 @@ body[style*="255, 255, 255"] [data-xc-pin]:hover > div, body[style*="255, 255, 2
     else
       onReady();
     addEventListener("pagehide", () => settingsStore.flush());
-    logger17.info(`${"0.1.0.202610241151"} started with ${Object.keys(plugins_default).length} plugins`);
+    logger17.info(`${"0.1.0.202610241204"} started with ${Object.keys(plugins_default).length} plugins`);
   }
 
   // src/index.ts

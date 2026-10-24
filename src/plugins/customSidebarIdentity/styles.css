@@ -1,0 +1,25 @@
+/* Account button rows: X's own text is hidden and the custom text drawn at the inherited size. */
+[data-xc-csi-name] > *, [data-xc-csi-handle] > * { display: none !important; }
+[data-xc-csi-name]::after, [data-xc-csi-handle]::after {
+    display: block; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+[data-xc-csi-name]::after { content: attr(data-xc-csi-name); font-weight: 700; }
+[data-xc-csi-handle]::after { content: attr(data-xc-csi-handle); }
+[data-xc-csi-hide] { display: none !important; }
+
+/* Settings field */
+.xc-csi-field { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.xc-csi-avatar { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.xc-csi-preview { width: 40px; height: 40px; flex: none; border-radius: 999px; object-fit: cover; background: var(--xc-bg-3); }
+.xc-csi-url { flex: 1 1 auto; min-width: 0; }
+.xc-csi-crop { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.xc-csi-stage {
+    position: relative; width: 160px; height: 160px; flex: none; align-self: center; overflow: hidden;
+    border-radius: 999px; cursor: grab; touch-action: none; user-select: none; background: var(--xc-bg-3);
+    box-shadow: inset 0 0 0 1px var(--xc-border);
+}
+.xc-csi-stage:active { cursor: grabbing; }
+.xc-csi-stage-img { position: absolute; max-width: none; pointer-events: none; user-select: none; }
+.xc-csi-zoom-row { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.xc-csi-zoom { flex: 1 1 auto; min-width: 0; accent-color: var(--xc-accent); }
+.xc-csi-zoom-val { flex: none; min-width: 44px; text-align: center; }

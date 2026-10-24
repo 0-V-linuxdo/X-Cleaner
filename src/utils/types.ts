@@ -99,6 +99,8 @@ export interface PluginDef extends Partial<PluginHooks> {
     dependencies?: string[];
     /** Names this plugin had before; their settings, stars and pins carry over on first run. */
     oldNames?: string[];
+    /** Runs once at registration, after settings load and before any plugin starts, to move old settings in. */
+    migrate?(): void;
     healthChecks?: HealthCheck[];
     /** Enabling or disabling only fully applies after a page reload. */
     requiresRestart?: boolean;

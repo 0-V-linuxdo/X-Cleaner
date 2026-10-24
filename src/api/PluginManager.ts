@@ -65,6 +65,7 @@ export function registerPlugin(plugin: Plugin) {
         return;
     }
     if (plugin.oldNames?.length) migratePluginSettings(plugin.name, ...plugin.oldNames);
+    try { plugin.migrate?.(); } catch (e) { logger.error(`Migration failed for ${plugin.name}`, e); }
     plugin.started = false;
     plugins[plugin.name] = plugin;
     if (plugin.settings) plugin.settings.pluginName = plugin.name;

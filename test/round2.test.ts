@@ -1,12 +1,12 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 
 import { plugins, registerPlugin, setPluginEnabled, stopAllPlugins } from "@api/PluginManager";
-import { loadSettings, Settings } from "@api/Settings";
+import { loadSettings, PlainSettings, Settings } from "@api/Settings";
 import { contextForCaret, contextForProfileButton, fillMenu, fillProfileMenu, ITEM_ATTR } from "@plugins/_api/postMenu";
 import { disposeController } from "@plugins/_api/replyFilter";
 import { collectThread, toMarkdown } from "@plugins/exportThread";
 import { bulkSelection } from "@plugins/panel/kit";
-import { ALIAS_ATTR, buildCss as streamerCss, markAlias } from "@plugins/streamerMode";
+import { buildCss as identityCss, HANDLE_ATTR, HIDE_ATTR, markIdentity, NAME_ATTR } from "@plugins/customSidebarIdentity";
 import { memoryStorage } from "@utils/storage";
 import type { Plugin } from "@utils/types";
 import Plugins from "~plugins";
@@ -131,35 +131,53 @@ describe("bulk selection", () => {
     });
 });
 
-describe("StreamerMode alias", () => {
-    const SWITCHER = '<button data-testid="SideNav_AccountSwitcher_Button"><div><div dir="ltr"><span><span>Real Name</span></span></div><div dir="ltr"><span><svg></svg></span></div></div><div dir="ltr"><span>@real</span></div></button>';
+describe("CustomSidebarIdentity", () => {
+    const SWITCHER = '<button data-testid="SideNav_AccountSwitcher_Button"><div data-testid="UserAvatar-Container-real"><div style="background-image: url(&quot;a.png&quot;);"></div><img src="a.png"></div><div><div dir="ltr"><span><span>Real Name</span></span></div><div dir="ltr"><span><svg></svg></span></div></div><div dir="ltr"><span>@real</span></div></button>';
 
-    test("an alias replaces the name instead of blurring it", () => {
-        const css = streamerCss({ accountName: true, alias: "Guest" }, "me");
-        expect(css).toContain(`[${ALIAS_ATTR}]::after`);
-        expect(css).not.toContain("blur(");
-        expect(streamerCss({ accountName: true, alias: " " }, "me")).toContain("blur(");
+    test("draws the avatar over X's own and sizes it only in the expanded button", () => {
+        const css = identityCss({ avatarUrl: "data:image/png;base64,AAAA", avatarSize: 56, applyToMenu: true }, "real");
+        expect(css).toContain('background-image: url("data:image/png;base64,AAAA")');
+        expect(css).toContain('[data-testid="UserAvatar-Container-real" i]');
+        expect(css).toContain(":has([dir])");
+        expect(css).toContain("56px");
+        expect(identityCss({ avatarUrl: "javascript:alert(1)", avatarSize: 40 }, "real")).toBe("");
+        expect(identityCss({ avatarUrl: "data:image/png;base64,AAAA" }, "real", false)).toBe("");
     });
 
-    test("marks the name row and hides the badge and handle rows, and undoes it", () => {
+    test("marks the name and handle rows, hides the badge, and undoes it", () => {
         document.body.innerHTML = SWITCHER;
         const sw = document.querySelector('[data-testid="SideNav_AccountSwitcher_Button"]')!;
-        markAlias(sw, "Guest");
+        markIdentity(sw, "Guest", "");
         const rows = [...sw.querySelectorAll("[dir]")];
-        expect(rows[0].getAttribute(ALIAS_ATTR)).toBe("Guest");
-        expect(rows.slice(1).every(r => r.hasAttribute("data-xc-alias-hide"))).toBe(true);
-        markAlias(sw, "");
-        expect(sw.querySelector(`[${ALIAS_ATTR}], [data-xc-alias-hide]`)).toBeNull();
+        expect(rows[0].getAttribute(NAME_ATTR)).toBe("Guest");
+        expect(rows[1].hasAttribute(HIDE_ATTR)).toBe(true);
+        expect(rows[2].hasAttribute(HANDLE_ATTR)).toBe(false);
+        markIdentity(sw, "", "guest");
+        expect(rows[0].hasAttribute(NAME_ATTR)).toBe(false);
+        expect(rows[1].hasAttribute(HIDE_ATTR)).toBe(false);
+        expect(rows[2].getAttribute(HANDLE_ATTR)).toBe("@guest");
     });
 
-    test("the running plugin keeps the alias on the account menu", () => {
+    test("the running plugin keeps the marks on the account button", () => {
         document.body.innerHTML = SWITCHER;
-        setPluginEnabled("StreamerMode", true);
-        Settings.plugins.StreamerMode.alias = "Guest";
+        setPluginEnabled("CustomSidebarIdentity", true);
+        Settings.plugins.CustomSidebarIdentity.displayName = "Guest";
+        Settings.plugins.CustomSidebarIdentity.displayHandle = "@guest";
         const { flushNow } = require("@plugins/_api/domObserver");
         flushNow();
-        expect(document.querySelector(`[${ALIAS_ATTR}]`)?.getAttribute(ALIAS_ATTR)).toBe("Guest");
-        setPluginEnabled("StreamerMode", false);
-        expect(document.querySelector(`[${ALIAS_ATTR}]`)).toBeNull();
+        expect(document.querySelector(`[${NAME_ATTR}]`)?.getAttribute(NAME_ATTR)).toBe("Guest");
+        expect(document.querySelector(`[${HANDLE_ATTR}]`)?.getAttribute(HANDLE_ATTR)).toBe("@guest");
+        setPluginEnabled("CustomSidebarIdentity", false);
+        expect(document.querySelector(`[${NAME_ATTR}], [${HANDLE_ATTR}], [${HIDE_ATTR}]`)).toBeNull();
+    });
+
+    test("moves StreamerMode's old alias over and keeps it on when StreamerMode was on", () => {
+        const storage = memoryStorage();
+        storage.set("XCleanerSettings", { plugins: { StreamerMode: { enabled: true, alias: "Guest" } }, core: {} });
+        loadSettings(storage);
+        plugins.CustomSidebarIdentity.migrate!();
+        expect(PlainSettings.plugins.StreamerMode.alias).toBeUndefined();
+        expect(PlainSettings.plugins.CustomSidebarIdentity.displayName).toBe("Guest");
+        expect(PlainSettings.plugins.CustomSidebarIdentity.enabled).toBe(true);
     });
 });
