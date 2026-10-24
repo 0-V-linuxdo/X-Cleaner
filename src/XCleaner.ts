@@ -22,6 +22,8 @@ let booted = false;
 export function boot() {
     if (booted) return;
     booted = true;
+    // Read-only marker so a check after an update can tell which build the page is running.
+    document.documentElement.dataset.xcVersion = VERSION;
     loadSettings();
     for (const plugin of Object.values(Plugins)) registerPlugin(plugin as Plugin);
     pruneOrphanedPluginSettings();

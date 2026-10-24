@@ -508,7 +508,7 @@ export function openSettingsPanel(options: { tab?: string; plugin?: string } = {
         h("div", null, IS_DEV ? t("开发版") : t("正式版"), " · ", t("用户脚本")),
         // Opening the script URL makes the script manager compare versions and offer the update.
         h("div", null,
-            h("a", { href: DOWNLOAD_URL, target: "_blank", rel: "noopener" }, t("检查更新")), " · ",
+            h("a", { href: INSTALL_URL, target: "_blank", rel: "noopener" }, t("检查更新")), " · ",
             h("a", { href: `${REPO_URL}/commits/main`, target: "_blank", rel: "noopener" }, t("更新记录"))),
     );
     const content = h("div", { class: "xc-pm-shell" },

@@ -11,6 +11,9 @@ const pluginRoot = resolve("src/plugins");
 export const REPO_URL = "https://github.com/0-V-linuxdo/X-Cleaner";
 const RAW_URL = "https://raw.githubusercontent.com/0-V-linuxdo/X-Cleaner/main/dist";
 export const DOWNLOAD_URL = `${RAW_URL}/X%20Cleaner.user.js`;
+// GitHub raw answers with `Content-Security-Policy: sandbox`, so Tampermonkey on Chrome never intercepts it and
+// only shows the source. Links people click go through jsDelivr; @updateURL stays on raw so no CDN cache delays it.
+export const INSTALL_URL = "https://cdn.jsdelivr.net/gh/0-V-linuxdo/X-Cleaner@heads/main/dist/X%20Cleaner.user.js";
 const UPDATE_URL = `${RAW_URL}/X%20Cleaner.meta.js`;
 
 export const HEADER = `// ==UserScript==
@@ -100,7 +103,7 @@ if (import.meta.main) {
         target: "browser",
         format: "iife",
         minify: false,
-        define: { IS_DEV: JSON.stringify(isDev), VERSION: JSON.stringify(version), REPO_URL: JSON.stringify(REPO_URL), DOWNLOAD_URL: JSON.stringify(DOWNLOAD_URL) },
+        define: { IS_DEV: JSON.stringify(isDev), VERSION: JSON.stringify(version), REPO_URL: JSON.stringify(REPO_URL), INSTALL_URL: JSON.stringify(INSTALL_URL) },
         plugins: bunPlugins,
     });
     if (!result.success) {

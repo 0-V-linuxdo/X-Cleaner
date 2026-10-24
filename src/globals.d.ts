@@ -1,7 +1,7 @@
 declare const IS_DEV: boolean;
 declare const VERSION: string;
 declare const REPO_URL: string;
-declare const DOWNLOAD_URL: string;
+declare const INSTALL_URL: string;
 
 declare function GM_getValue<T = unknown>(key: string, defaultValue?: T): T;
 declare function GM_setValue(key: string, value: unknown): void;

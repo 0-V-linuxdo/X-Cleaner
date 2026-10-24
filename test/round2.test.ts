@@ -181,3 +181,11 @@ describe("CustomSidebarIdentity", () => {
         expect(PlainSettings.plugins.CustomSidebarIdentity.enabled).toBe(true);
     });
 });
+
+describe("version marker", () => {
+    test("boot writes the running version on <html>", async () => {
+        const { boot } = await import("../src/XCleaner");
+        boot();
+        expect(document.documentElement.dataset.xcVersion).toBe("test");
+    });
+});
