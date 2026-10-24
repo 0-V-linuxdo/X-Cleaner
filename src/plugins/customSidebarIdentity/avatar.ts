@@ -193,7 +193,7 @@ export function renderAvatarField(store: CropState): HTMLElement {
         const shown = raw.startsWith("data:image/") ? raw : (src || raw);
         if (raw && preview.getAttribute("src") !== shown) preview.src = shown;
         if (syncInput) input.value = src ? "" : raw;
-        input.placeholder = src ? t("已使用粘贴的图片。拖动圆圈调整裁剪，或输入链接替换。") : t("粘贴图片，或输入 https://…");
+        input.placeholder = src ? t("图片已载入。拖动圆圈调整裁剪，或输入新链接替换。") : t("粘贴图片，或输入 https://…");
         clear.hidden = !raw;
         failHint.hidden = !(remoteFail && !src);
         if (src !== stageFor) {

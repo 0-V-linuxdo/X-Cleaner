@@ -632,7 +632,7 @@ const en: Record<string, string> = {
     "账号菜单": "Account menu",
     "同时替换账号菜单顶部当前账号的头像和名字（登录了多个账号时才有这一行）。": "Also replace the avatar and name of the current account at the top of the account menu (that row only shows when you're signed in to several accounts).",
     "无法读取这个链接的图片。可以把图片粘贴或拖到这里。": "Couldn't load an image from this link. Paste or drop the picture here instead.",
-    "已使用粘贴的图片。拖动圆圈调整裁剪，或输入链接替换。": "Using a pasted picture. Drag the circle to adjust the crop, or type a link to replace it.",
+    "图片已载入。拖动圆圈调整裁剪，或输入新链接替换。": "Picture loaded. Drag the circle to adjust the crop, or type a new link to replace it.",
     "粘贴图片，或输入 https://…": "Paste a picture, or type https://…",
     "缩放": "Zoom",
     "拖动平移，滚轮缩放。圆圈就是侧栏里显示的范围。": "Drag to pan, scroll to zoom. The circle is what the sidebar shows.",

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         X Cleaner
 // @namespace    https://github.com/0-V-linuxdo/x-cleaner
-// @version      0.1.0.202610241208
+// @version      0.1.0.202610241209
 // @description  A plugin-based cleaner for x.com: hide adult promotion, crypto funnels and promotional reply accounts. Includes review, lists, safe regex rules and optional AI-assisted rule drafts.
 // @author       X Cleaner Contributors
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z'/%3E%3Cpath d='m4.5 4.5 15 15'/%3E%3C/svg%3E
@@ -1121,7 +1121,7 @@ Continue?`,
     "账号菜单": "Account menu",
     "同时替换账号菜单顶部当前账号的头像和名字（登录了多个账号时才有这一行）。": "Also replace the avatar and name of the current account at the top of the account menu (that row only shows when you're signed in to several accounts).",
     "无法读取这个链接的图片。可以把图片粘贴或拖到这里。": "Couldn't load an image from this link. Paste or drop the picture here instead.",
-    "已使用粘贴的图片。拖动圆圈调整裁剪，或输入链接替换。": "Using a pasted picture. Drag the circle to adjust the crop, or type a link to replace it.",
+    "图片已载入。拖动圆圈调整裁剪，或输入新链接替换。": "Picture loaded. Drag the circle to adjust the crop, or type a new link to replace it.",
     "粘贴图片，或输入 https://…": "Paste a picture, or type https://…",
     "缩放": "Zoom",
     "拖动平移，滚轮缩放。圆圈就是侧栏里显示的范围。": "Drag to pan, scroll to zoom. The circle is what the sidebar shows.",
@@ -3060,7 +3060,7 @@ ${TOOLTIP_CSS}`,
     const hint = h("span", { class: "xc-pm-hint", tabindex: "0" }, svgIcon(Icons.info, 14));
     const hintTip = attachTooltip(hint, () => t(TABS.find((tab) => tab.id === activeId)?.description ?? ""), "bottom");
     const body = h("div", { class: "xc-pm-body" });
-    const version = h("div", { class: "xc-pm-version" }, h("div", null, "X Cleaner · ", "0.1.0.202610241208"), h("div", null, t("正式版"), " · ", t("用户脚本")), h("div", null, h("a", { href: "https://cdn.jsdelivr.net/gh/0-V-linuxdo/X-Cleaner@heads/main/dist/X%20Cleaner.user.js", target: "_blank", rel: "noopener" }, t("检查更新")), " · ", h("a", { href: `${"https://github.com/0-V-linuxdo/X-Cleaner"}/commits/main`, target: "_blank", rel: "noopener" }, t("更新记录"))));
+    const version = h("div", { class: "xc-pm-version" }, h("div", null, "X Cleaner · ", "0.1.0.202610241209"), h("div", null, t("正式版"), " · ", t("用户脚本")), h("div", null, h("a", { href: "https://cdn.jsdelivr.net/gh/0-V-linuxdo/X-Cleaner@heads/main/dist/X%20Cleaner.user.js", target: "_blank", rel: "noopener" }, t("检查更新")), " · ", h("a", { href: `${"https://github.com/0-V-linuxdo/X-Cleaner"}/commits/main`, target: "_blank", rel: "noopener" }, t("更新记录"))));
     const content = h("div", { class: "xc-pm-shell" }, h("aside", { class: "xc-pm-sidebar" }, nav, version), h("section", { class: "xc-pm-main" }, h("header", { class: "xc-pm-header" }, heading, hint, closeButton(() => close())), body));
     const show = (id, plugin) => {
       activeId = id;
@@ -6946,7 +6946,7 @@ Write reason in ${aiLanguageName()}.` },
         preview.src = shown;
       if (syncInput)
         input.value = src ? "" : raw;
-      input.placeholder = src ? t("已使用粘贴的图片。拖动圆圈调整裁剪，或输入链接替换。") : t("粘贴图片，或输入 https://…");
+      input.placeholder = src ? t("图片已载入。拖动圆圈调整裁剪，或输入新链接替换。") : t("粘贴图片，或输入 https://…");
       clear.hidden = !raw;
       failHint.hidden = !(remoteFail && !src);
       if (src !== stageFor) {
@@ -11376,7 +11376,7 @@ body[style*="255, 255, 255"] [data-xc-pin]:hover > div, body[style*="255, 255, 2
     if (booted)
       return;
     booted = true;
-    document.documentElement.dataset.xcVersion = "0.1.0.202610241208";
+    document.documentElement.dataset.xcVersion = "0.1.0.202610241209";
     loadSettings();
     for (const plugin of Object.values(plugins_default))
       registerPlugin(plugin);
@@ -11389,7 +11389,7 @@ body[style*="255, 255, 255"] [data-xc-pin]:hover > div, body[style*="255, 255, 2
     else
       onReady();
     addEventListener("pagehide", () => settingsStore.flush());
-    logger17.info(`${"0.1.0.202610241208"} started with ${Object.keys(plugins_default).length} plugins`);
+    logger17.info(`${"0.1.0.202610241209"} started with ${Object.keys(plugins_default).length} plugins`);
   }
 
   // src/index.ts
