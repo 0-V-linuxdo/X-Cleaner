@@ -32,11 +32,14 @@ export const RULES: Record<Key, string> = {
     hideFooter: `${SIDE} div:has(> nav[role="navigation"])`,
 };
 
+// A 2px bordered divider sits between the search box's spacer and the first card; with a card gone
+// it is left floating under the search box. It is the last empty div before the cards.
+export const DIVIDER = `${SIDE} div:has(> div > nav[role="navigation"]) > div:empty:has(+ div:not(:empty))`;
+
 export function buildCss(values: Partial<Record<Key, boolean>>): string {
-    return (Object.keys(RULES) as Key[])
-        .filter(k => values[k])
-        .map(k => `${RULES[k]} { display: none !important; }`)
-        .join("\n");
+    const hidden = (Object.keys(RULES) as Key[]).filter(k => values[k]).map(k => RULES[k]);
+    if (!hidden.length) return "";
+    return [...hidden, DIVIDER].map(sel => `${sel} { display: none !important; }`).join("\n");
 }
 
 function apply() {

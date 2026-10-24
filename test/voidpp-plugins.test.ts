@@ -8,7 +8,7 @@ import { closeMenu, contextForCaret, fillMenu, ITEM_ATTR } from "@plugins/_api/p
 import { formatTime } from "@plugins/absoluteTimestamps";
 import { buildCss as linkCss, expandedUrl } from "@plugins/betterLinks";
 import { AD_ATTR, buildCss as declutterCss, isAdTweet, stripTitleCount } from "@plugins/declutter";
-import { buildCss as sidebarWidgetsCss, RULES as SIDEBAR_RULES } from "@plugins/sidebarWidgets";
+import { buildCss as sidebarWidgetsCss, DIVIDER as SIDEBAR_DIVIDER, RULES as SIDEBAR_RULES } from "@plugins/sidebarWidgets";
 import { ENTRY_ATTR, fillMoreMenu } from "@plugins/moreMenuEntry";
 import { resetHealth, runChecks } from "@plugins/selectorHealth";
 import { buildCss as streamerCss } from "@plugins/streamerMode";
@@ -83,6 +83,7 @@ describe("Declutter", () => {
 
 describe("SidebarWidgets", () => {
     const sidebar = `<div data-testid="sidebarColumn"><div>
+        <div id="spacer"></div><div id="divider"></div>
         <div id="trends"><section><div data-testid="trend">t</div></section></div>
         <div id="follow"><div><aside><div data-testid="UserCell">u</div></aside></div></div>
         <div id="footer"><nav role="navigation"><a href="/tos">Terms</a></nav></div>
@@ -94,6 +95,7 @@ describe("SidebarWidgets", () => {
         expect(css).toContain('[data-testid="trend"]');
         expect(css).toContain('nav[role="navigation"]');
         expect(css).not.toContain("UserCell");
+        expect(css).toContain(SIDEBAR_DIVIDER);
     });
 
     test("each rule matches only its own card", () => {
@@ -104,6 +106,7 @@ describe("SidebarWidgets", () => {
         expect(ids(SIDEBAR_RULES.hideTrends)).toEqual(["trends"]);
         expect(ids(SIDEBAR_RULES.hideWhoToFollow)).toEqual(["follow"]);
         expect(ids(SIDEBAR_RULES.hideFooter)).toEqual(["footer"]);
+        expect(ids(SIDEBAR_DIVIDER)).toEqual(["divider"]);
     });
 
     test("is on by default with all three cards hidden, and cleans up on stop", () => {
