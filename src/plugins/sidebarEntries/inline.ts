@@ -36,6 +36,19 @@ const view = (): Window => document.defaultView ?? window;
 
 const more = (nav: Element) => nav.querySelector<HTMLElement>(`:scope > ${MORE_BUTTON}`);
 
+export const SCROLL_ATTR = "data-xc-sidebar-scroll";
+
+/**
+ * X's sidebar column scrolls as a whole, account bar included, once the unfolded rows make it too tall.
+ * Marks that column so the plugin's style lets only its upper part (logo, links, Post) scroll instead.
+ */
+function markScroller(nav: Element, on: boolean) {
+    let el = nav.parentElement;
+    while (el && el.tagName !== "HEADER" && getComputedStyle(el).overflowY !== "auto" && !el.hasAttribute(SCROLL_ATTR)) el = el.parentElement;
+    if (!el || el.tagName === "HEADER") return;
+    if (on !== el.hasAttribute(SCROLL_ATTR)) el.toggleAttribute(SCROLL_ATTR, on);
+}
+
 export const CHEVRON_ATTR = "data-xc-chevron";
 const CHEVRON = '<path d="M5.5 9 12 15.5 18.5 9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>';
 
@@ -70,6 +83,7 @@ function render(nav: Element) {
     const template = button ? templateLink(nav) : null;
     const old = nav.querySelector<HTMLElement>(`:scope > [${INLINE_ATTR}]`);
     decorate(button, !!source?.enabled());
+    markScroller(nav, !!source?.enabled());
     if (!source?.enabled() || !source.isOpen() || !button || !template) {
         old?.remove();
         button?.removeAttribute("data-xc-inline-open");
@@ -100,6 +114,7 @@ export function syncInline(nav: Element) {
     const want = !!source?.enabled() && source.isOpen();
     const button = more(nav);
     if (!!source?.enabled() !== !!button?.querySelector(`[${CHEVRON_ATTR}]`)) decorate(button, !!source?.enabled());
+    markScroller(nav, !!source?.enabled());
     if (!want) {
         if (box) render(nav);
         return;
@@ -139,4 +154,5 @@ export function stopInline() {
     for (const box of document.querySelectorAll(`[${INLINE_ATTR}]`)) box.remove();
     for (const b of document.querySelectorAll("[data-xc-inline-open]")) b.removeAttribute("data-xc-inline-open");
     for (const b of document.querySelectorAll<HTMLElement>(`${MORE_BUTTON}[${CHEVRON_ATTR}]`)) decorate(b, false);
+    for (const el of document.querySelectorAll(`[${SCROLL_ATTR}]`)) el.removeAttribute(SCROLL_ATTR);
 }
