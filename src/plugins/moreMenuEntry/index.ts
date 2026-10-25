@@ -54,13 +54,43 @@ export function starredPlugins(): string[] {
     return PlainSettings.core.starredPlugins.filter(n => plugins[n] && !plugins[n].required && !plugins[n].hidden);
 }
 
+export interface CleanerEntry {
+    id: string;
+    label: string;
+    icon: string;
+    run(): void;
+}
+
+/** X Cleaner's own rows for the 「更多」 menu: the manager, starred plugin switches, X shortcuts. */
+export function cleanerEntries(): CleanerEntry[] {
+    const out: CleanerEntry[] = [{ id: "manager", label: t("X Cleaner 插件管理"), icon: Icons.broom, run: openPanel }];
+    if (settings.store.showStarred) {
+        for (const name of starredPlugins()) {
+            const on = isPluginEnabled(name);
+            out.push({
+                id: `plugin:${name}`,
+                label: on ? t("停用 {name}", { name }) : t("启用 {name}", { name }),
+                icon: on ? Icons.check : Icons.plug,
+                run() {
+                    if (setPluginEnabled(name, !on)) showToast(on ? t("{name} 已停用。", { name }) : t("{name} 已启用。", { name }), { type: "success" });
+                    else showToast(on ? t("{name} 停用失败，详见控制台。", { name }) : t("{name} 启用失败，详见控制台。", { name }), { type: "error" });
+                },
+            });
+        }
+    }
+    for (const sc of X_SHORTCUTS) {
+        if (settings.store[sc.key]) out.push({ id: `x:${sc.key}`, label: t(sc.label), icon: sc.icon, run: () => goTo(sc.path) });
+    }
+    return out;
+}
+
 export function fillMoreMenu(menu: Element): HTMLElement[] {
     if (menu.querySelector(`[${ENTRY_ATTR}]`)) return [];
     const tpl = templateRow(menu);
     const host = tpl?.parentElement;
     if (!tpl || !host) return [];
     const rows: HTMLElement[] = [];
-    const add = (id: string, label: string, icon: string, run: () => void) => {
+    const add = ({ id, label, icon, run }: CleanerEntry) => {
         const row = cloneMenuRow(tpl, label, icon);
         for (const a of row.querySelectorAll('[role="link"]')) a.removeAttribute("role");
         row.setAttribute(ENTRY_ATTR, id);
@@ -76,19 +106,7 @@ export function fillMoreMenu(menu: Element): HTMLElement[] {
         host.appendChild(row);
         rows.push(row);
     };
-    add("manager", t("X Cleaner 插件管理"), Icons.broom, openPanel);
-    if (settings.store.showStarred) {
-        for (const name of starredPlugins()) {
-            const on = isPluginEnabled(name);
-            add(`plugin:${name}`, on ? t("停用 {name}", { name }) : t("启用 {name}", { name }), on ? Icons.check : Icons.plug, () => {
-                if (setPluginEnabled(name, !on)) showToast(on ? t("{name} 已停用。", { name }) : t("{name} 已启用。", { name }), { type: "success" });
-                else showToast(on ? t("{name} 停用失败，详见控制台。", { name }) : t("{name} 启用失败，详见控制台。", { name }), { type: "error" });
-            });
-        }
-    }
-    for (const sc of X_SHORTCUTS) {
-        if (settings.store[sc.key]) add(`x:${sc.key}`, t(sc.label), sc.icon, () => goTo(sc.path));
-    }
+    for (const entry of cleanerEntries()) add(entry);
     return rows;
 }
 

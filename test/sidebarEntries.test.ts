@@ -4,7 +4,7 @@ import { loadSettings, Settings } from "@api/Settings";
 import { plugins, registerPlugin, setPluginEnabled, stopAllPlugins } from "@api/PluginManager";
 import { flushNow } from "@plugins/_api/domObserver";
 import { buildCss, describeEntry, mergeOrder, NAV, PIN_ATTR } from "@plugins/sidebarEntries/entries";
-import { MENU_HIDDEN_ATTR, readMoreMenu } from "@plugins/sidebarEntries/pins";
+import { isReplaying, MENU_HIDDEN_ATTR, readMoreMenu } from "@plugins/sidebarEntries/pins";
 import { openPluginSettings } from "@plugins/_core/settings/panel";
 import { memoryStorage } from "@utils/storage";
 import type { Plugin } from "@utils/types";
@@ -234,3 +234,82 @@ describe("SidebarEntries: pins from the 「更多」 menu", () => {
         expect(menu.querySelectorAll(`[${MENU_HIDDEN_ATTR}]`).length).toBe(0);
     });
 });
+
+describe("SidebarEntries: 「更多」 unfolded in the sidebar", () => {
+    beforeEach(() => { document.body.innerHTML = navHtml(true); });
+
+    const box = () => nav().querySelector<HTMLElement>("[data-xc-inline-more]");
+    const labels = () => [...box()?.querySelectorAll<HTMLElement>("[data-xc-pin]") ?? []].map(r => r.getAttribute("aria-label"));
+
+    test("a click on 「更多」 unfolds its rows below the button instead of X's menu, and folds them again", async () => {
+        setPluginEnabled("SidebarEntries", true);
+        setPluginEnabled("MoreMenuEntry", true);
+        flushNow();
+        const s = Settings.plugins.SidebarEntries as any;
+        s.moreItems = readMoreMenu(openMoreMenu());
+        document.querySelector("#layers")!.innerHTML = "";
+        s.menuHidden = ["url:ads.x.com"];
+        await flush();
+        const more = nav().querySelector<HTMLElement>('[data-testid="AppTabBar_More_Menu"]')!;
+        // X only ever sees the out-of-sight click that refreshes the stored rows, never the user's.
+        let xSawUserClick = false;
+        more.addEventListener("click", () => {
+            if (!isReplaying()) xSawUserClick = true;
+            else setTimeout(openMoreMenu, 5);
+        });
+        more.click();
+        await flush();
+        expect(xSawUserClick).toBe(false);
+        expect(box()!.previousElementSibling).toBe(more);
+        expect(labels().slice(0, 3)).toEqual(["Lists", "Create your Space", "Settings and privacy"]);
+        expect(labels()).toContain("X Cleaner 插件管理");
+        expect(box()!.querySelector(".xc-inline-sep")).not.toBeNull();
+        expect(box()!.querySelector("[data-xc-pin]")!.textContent).toBe("Lists");
+
+        more.click();
+        await flush();
+        expect(box()).toBeNull();
+        // Let the out-of-sight refresh of the stored rows finish inside this test.
+        await new Promise(r => setTimeout(r, 100));
+    });
+
+    test("rows follow the sidebar to icon-only and replay X's menu row on click", async () => {
+        setPluginEnabled("SidebarEntries", true);
+        flushNow();
+        const s = Settings.plugins.SidebarEntries as any;
+        s.moreItems = readMoreMenu(openMoreMenu());
+        document.querySelector("#layers")!.innerHTML = "";
+        s.inlineOpen = true;
+        await flush();
+        expect(box()!.getAttribute("data-xc-inline-more")).toBe("true");
+
+        const more = nav().querySelector('[data-testid="AppTabBar_More_Menu"]')!;
+        for (const a of nav().querySelectorAll("a[data-testid]")) a.remove();
+        more.insertAdjacentHTML("beforebegin", link("/home", "AppTabBar_Home_Link", "Home", false) + link("/explore", "AppTabBar_Explore_Link", "Explore", false));
+        await flush();
+        expect(box()!.getAttribute("data-xc-inline-more")).toBe("false");
+        expect(box()!.querySelector("[data-xc-pin]")!.textContent).toBe("");
+
+        more.addEventListener("click", () => setTimeout(openMoreMenu, 5));
+        let clicked = "";
+        document.addEventListener("click", e => { const r = (e.target as Element).closest?.('[role="menuitem"]'); if (r) clicked = r.textContent!.trim(); }, true);
+        box()!.querySelector<HTMLElement>('[data-xc-pin="text:Create your Space"]')!.click();
+        await new Promise(r => setTimeout(r, 200));
+        expect(clicked).toBe("Create your Space");
+        expect(box()).not.toBeNull();
+    });
+
+    test("switched off, 「更多」 opens X's menu as before", async () => {
+        setPluginEnabled("SidebarEntries", true);
+        flushNow();
+        (Settings.plugins.SidebarEntries as any).inlineMore = false;
+        await flush();
+        const more = nav().querySelector<HTMLElement>('[data-testid="AppTabBar_More_Menu"]')!;
+        let xSawClick = false;
+        more.addEventListener("click", () => { xSawClick = true; });
+        more.click();
+        expect(xSawClick).toBe(true);
+        expect(box()).toBeNull();
+    });
+});
+

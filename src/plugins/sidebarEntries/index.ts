@@ -4,7 +4,9 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { definePluginSettings } from "@api/Settings";
+import { isPluginEnabled } from "@api/PluginManager";
+import { definePluginSettings, Settings } from "@api/Settings";
+import { cleanerEntries } from "@plugins/moreMenuEntry";
 import { h } from "@ui/h";
 import { Icons } from "@ui/icons";
 import { registerStyle, unregisterStyle } from "@utils/css";
@@ -14,12 +16,19 @@ import definePlugin, { OptionType } from "@utils/types";
 import { renderEditor, renderPinEditor } from "./editor";
 import { buildCss, type Layout, mergeOrder, NAV, readEntries, type SidebarEntry } from "./entries";
 import { activatePin, isMoreMenu, markHiddenRows, MENU_HIDDEN_ATTR, MENU_SEL, type MoreItem, readMoreMenu, syncPins, withHiddenMoreMenu } from "./pins";
+import { type InlineRow, refreshInline, startInline, stopInline, syncInline } from "./inline";
 import css from "./styles.css";
 import { CHECKS } from "@x/health";
 
 const STYLE = "sidebarEntries:layout";
 
 export const settings = definePluginSettings({
+    inlineMore: {
+        type: OptionType.BOOLEAN,
+        label: N_("「更多」在侧栏里展开"),
+        description: N_("点侧栏的「更多」时，把它的项目直接展开在按钮下方，不再弹出菜单。侧栏收起成图标时也一样。"),
+        default: true,
+    },
     layout: {
         type: OptionType.CUSTOM,
         label: N_("侧栏入口"),
@@ -43,7 +52,7 @@ export const settings = definePluginSettings({
             return h("div", { class: "xc-sbe-wrap" }, editor.el, pins);
         },
     },
-}).withPrivateSettings<{ known?: SidebarEntry[]; moreItems?: MoreItem[]; pinned?: string[]; menuHidden?: string[] }>();
+}).withPrivateSettings<{ known?: SidebarEntry[]; moreItems?: MoreItem[]; pinned?: string[]; menuHidden?: string[]; inlineOpen?: boolean }>();
 
 const known = (): SidebarEntry[] => settings.plain.known ?? [];
 const pinnedKeys = (): string[] => Array.isArray(settings.plain.pinned) ? settings.plain.pinned : [];
@@ -76,6 +85,31 @@ async function scanMoreMenu(): Promise<boolean> {
 
 const onPinActivate = (item: MoreItem) => void activatePin(item);
 
+let scannedThisPage = false;
+
+const inlineSource = {
+    enabled: () => !!settings.plain && settings.store.inlineMore,
+    isOpen: () => !!settings.plain?.inlineOpen,
+    setOpen(open: boolean) { settings.store.inlineOpen = open; },
+    groups(): InlineRow[][] {
+        const hidden = new Set(menuHiddenKeys());
+        const xRows = (settings.plain.moreItems ?? []).filter(i => !hidden.has(i.key)).map(i => ({ ...i, run: () => void activatePin(i) }));
+        const ours = isPluginEnabled("MoreMenuEntry") && Settings.plugins.MoreMenuEntry
+            ? cleanerEntries().map(e => ({ key: `xc:${e.id}`, label: e.label, icon: e.icon, run: e.run }))
+            : [];
+        return [xRows, ours];
+    },
+    /** Reads X's menu once per page so new or renamed rows show up; the first unfold uses what was stored. */
+    onOpen() {
+        if (scannedThisPage) return;
+        scannedThisPage = true;
+        const before = JSON.stringify(settings.plain.moreItems ?? []);
+        void scanMoreMenu().then(() => {
+            if (JSON.stringify(settings.plain.moreItems ?? []) !== before) refreshInline();
+        });
+    },
+};
+
 function syncNav() {
     const nav = document.querySelector(NAV);
     if (nav) syncPins(nav, pinnedItems(), onPinActivate);
@@ -88,6 +122,7 @@ function layout(): Layout {
 
 function apply() {
     syncNav();
+    refreshInline();
     const text = buildCss(known(), layout());
     if (text) registerStyle(STYLE, text);
     else unregisterStyle(STYLE);
@@ -127,6 +162,7 @@ export default definePlugin({
         [NAV](nav) {
             const update = () => {
                 syncPins(nav, pinnedItems(), onPinActivate);
+                syncInline(nav);
                 record(nav);
             };
             update();
@@ -148,8 +184,12 @@ export default definePlugin({
         },
     },
 
-    start: apply,
+    start() {
+        startInline(inlineSource);
+        apply();
+    },
     stop() {
+        stopInline();
         unregisterStyle(STYLE);
         const nav = document.querySelector(NAV);
         if (nav) syncPins(nav, [], onPinActivate);

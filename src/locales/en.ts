@@ -666,6 +666,8 @@ const en: Record<string, string> = {
     "固定 {label} 到侧栏": "Pin {label} to the sidebar",
     "「侧栏」打开的项目会出现在侧栏「更多」的正上方，侧栏收起成图标时也一样，固定后可以在上面的列表里调整位置。「菜单」关掉的项目会从「更多」菜单里隐藏。": "Items with “Sidebar” on appear right above “More” in the sidebar, also when the sidebar is collapsed to icons; once pinned, you can move them in the list above. Items with “Menu” off are hidden from the “More” menu.",
     "侧栏": "Sidebar",
+    "「更多」在侧栏里展开": "Unfold “More” in the sidebar",
+    "点侧栏的「更多」时，把它的项目直接展开在按钮下方，不再弹出菜单。侧栏收起成图标时也一样。": "Clicking “More” in the sidebar unfolds its items right below the button instead of opening a popup menu, also when the sidebar is collapsed to icons.",
     "菜单": "Menu",
     "在「更多」菜单里显示 {label}": "Show {label} in the “More” menu",
     "读取": "Read",

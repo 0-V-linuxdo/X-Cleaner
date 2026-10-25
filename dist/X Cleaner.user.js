@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         X Cleaner
 // @namespace    https://github.com/0-V-linuxdo/x-cleaner
-// @version      0.1.0.202610250004
+// @version      0.1.0.202610250030
 // @description  A plugin-based cleaner for x.com: hide adult promotion, crypto funnels and promotional reply accounts. Includes review, lists, safe regex rules and optional AI-assisted rule drafts.
 // @author       X Cleaner Contributors
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z'/%3E%3Cpath d='m4.5 4.5 15 15'/%3E%3C/svg%3E
@@ -1153,6 +1153,8 @@ Continue?`,
     "固定 {label} 到侧栏": "Pin {label} to the sidebar",
     "「侧栏」打开的项目会出现在侧栏「更多」的正上方，侧栏收起成图标时也一样，固定后可以在上面的列表里调整位置。「菜单」关掉的项目会从「更多」菜单里隐藏。": "Items with “Sidebar” on appear right above “More” in the sidebar, also when the sidebar is collapsed to icons; once pinned, you can move them in the list above. Items with “Menu” off are hidden from the “More” menu.",
     "侧栏": "Sidebar",
+    "「更多」在侧栏里展开": "Unfold “More” in the sidebar",
+    "点侧栏的「更多」时，把它的项目直接展开在按钮下方，不再弹出菜单。侧栏收起成图标时也一样。": "Clicking “More” in the sidebar unfolds its items right below the button instead of opening a popup menu, also when the sidebar is collapsed to icons.",
     "菜单": "Menu",
     "在「更多」菜单里显示 {label}": "Show {label} in the “More” menu",
     "读取": "Read",
@@ -3107,7 +3109,7 @@ ${TOOLTIP_CSS}`,
     const hint = h("span", { class: "xc-pm-hint", tabindex: "0" }, svgIcon(Icons.info, 14));
     const hintTip = attachTooltip(hint, () => t(TABS.find((tab) => tab.id === activeId)?.description ?? ""), "bottom");
     const body = h("div", { class: "xc-pm-body" });
-    const version = h("div", { class: "xc-pm-version" }, h("div", null, "X Cleaner · ", "0.1.0.202610250004"), h("div", null, t("正式版"), " · ", t("用户脚本")), h("div", null, h("a", { href: "https://cdn.jsdelivr.net/gh/0-V-linuxdo/X-Cleaner@heads/main/dist/X%20Cleaner.user.js", target: "_blank", rel: "noopener" }, t("检查更新")), " · ", h("a", { href: `${"https://github.com/0-V-linuxdo/X-Cleaner"}/commits/main`, target: "_blank", rel: "noopener" }, t("更新记录"))));
+    const version = h("div", { class: "xc-pm-version" }, h("div", null, "X Cleaner · ", "0.1.0.202610250030"), h("div", null, t("正式版"), " · ", t("用户脚本")), h("div", null, h("a", { href: "https://cdn.jsdelivr.net/gh/0-V-linuxdo/X-Cleaner@heads/main/dist/X%20Cleaner.user.js", target: "_blank", rel: "noopener" }, t("检查更新")), " · ", h("a", { href: `${"https://github.com/0-V-linuxdo/X-Cleaner"}/commits/main`, target: "_blank", rel: "noopener" }, t("更新记录"))));
     const content = h("div", { class: "xc-pm-shell" }, h("aside", { class: "xc-pm-sidebar" }, nav, version), h("section", { class: "xc-pm-main" }, h("header", { class: "xc-pm-header" }, heading, hint, closeButton(() => close())), body));
     const show = (id, plugin) => {
       activeId = id;
@@ -7747,6 +7749,30 @@ Write reason in ${aiLanguageName()}.` },
   function starredPlugins() {
     return PlainSettings.core.starredPlugins.filter((n) => plugins[n] && !plugins[n].required && !plugins[n].hidden);
   }
+  function cleanerEntries() {
+    const out = [{ id: "manager", label: t("X Cleaner 插件管理"), icon: Icons.broom, run: openPanel }];
+    if (settings6.store.showStarred) {
+      for (const name of starredPlugins()) {
+        const on = isPluginEnabled(name);
+        out.push({
+          id: `plugin:${name}`,
+          label: on ? t("停用 {name}", { name }) : t("启用 {name}", { name }),
+          icon: on ? Icons.check : Icons.plug,
+          run() {
+            if (setPluginEnabled(name, !on))
+              showToast(on ? t("{name} 已停用。", { name }) : t("{name} 已启用。", { name }), { type: "success" });
+            else
+              showToast(on ? t("{name} 停用失败，详见控制台。", { name }) : t("{name} 启用失败，详见控制台。", { name }), { type: "error" });
+          }
+        });
+      }
+    }
+    for (const sc of X_SHORTCUTS) {
+      if (settings6.store[sc.key])
+        out.push({ id: `x:${sc.key}`, label: t(sc.label), icon: sc.icon, run: () => goTo(sc.path) });
+    }
+    return out;
+  }
   function fillMoreMenu(menu) {
     if (menu.querySelector(`[${ENTRY_ATTR}]`))
       return [];
@@ -7755,7 +7781,7 @@ Write reason in ${aiLanguageName()}.` },
     if (!tpl || !host)
       return [];
     const rows = [];
-    const add = (id, label, icon, run) => {
+    const add = ({ id, label, icon, run }) => {
       const row = cloneMenuRow(tpl, label, icon);
       for (const a of row.querySelectorAll('[role="link"]'))
         a.removeAttribute("role");
@@ -7775,22 +7801,8 @@ Write reason in ${aiLanguageName()}.` },
       host.appendChild(row);
       rows.push(row);
     };
-    add("manager", t("X Cleaner 插件管理"), Icons.broom, openPanel);
-    if (settings6.store.showStarred) {
-      for (const name of starredPlugins()) {
-        const on = isPluginEnabled(name);
-        add(`plugin:${name}`, on ? t("停用 {name}", { name }) : t("启用 {name}", { name }), on ? Icons.check : Icons.plug, () => {
-          if (setPluginEnabled(name, !on))
-            showToast(on ? t("{name} 已停用。", { name }) : t("{name} 已启用。", { name }), { type: "success" });
-          else
-            showToast(on ? t("{name} 停用失败，详见控制台。", { name }) : t("{name} 启用失败，详见控制台。", { name }), { type: "error" });
-        });
-      }
-    }
-    for (const sc of X_SHORTCUTS) {
-      if (settings6.store[sc.key])
-        add(`x:${sc.key}`, t(sc.label), sc.icon, () => goTo(sc.path));
-    }
+    for (const entry of cleanerEntries())
+      add(entry);
     return rows;
   }
   var OPENING_ATTR = "data-xc-more-opening";
@@ -11013,6 +11025,8 @@ Write rule.name and reason in ${aiLanguageName()}.` }
     const cls = like?.getAttribute("class");
     if (cls)
       svg.setAttribute("class", cls);
+    if (svg.getAttribute("fill") === "none")
+      svg.style.fill = "none";
     svg.setAttribute("aria-hidden", "true");
     return svg;
   }
@@ -11094,6 +11108,8 @@ Write rule.name and reason in ${aiLanguageName()}.` }
     }
     return true;
   }
+  var replaying = false;
+  var isReplaying = () => replaying;
   function waitFor(find, ms = WAIT_MS4) {
     return new Promise((resolve) => {
       const found = find();
@@ -11128,8 +11144,14 @@ Write rule.name and reason in ${aiLanguageName()}.` }
       return false;
     registerStyle(HIDE_STYLE, `${MENU_SEL2}{opacity:0 !important}`);
     try {
-      if (!document.querySelector(MENU_SEL2))
-        button.click();
+      if (!document.querySelector(MENU_SEL2)) {
+        replaying = true;
+        try {
+          button.click();
+        } finally {
+          replaying = false;
+        }
+      }
       const menu = await waitFor(() => {
         const m = document.querySelector(MENU_SEL2);
         return m && menuRows(m).length ? m : null;
@@ -11154,6 +11176,88 @@ Write rule.name and reason in ${aiLanguageName()}.` }
     });
     if (!clicked && item.href)
       location.assign(item.href);
+  }
+
+  // src/plugins/sidebarEntries/inline.ts
+  var INLINE_ATTR = "data-xc-inline-more";
+  var source = null;
+  var view = () => document.defaultView ?? window;
+  var more = (nav) => nav.querySelector(`:scope > ${MORE_BUTTON2}`);
+  function render(nav) {
+    const button = more(nav);
+    const template = button ? templateLink(nav) : null;
+    const old = nav.querySelector(`:scope > [${INLINE_ATTR}]`);
+    if (!source?.enabled() || !source.isOpen() || !button || !template) {
+      old?.remove();
+      button?.removeAttribute("data-xc-inline-open");
+      return;
+    }
+    const wide = showsLabels(template);
+    const box = document.createElement("div");
+    box.setAttribute(INLINE_ATTR, String(wide));
+    box.setAttribute(OWNED_ATTR, "");
+    box.setAttribute("role", "group");
+    box.setAttribute("aria-label", button.getAttribute("aria-label") ?? "More");
+    const order = getComputedStyle(button).order;
+    if (order && order !== "0")
+      box.style.order = order;
+    const groups = source.groups().filter((g) => g.length);
+    groups.forEach((group, i) => {
+      if (i)
+        box.appendChild(Object.assign(document.createElement("div"), { className: "xc-inline-sep" }));
+      for (const row of group)
+        box.appendChild(buildPin(template, row, () => row.run()));
+    });
+    if (old)
+      old.replaceWith(box);
+    else
+      button.after(box);
+    button.setAttribute("data-xc-inline-open", "");
+  }
+  function syncInline(nav) {
+    const box = nav.querySelector(`:scope > [${INLINE_ATTR}]`);
+    const want = !!source?.enabled() && source.isOpen();
+    if (!want) {
+      if (box)
+        render(nav);
+      return;
+    }
+    const template = templateLink(nav);
+    const button = more(nav);
+    if (!box || !template || box.previousElementSibling !== button || box.getAttribute(INLINE_ATTR) !== String(showsLabels(template)))
+      render(nav);
+  }
+  function refreshInline() {
+    const nav = document.querySelector(NAV2);
+    if (nav)
+      render(nav);
+  }
+  function onClick3(e) {
+    if (!source?.enabled() || isReplaying())
+      return;
+    const button = e.target?.closest?.(MORE_BUTTON2);
+    if (!button || !button.closest(NAV2))
+      return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    const open = !source.isOpen();
+    source.setOpen(open);
+    refreshInline();
+    if (open)
+      setTimeout(() => source?.onOpen?.(), 0);
+  }
+  function startInline(src) {
+    source = src;
+    view().addEventListener("click", onClick3, true);
+    refreshInline();
+  }
+  function stopInline() {
+    view().removeEventListener("click", onClick3, true);
+    source = null;
+    for (const box of document.querySelectorAll(`[${INLINE_ATTR}]`))
+      box.remove();
+    for (const b of document.querySelectorAll("[data-xc-inline-open]"))
+      b.removeAttribute("data-xc-inline-open");
   }
 
   // xc-css:/home/claude/x-cleaner/src/plugins/sidebarEntries/styles.css
@@ -11182,11 +11286,20 @@ Write rule.name and reason in ${aiLanguageName()}.` }
 /* X highlights its own sidebar links from script; pins copy its hover colours per theme. */
 [data-xc-pin]:hover > div, [data-xc-pin]:focus-visible > div { background-color: rgba(231, 233, 234, .1); }
 body[style*="255, 255, 255"] [data-xc-pin]:hover > div, body[style*="255, 255, 255"] [data-xc-pin]:focus-visible > div { background-color: rgba(15, 20, 25, .1); }
+[data-xc-inline-more] { display: flex; flex-direction: column; align-items: inherit; width: 100%; }
+[data-xc-inline-more="false"] { align-items: center; }
+[data-xc-inline-more] > .xc-inline-sep { height: 1px; margin: 4px 12px; background: rgba(113, 118, 123, .4); align-self: stretch; }
 `;
 
   // src/plugins/sidebarEntries/index.ts
   var STYLE6 = "sidebarEntries:layout";
   var settings8 = definePluginSettings({
+    inlineMore: {
+      type: "boolean" /* BOOLEAN */,
+      label: N_("「更多」在侧栏里展开"),
+      description: N_("点侧栏的「更多」时，把它的项目直接展开在按钮下方，不再弹出菜单。侧栏收起成图标时也一样。"),
+      default: true
+    },
     layout: {
       type: "custom" /* CUSTOM */,
       label: N_("侧栏入口"),
@@ -11241,6 +11354,30 @@ body[style*="255, 255, 255"] [data-xc-pin]:hover > div, body[style*="255, 255, 2
     });
   }
   var onPinActivate = (item) => void activatePin(item);
+  var scannedThisPage = false;
+  var inlineSource = {
+    enabled: () => !!settings8.plain && settings8.store.inlineMore,
+    isOpen: () => !!settings8.plain?.inlineOpen,
+    setOpen(open) {
+      settings8.store.inlineOpen = open;
+    },
+    groups() {
+      const hidden = new Set(menuHiddenKeys());
+      const xRows = (settings8.plain.moreItems ?? []).filter((i) => !hidden.has(i.key)).map((i) => ({ ...i, run: () => void activatePin(i) }));
+      const ours = isPluginEnabled("MoreMenuEntry") && Settings.plugins.MoreMenuEntry ? cleanerEntries().map((e) => ({ key: `xc:${e.id}`, label: e.label, icon: e.icon, run: e.run })) : [];
+      return [xRows, ours];
+    },
+    onOpen() {
+      if (scannedThisPage)
+        return;
+      scannedThisPage = true;
+      const before = JSON.stringify(settings8.plain.moreItems ?? []);
+      scanMoreMenu().then(() => {
+        if (JSON.stringify(settings8.plain.moreItems ?? []) !== before)
+          refreshInline();
+      });
+    }
+  };
   function syncNav() {
     const nav = document.querySelector(NAV2);
     if (nav)
@@ -11252,6 +11389,7 @@ body[style*="255, 255, 255"] [data-xc-pin]:hover > div, body[style*="255, 255, 2
   }
   function apply6() {
     syncNav();
+    refreshInline();
     const text = buildCss6(known(), layout());
     if (text)
       registerStyle(STYLE6, text);
@@ -11292,6 +11430,7 @@ body[style*="255, 255, 255"] [data-xc-pin]:hover > div, body[style*="255, 255, 2
       [NAV2](nav) {
         const update = () => {
           syncPins(nav, pinnedItems(), onPinActivate);
+          syncInline(nav);
           record(nav);
         };
         update();
@@ -11312,8 +11451,12 @@ body[style*="255, 255, 255"] [data-xc-pin]:hover > div, body[style*="255, 255, 2
         return () => observer.disconnect();
       }
     },
-    start: apply6,
+    start() {
+      startInline(inlineSource);
+      apply6();
+    },
     stop() {
+      stopInline();
       unregisterStyle(STYLE6);
       const nav = document.querySelector(NAV2);
       if (nav)
@@ -11504,7 +11647,7 @@ body[style*="255, 255, 255"] [data-xc-pin]:hover > div, body[style*="255, 255, 2
     if (booted)
       return;
     booted = true;
-    document.documentElement.dataset.xcVersion = "0.1.0.202610250004";
+    document.documentElement.dataset.xcVersion = "0.1.0.202610250030";
     loadSettings();
     for (const plugin of Object.values(plugins_default))
       registerPlugin(plugin);
@@ -11517,7 +11660,7 @@ body[style*="255, 255, 255"] [data-xc-pin]:hover > div, body[style*="255, 255, 2
     else
       onReady();
     addEventListener("pagehide", () => settingsStore.flush());
-    logger17.info(`${"0.1.0.202610250004"} started with ${Object.keys(plugins_default).length} plugins`);
+    logger17.info(`${"0.1.0.202610250030"} started with ${Object.keys(plugins_default).length} plugins`);
   }
 
   // src/index.ts

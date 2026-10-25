@@ -104,7 +104,7 @@ export function isMoreMenu(menu: Element): boolean {
 }
 
 /** A sidebar link to copy: not the current page's (X draws that one bold), and without a badge. */
-function templateLink(nav: Element): HTMLElement | null {
+export function templateLink(nav: Element): HTMLElement | null {
     const links = [...nav.querySelectorAll<HTMLElement>(":scope > a[href]")].filter(a => !a.hasAttribute(PIN_ATTR));
     const here = location.pathname;
     const idle = (a: HTMLElement) => {
@@ -119,7 +119,7 @@ function templateLink(nav: Element): HTMLElement | null {
 }
 
 /** Whether X currently shows text in its sidebar (wide) or icons only (collapsed). */
-const showsLabels = (link: Element) => [...link.querySelectorAll("span")].some(s => !s.childElementCount && s.textContent?.trim());
+export const showsLabels = (link: Element) => [...link.querySelectorAll("span")].some(s => !s.childElementCount && s.textContent?.trim());
 
 function iconFrom(markup: string, like: SVGElement | null): SVGElement | null {
     const withNs = /<svg[^>]*\sxmlns=/.test(markup) ? markup : markup.replace("<svg", '<svg xmlns="http://www.w3.org/2000/svg"');
@@ -130,6 +130,8 @@ function iconFrom(markup: string, like: SVGElement | null): SVGElement | null {
     for (const el of [svg, ...svg.querySelectorAll("*")]) for (const a of [...el.attributes]) if (/^on/i.test(a.name)) el.removeAttribute(a.name);
     const cls = like?.getAttribute("class");
     if (cls) svg.setAttribute("class", cls);
+    // Outline icons (X Cleaner's own) would be filled in by X's icon class.
+    if (svg.getAttribute("fill") === "none") svg.style.fill = "none";
     svg.setAttribute("aria-hidden", "true");
     return svg;
 }
@@ -209,6 +211,10 @@ export function syncPins(nav: Element, items: MoreItem[], onActivate: (item: Mor
     return true;
 }
 
+let replaying = false;
+/** True while a click on 「更多」 comes from us opening the menu out of sight, not from the user. */
+export const isReplaying = () => replaying;
+
 function waitFor<T>(find: () => T | null, ms = WAIT_MS): Promise<T | null> {
     return new Promise(resolve => {
         const found = find();
@@ -242,7 +248,10 @@ export async function withHiddenMoreMenu(use: (menu: Element) => boolean | void)
     if (!button) return false;
     registerStyle(HIDE_STYLE, `${MENU_SEL}{opacity:0 !important}`);
     try {
-        if (!document.querySelector(MENU_SEL)) button.click();
+        if (!document.querySelector(MENU_SEL)) {
+            replaying = true;
+            try { button.click(); } finally { replaying = false; }
+        }
         const menu = await waitFor(() => {
             const m = document.querySelector(MENU_SEL);
             return m && menuRows(m).length ? m : null;
