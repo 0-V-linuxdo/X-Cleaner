@@ -43,8 +43,9 @@ export const SCROLL_ATTR = "data-xc-sidebar-scroll";
  * Marks that column so the plugin's style lets only its upper part (logo, links, Post) scroll instead.
  */
 function markScroller(nav: Element, on: boolean) {
-    let el = nav.parentElement;
-    while (el && el.tagName !== "HEADER" && getComputedStyle(el).overflowY !== "auto" && !el.hasAttribute(SCROLL_ATTR)) el = el.parentElement;
+    // Once marked, the column's upper part scrolls itself: look for the mark before for `overflow: auto`.
+    let el = nav.closest(`[${SCROLL_ATTR}]`) ?? nav.parentElement;
+    while (el && el.tagName !== "HEADER" && !el.hasAttribute(SCROLL_ATTR) && getComputedStyle(el).overflowY !== "auto") el = el.parentElement;
     if (!el || el.tagName === "HEADER") return;
     if (on !== el.hasAttribute(SCROLL_ATTR)) el.toggleAttribute(SCROLL_ATTR, on);
 }

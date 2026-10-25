@@ -315,5 +315,17 @@ describe("SidebarEntries: 「更多」 unfolded in the sidebar", () => {
         expect(more.querySelector("svg[data-xc-chevron]")).toBeNull();
         expect(more.hasAttribute("data-xc-chevron")).toBe(false);
     });
+
+    test("marks only X's scrolling sidebar column, however often 「更多」 is unfolded", async () => {
+        document.body.innerHTML = navHtml(true).replace('<header role="banner">', '<header role="banner"><div class="col" style="overflow-y: auto"><div class="upper">').replace("</nav></header>", "</nav></div><div class=\"account\"></div></div></header>");
+        setPluginEnabled("SidebarEntries", true);
+        flushNow();
+        await flush();
+        const more = nav().querySelector<HTMLElement>('[data-testid="AppTabBar_More_Menu"]')!;
+        for (let i = 0; i < 4; i++) { more.click(); await flush(); }
+        expect([...document.querySelectorAll("[data-xc-sidebar-scroll]")].map(e => e.className)).toEqual(["col"]);
+        setPluginEnabled("SidebarEntries", false);
+        expect(document.querySelectorAll("[data-xc-sidebar-scroll]").length).toBe(0);
+    });
 });
 
