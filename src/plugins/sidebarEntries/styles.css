@@ -34,3 +34,6 @@ svg[data-xc-chevron] { fill: none !important; transition: transform .2s ease; }
 /* Only the links part of X's sidebar column scrolls; the account bar under it stays put. */
 [data-xc-sidebar-scroll] { overflow-y: hidden !important; }
 [data-xc-sidebar-scroll] > :first-child { flex: 1 1 auto !important; min-height: 0 !important; overflow-y: auto !important; overscroll-behavior: contain; }
+/* No track: a thin thumb that only shows while the pointer is over the sidebar. */
+[data-xc-sidebar-scroll] > :first-child { scrollbar-width: thin; scrollbar-color: transparent transparent; }
+[data-xc-sidebar-scroll] > :first-child:hover { scrollbar-color: rgba(113, 118, 123, .5) transparent; }
