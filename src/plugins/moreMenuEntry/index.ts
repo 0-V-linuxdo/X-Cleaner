@@ -94,7 +94,8 @@ export function fillMoreMenu(menu: Element): HTMLElement[] {
 
 /** Set on <html> while the More menu opens; the plugin's style keeps the menu invisible meanwhile. */
 export const OPENING_ATTR = "data-xc-more-opening";
-const OPEN_FALLBACK_MS = 400;
+// As long as we wait for the menu: X loads the menu code on the first open, which can take a while.
+const OPEN_FALLBACK_MS = WAIT_MS;
 let fallback: ReturnType<typeof setTimeout> | undefined;
 
 function reveal() {
