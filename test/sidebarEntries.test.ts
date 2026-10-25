@@ -324,6 +324,12 @@ describe("SidebarEntries: 「更多」 unfolded in the sidebar", () => {
         const more = nav().querySelector<HTMLElement>('[data-testid="AppTabBar_More_Menu"]')!;
         for (let i = 0; i < 4; i++) { more.click(); await flush(); }
         expect([...document.querySelectorAll("[data-xc-sidebar-scroll]")].map(e => e.className)).toEqual(["col"]);
+        const col = document.querySelector(".col")!;
+        expect(col.hasAttribute("data-xc-scrollbar-left")).toBe(true);
+        (Settings.plugins.SidebarEntries as any).sidebarScrollbarLeft = false;
+        await flush();
+        expect(col.hasAttribute("data-xc-scrollbar-left")).toBe(false);
+        expect(col.hasAttribute("data-xc-sidebar-scroll")).toBe(true);
         setPluginEnabled("SidebarEntries", false);
         expect(document.querySelectorAll("[data-xc-sidebar-scroll]").length).toBe(0);
     });

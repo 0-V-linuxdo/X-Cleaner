@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         X Cleaner
 // @namespace    https://github.com/0-V-linuxdo/x-cleaner
-// @version      0.1.0.202610250452
+// @version      0.1.0.202610250458
 // @description  A plugin-based cleaner for x.com: hide adult promotion, crypto funnels and promotional reply accounts. Includes review, lists, safe regex rules and optional AI-assisted rule drafts.
 // @author       X Cleaner Contributors
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z'/%3E%3Cpath d='m4.5 4.5 15 15'/%3E%3C/svg%3E
@@ -1145,6 +1145,8 @@ Continue?`,
     "页面滚动条轨道": "Page scrollbar track",
     "去掉网页滚动条的灰色轨道，只留一条细的滑块。": "Drops the gray track of the page scrollbar, leaving only a thin thumb.",
     "精简 X 的页面：分别隐藏 Premium 推销、推广帖、Grok 按钮和浮窗、浏览量等干扰元素。右侧栏的趋势、推荐关注和页脚见 RightSidebarCleaner。": "Declutters X: hides Premium upsells, promoted posts, Grok buttons and drawer, view counts and other distractions, each on its own switch. For the right sidebar's trends, Who to follow and footer, see RightSidebarCleaner.",
+    "侧栏滚动条放在左边": "Sidebar scrollbar on the left",
+    "「更多」展开后侧栏需要滚动时，把滚动条放在侧栏左边；关闭则留在右边。两边都没有轨道，只在鼠标移到侧栏上时显示。": "When the unfolded 「More」 makes the sidebar scroll, puts its scrollbar on the left; off keeps it on the right. Either way it has no track and only shows while the pointer is over the sidebar.",
     "侧栏入口": "Sidebar entries",
     "拖动或用箭头调整顺序，开关控制是否显示。没出现在当前页面的入口会保留你的设置。": "Drag or use the arrows to reorder; the switches show or hide each entry. Entries not on the current page keep your settings.",
     "管理 X 左侧栏的入口：选择显示哪些、按什么顺序排列，还能把「更多」菜单里的项目固定到侧栏或从菜单里隐藏。": "Manage the entries in X's left sidebar: choose which show and in what order, and pin items from the “More” menu into the sidebar or hide them from the menu.",
@@ -3111,7 +3113,7 @@ ${TOOLTIP_CSS}`,
     const hint = h("span", { class: "xc-pm-hint", tabindex: "0" }, svgIcon(Icons.info, 14));
     const hintTip = attachTooltip(hint, () => t(TABS.find((tab) => tab.id === activeId)?.description ?? ""), "bottom");
     const body = h("div", { class: "xc-pm-body" });
-    const version = h("div", { class: "xc-pm-version" }, h("div", null, "X Cleaner · ", "0.1.0.202610250452"), h("div", null, t("正式版"), " · ", t("用户脚本")), h("div", null, h("a", { href: "https://cdn.jsdelivr.net/gh/0-V-linuxdo/X-Cleaner@heads/main/dist/X%20Cleaner.user.js", target: "_blank", rel: "noopener" }, t("检查更新")), " · ", h("a", { href: `${"https://github.com/0-V-linuxdo/X-Cleaner"}/commits/main`, target: "_blank", rel: "noopener" }, t("更新记录"))));
+    const version = h("div", { class: "xc-pm-version" }, h("div", null, "X Cleaner · ", "0.1.0.202610250458"), h("div", null, t("正式版"), " · ", t("用户脚本")), h("div", null, h("a", { href: "https://cdn.jsdelivr.net/gh/0-V-linuxdo/X-Cleaner@heads/main/dist/X%20Cleaner.user.js", target: "_blank", rel: "noopener" }, t("检查更新")), " · ", h("a", { href: `${"https://github.com/0-V-linuxdo/X-Cleaner"}/commits/main`, target: "_blank", rel: "noopener" }, t("更新记录"))));
     const content = h("div", { class: "xc-pm-shell" }, h("aside", { class: "xc-pm-sidebar" }, nav, version), h("section", { class: "xc-pm-main" }, h("header", { class: "xc-pm-header" }, heading, hint, closeButton(() => close())), body));
     const show = (id, plugin) => {
       activeId = id;
@@ -11192,6 +11194,7 @@ Write rule.name and reason in ${aiLanguageName()}.` }
   var more = (nav) => nav.querySelector(`:scope > ${MORE_BUTTON2}`);
   var SCROLL_ATTR = "data-xc-sidebar-scroll";
   var SCROLLBAR_VAR = "--xc-sidebar-scrollbar";
+  var SCROLLBAR_LEFT_ATTR = "data-xc-scrollbar-left";
   function markScroller(nav, on) {
     let el = nav.closest(`[${SCROLL_ATTR}]`) ?? nav.parentElement;
     while (el && el.tagName !== "HEADER" && !el.hasAttribute(SCROLL_ATTR) && getComputedStyle(el).overflowY !== "auto")
@@ -11200,9 +11203,13 @@ Write rule.name and reason in ${aiLanguageName()}.` }
       return;
     if (!on) {
       el.removeAttribute(SCROLL_ATTR);
+      el.removeAttribute(SCROLLBAR_LEFT_ATTR);
       el.style.removeProperty(SCROLLBAR_VAR);
       return;
     }
+    const left = !!source?.scrollbarLeft?.();
+    if (left !== el.hasAttribute(SCROLLBAR_LEFT_ATTR))
+      el.toggleAttribute(SCROLLBAR_LEFT_ATTR, left);
     const template = templateLink(nav);
     const mark = !template || showsLabels(template) ? "wide" : "narrow";
     if (el.getAttribute(SCROLL_ATTR) !== mark)
@@ -11323,6 +11330,7 @@ Write rule.name and reason in ${aiLanguageName()}.` }
       decorate(b, false);
     for (const el of document.querySelectorAll(`[${SCROLL_ATTR}]`)) {
       el.removeAttribute(SCROLL_ATTR);
+      el.removeAttribute(SCROLLBAR_LEFT_ATTR);
       el.style.removeProperty(SCROLLBAR_VAR);
     }
   }
@@ -11364,17 +11372,15 @@ svg[data-xc-chevron] { fill: none !important; transition: transform .2s ease; }
 /* Only the links part of X's sidebar column scrolls; the account bar under it stays put. */
 [data-xc-sidebar-scroll] { overflow: visible clip !important; }
 [data-xc-sidebar-scroll] > :first-child { flex: 1 1 auto !important; min-height: 0 !important; overflow-y: auto !important; overscroll-behavior: contain; }
+/* No track: a thin thumb that only shows while the pointer is over the sidebar. */
+[data-xc-sidebar-scroll] > :first-child { scrollbar-gutter: stable; scrollbar-width: thin; scrollbar-color: transparent transparent; }
 /*
- * No track: a thin thumb on the left that only shows while the pointer is over the sidebar. \`rtl\` puts the
- * scrollbar on the left, its rows stay \`ltr\`, and the column is pulled left by the gutter's width so the
- * rows still line up with the account bar.
+ * On the left: \`rtl\` puts the scrollbar there, its rows stay \`ltr\`, and the column is pulled left by the
+ * gutter's width so the rows still line up with the account bar.
  */
-[data-xc-sidebar-scroll] > :first-child {
-    direction: rtl; scrollbar-gutter: stable; scrollbar-width: thin; scrollbar-color: transparent transparent;
-    margin-left: calc(-1 * var(--xc-sidebar-scrollbar, 0px)) !important;
-}
-[data-xc-sidebar-scroll] > :first-child > * { direction: ltr; }
-[data-xc-sidebar-scroll="wide"] > :first-child { align-items: self-start !important; }
+[data-xc-scrollbar-left] > :first-child { direction: rtl; margin-left: calc(-1 * var(--xc-sidebar-scrollbar, 0px)) !important; }
+[data-xc-scrollbar-left] > :first-child > * { direction: ltr; }
+[data-xc-scrollbar-left][data-xc-sidebar-scroll="wide"] > :first-child { align-items: self-start !important; }
 [data-xc-sidebar-scroll] > :first-child:hover { scrollbar-color: rgba(113, 118, 123, .5) transparent; }
 `;
 
@@ -11385,6 +11391,12 @@ svg[data-xc-chevron] { fill: none !important; transition: transform .2s ease; }
       type: "boolean" /* BOOLEAN */,
       label: N_("「更多」在侧栏里展开"),
       description: N_("点侧栏的「更多」时，把它的项目直接展开在按钮下方，不再弹出菜单。侧栏收起成图标时也一样。"),
+      default: true
+    },
+    sidebarScrollbarLeft: {
+      type: "boolean" /* BOOLEAN */,
+      label: N_("侧栏滚动条放在左边"),
+      description: N_("「更多」展开后侧栏需要滚动时，把滚动条放在侧栏左边；关闭则留在右边。两边都没有轨道，只在鼠标移到侧栏上时显示。"),
       default: true
     },
     layout: {
@@ -11445,6 +11457,7 @@ svg[data-xc-chevron] { fill: none !important; transition: transform .2s ease; }
   var inlineSource = {
     enabled: () => !!settings8.plain && settings8.store.inlineMore,
     isOpen: () => !!settings8.plain?.inlineOpen,
+    scrollbarLeft: () => !!settings8.plain && settings8.store.sidebarScrollbarLeft,
     setOpen(open) {
       settings8.store.inlineOpen = open;
     },
@@ -11734,7 +11747,7 @@ svg[data-xc-chevron] { fill: none !important; transition: transform .2s ease; }
     if (booted)
       return;
     booted = true;
-    document.documentElement.dataset.xcVersion = "0.1.0.202610250452";
+    document.documentElement.dataset.xcVersion = "0.1.0.202610250458";
     loadSettings();
     for (const plugin of Object.values(plugins_default))
       registerPlugin(plugin);
@@ -11747,7 +11760,7 @@ svg[data-xc-chevron] { fill: none !important; transition: transform .2s ease; }
     else
       onReady();
     addEventListener("pagehide", () => settingsStore.flush());
-    logger17.info(`${"0.1.0.202610250452"} started with ${Object.keys(plugins_default).length} plugins`);
+    logger17.info(`${"0.1.0.202610250458"} started with ${Object.keys(plugins_default).length} plugins`);
   }
 
   // src/index.ts

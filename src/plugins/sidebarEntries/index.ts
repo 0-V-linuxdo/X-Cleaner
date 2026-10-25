@@ -29,6 +29,12 @@ export const settings = definePluginSettings({
         description: N_("点侧栏的「更多」时，把它的项目直接展开在按钮下方，不再弹出菜单。侧栏收起成图标时也一样。"),
         default: true,
     },
+    sidebarScrollbarLeft: {
+        type: OptionType.BOOLEAN,
+        label: N_("侧栏滚动条放在左边"),
+        description: N_("「更多」展开后侧栏需要滚动时，把滚动条放在侧栏左边；关闭则留在右边。两边都没有轨道，只在鼠标移到侧栏上时显示。"),
+        default: true,
+    },
     layout: {
         type: OptionType.CUSTOM,
         label: N_("侧栏入口"),
@@ -90,6 +96,7 @@ let scannedThisPage = false;
 const inlineSource = {
     enabled: () => !!settings.plain && settings.store.inlineMore,
     isOpen: () => !!settings.plain?.inlineOpen,
+    scrollbarLeft: () => !!settings.plain && settings.store.sidebarScrollbarLeft,
     setOpen(open: boolean) { settings.store.inlineOpen = open; },
     groups(): InlineRow[][] {
         const hidden = new Set(menuHiddenKeys());

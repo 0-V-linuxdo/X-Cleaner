@@ -658,6 +658,8 @@ const en: Record<string, string> = {
     "去掉网页滚动条的灰色轨道，只留一条细的滑块。": "Drops the gray track of the page scrollbar, leaving only a thin thumb.",
     "精简 X 的页面：分别隐藏 Premium 推销、推广帖、Grok 按钮和浮窗、浏览量等干扰元素。右侧栏的趋势、推荐关注和页脚见 RightSidebarCleaner。": "Declutters X: hides Premium upsells, promoted posts, Grok buttons and drawer, view counts and other distractions, each on its own switch. For the right sidebar's trends, Who to follow and footer, see RightSidebarCleaner.",
 
+    "侧栏滚动条放在左边": "Sidebar scrollbar on the left",
+    "「更多」展开后侧栏需要滚动时，把滚动条放在侧栏左边；关闭则留在右边。两边都没有轨道，只在鼠标移到侧栏上时显示。": "When the unfolded 「More」 makes the sidebar scroll, puts its scrollbar on the left; off keeps it on the right. Either way it has no track and only shows while the pointer is over the sidebar.",
     "侧栏入口": "Sidebar entries",
     "拖动或用箭头调整顺序，开关控制是否显示。没出现在当前页面的入口会保留你的设置。": "Drag or use the arrows to reorder; the switches show or hide each entry. Entries not on the current page keep your settings.",
     "管理 X 左侧栏的入口：选择显示哪些、按什么顺序排列，还能把「更多」菜单里的项目固定到侧栏或从菜单里隐藏。": "Manage the entries in X's left sidebar: choose which show and in what order, and pin items from the “More” menu into the sidebar or hide them from the menu.",

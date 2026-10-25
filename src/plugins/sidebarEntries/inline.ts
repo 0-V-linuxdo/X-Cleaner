@@ -24,6 +24,8 @@ export interface InlineSource {
     enabled(): boolean;
     isOpen(): boolean;
     setOpen(open: boolean): void;
+    /** Whether the sidebar's scrollbar goes on the left instead of X's right. */
+    scrollbarLeft?(): boolean;
     /** X's 「更多」 rows, then X Cleaner's own, as groups shown with a divider between. */
     groups(): InlineRow[][];
     /** Called on every unfold so the rows stay current; may re-render through `refresh`. */
@@ -39,6 +41,7 @@ const more = (nav: Element) => nav.querySelector<HTMLElement>(`:scope > ${MORE_B
 export const SCROLL_ATTR = "data-xc-sidebar-scroll";
 
 const SCROLLBAR_VAR = "--xc-sidebar-scrollbar";
+const SCROLLBAR_LEFT_ATTR = "data-xc-scrollbar-left";
 
 /**
  * X's sidebar column scrolls as a whole, account bar included, once the unfolded rows make it too tall.
@@ -53,9 +56,12 @@ function markScroller(nav: Element, on: boolean) {
     if (!el || el.tagName === "HEADER") return;
     if (!on) {
         el.removeAttribute(SCROLL_ATTR);
+        el.removeAttribute(SCROLLBAR_LEFT_ATTR);
         el.style.removeProperty(SCROLLBAR_VAR);
         return;
     }
+    const left = !!source?.scrollbarLeft?.();
+    if (left !== el.hasAttribute(SCROLLBAR_LEFT_ATTR)) el.toggleAttribute(SCROLLBAR_LEFT_ATTR, left);
     const template = templateLink(nav);
     const mark = !template || showsLabels(template) ? "wide" : "narrow";
     if (el.getAttribute(SCROLL_ATTR) !== mark) el.setAttribute(SCROLL_ATTR, mark);
@@ -172,6 +178,7 @@ export function stopInline() {
     for (const b of document.querySelectorAll<HTMLElement>(`${MORE_BUTTON}[${CHEVRON_ATTR}]`)) decorate(b, false);
     for (const el of document.querySelectorAll<HTMLElement>(`[${SCROLL_ATTR}]`)) {
         el.removeAttribute(SCROLL_ATTR);
+        el.removeAttribute(SCROLLBAR_LEFT_ATTR);
         el.style.removeProperty(SCROLLBAR_VAR);
     }
 }
