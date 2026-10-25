@@ -26,3 +26,6 @@ body[style*="255, 255, 255"] [data-xc-pin]:hover > div, body[style*="255, 255, 2
 [data-xc-inline-more] { display: flex; flex-direction: column; align-items: inherit; width: 100%; }
 [data-xc-inline-more="false"] { align-items: center; }
 [data-xc-inline-more] > .xc-inline-sep { height: 1px; margin: 4px 12px; background: rgba(113, 118, 123, .4); align-self: stretch; }
+[data-testid="AppTabBar_More_Menu"][data-xc-chevron] svg:not([data-xc-chevron]) { display: none !important; }
+svg[data-xc-chevron] { fill: none !important; transition: transform .2s ease; }
+[data-xc-inline-open] svg[data-xc-chevron] { transform: rotate(180deg); }

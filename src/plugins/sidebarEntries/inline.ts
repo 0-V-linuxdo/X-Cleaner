@@ -36,10 +36,40 @@ const view = (): Window => document.defaultView ?? window;
 
 const more = (nav: Element) => nav.querySelector<HTMLElement>(`:scope > ${MORE_BUTTON}`);
 
+export const CHEVRON_ATTR = "data-xc-chevron";
+const CHEVRON = '<path d="M5.5 9 12 15.5 18.5 9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>';
+
+/**
+ * Swaps 「更多」's dots for a chevron that points down when folded and up when unfolded. X's own icon is
+ * only hidden (by the plugin's style), never removed, since X's renderer still owns it.
+ */
+function decorate(button: HTMLElement | null, on: boolean) {
+    if (!button) return;
+    const ours = button.querySelector(`[${CHEVRON_ATTR}]`);
+    if (!on) {
+        ours?.remove();
+        button.removeAttribute(CHEVRON_ATTR);
+        return;
+    }
+    button.setAttribute(CHEVRON_ATTR, "");
+    if (ours?.isConnected) return;
+    const native = button.querySelector("svg");
+    if (!native) return;
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("viewBox", "0 0 24 24");
+    svg.setAttribute("aria-hidden", "true");
+    svg.setAttribute(CHEVRON_ATTR, "");
+    const cls = native.getAttribute("class");
+    if (cls) svg.setAttribute("class", cls);
+    svg.innerHTML = CHEVRON;
+    native.after(svg);
+}
+
 function render(nav: Element) {
     const button = more(nav);
     const template = button ? templateLink(nav) : null;
     const old = nav.querySelector<HTMLElement>(`:scope > [${INLINE_ATTR}]`);
+    decorate(button, !!source?.enabled());
     if (!source?.enabled() || !source.isOpen() || !button || !template) {
         old?.remove();
         button?.removeAttribute("data-xc-inline-open");
@@ -68,12 +98,13 @@ function render(nav: Element) {
 export function syncInline(nav: Element) {
     const box = nav.querySelector<HTMLElement>(`:scope > [${INLINE_ATTR}]`);
     const want = !!source?.enabled() && source.isOpen();
+    const button = more(nav);
+    if (!!source?.enabled() !== !!button?.querySelector(`[${CHEVRON_ATTR}]`)) decorate(button, !!source?.enabled());
     if (!want) {
         if (box) render(nav);
         return;
     }
     const template = templateLink(nav);
-    const button = more(nav);
     if (!box || !template || box.previousElementSibling !== button || box.getAttribute(INLINE_ATTR) !== String(showsLabels(template))) render(nav);
 }
 
@@ -107,4 +138,5 @@ export function stopInline() {
     source = null;
     for (const box of document.querySelectorAll(`[${INLINE_ATTR}]`)) box.remove();
     for (const b of document.querySelectorAll("[data-xc-inline-open]")) b.removeAttribute("data-xc-inline-open");
+    for (const b of document.querySelectorAll<HTMLElement>(`${MORE_BUTTON}[${CHEVRON_ATTR}]`)) decorate(b, false);
 }

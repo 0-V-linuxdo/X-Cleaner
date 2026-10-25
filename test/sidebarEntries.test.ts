@@ -118,7 +118,7 @@ const link = (href: string, tid: string, label: string, wide: boolean) =>
 const navHtml = (wide: boolean) => `<header role="banner"><nav role="navigation" aria-label="Primary">
     ${link("/home", "AppTabBar_Home_Link", "Home", wide)}
     ${link("/explore", "AppTabBar_Explore_Link", "Explore", wide)}
-    <button data-testid="AppTabBar_More_Menu" aria-label="More menu items" aria-expanded="false">More</button>
+    <button data-testid="AppTabBar_More_Menu" aria-label="More menu items" aria-expanded="false"><div><svg class="nav-icon" viewBox="0 0 24 24"><path d="M9"/></svg>${wide ? '<div dir="ltr"><span>More</span></div>' : ""}</div></button>
 </nav></header><main></main>`;
 const MORE_MENU = `<div><div class="backdrop"></div><div role="menu"><div data-testid="Dropdown">
     <a href="/me/lists" role="menuitem"><svg viewBox="0 0 24 24"><path d="M1"/></svg><div dir="ltr"><span>Lists</span></div></a>
@@ -269,6 +269,8 @@ describe("SidebarEntries: 「更多」 unfolded in the sidebar", () => {
         more.click();
         await flush();
         expect(box()).toBeNull();
+        expect(more.querySelector("svg[data-xc-chevron]")!.getAttribute("class")).toBe("nav-icon");
+        expect(more.hasAttribute("data-xc-chevron")).toBe(true);
         // Let the out-of-sight refresh of the stored rows finish inside this test.
         await new Promise(r => setTimeout(r, 100));
     });
@@ -310,6 +312,8 @@ describe("SidebarEntries: 「更多」 unfolded in the sidebar", () => {
         more.click();
         expect(xSawClick).toBe(true);
         expect(box()).toBeNull();
+        expect(more.querySelector("svg[data-xc-chevron]")).toBeNull();
+        expect(more.hasAttribute("data-xc-chevron")).toBe(false);
     });
 });
 
