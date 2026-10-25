@@ -92,12 +92,29 @@ export function fillMoreMenu(menu: Element): HTMLElement[] {
     return rows;
 }
 
+/** Set on <html> while the More menu opens; the plugin's style keeps the menu invisible meanwhile. */
+export const OPENING_ATTR = "data-xc-more-opening";
+const OPEN_FALLBACK_MS = 400;
+let fallback: ReturnType<typeof setTimeout> | undefined;
+
+function reveal() {
+    clearTimeout(fallback);
+    document.documentElement.removeAttribute(OPENING_ATTR);
+}
+
+/** Hide the next menu from the click on, so neither X's first placement nor the missing rows show. */
+export function hideOpening() {
+    document.documentElement.setAttribute(OPENING_ATTR, "");
+    clearTimeout(fallback);
+    fallback = setTimeout(reveal, OPEN_FALLBACK_MS);
+}
+
 /**
  * X places the menu from its height when it mounts, before our rows exist, then moves it once it
  * notices the menu grew: a visible jump. Keep the menu hidden until its position stops changing.
  */
 export function hideUntilSettled(menu: HTMLElement, maxFrames = 12) {
-    menu.style.visibility = "hidden";
+    hideOpening();
     let last = "";
     let still = 0;
     let frames = 0;
@@ -106,7 +123,7 @@ export function hideUntilSettled(menu: HTMLElement, maxFrames = 12) {
         const pos = `${menu.style.top}|${menu.style.bottom}|${menu.style.right}|${menu.style.left}|${Math.round(r.top)}|${Math.round(r.height)}`;
         still = pos === last ? still + 1 : 0;
         last = pos;
-        if (still >= 2 || ++frames >= maxFrames || !menu.isConnected) menu.style.visibility = "";
+        if (still >= 2 || ++frames >= maxFrames || !menu.isConnected) reveal();
         else requestAnimationFrame(step);
     };
     requestAnimationFrame(step);
@@ -122,10 +139,13 @@ function tryFill() {
     if (!menu || !templateRow(menu)) return;
     pendingAt = 0;
     if (fillMoreMenu(menu).length) hideUntilSettled(menu);
+    else reveal();
 }
 
 function onClick(e: MouseEvent) {
     if (!(e.target as Element | null)?.closest?.(MORE_BUTTON)) return;
+    // Clicking More while its menu is open closes it; nothing to hide then.
+    if (!document.querySelector(MENU_SEL)) hideOpening();
     pendingAt = Date.now();
     queueMicrotask(tryFill);
 }
@@ -138,6 +158,7 @@ export default definePlugin({
     enabledByDefault: true,
     settings,
     healthChecks: [CHECKS.moreMenuButton],
+    managedStyle: `[${OPENING_ATTR}] ${MENU_SEL} { visibility: hidden !important; }`,
 
     start() {
         document.addEventListener("click", onClick, true);
@@ -150,6 +171,7 @@ export default definePlugin({
         observer?.disconnect();
         observer = null;
         pendingAt = 0;
+        reveal();
         for (const el of document.querySelectorAll(`[${ENTRY_ATTR}]`)) el.remove();
     },
 });

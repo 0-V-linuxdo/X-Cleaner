@@ -105,15 +105,16 @@ describe("COLOR setting", () => {
 
 describe("MoreMenuEntry settle", () => {
     test("hides the menu until X stops moving it, then shows it again", async () => {
-        const { hideUntilSettled } = await import("@plugins/moreMenuEntry");
+        const { hideUntilSettled, OPENING_ATTR } = await import("@plugins/moreMenuEntry");
+        const hidden = () => document.documentElement.hasAttribute(OPENING_ATTR);
         const menu = document.createElement("div");
         document.body.appendChild(menu);
         menu.style.top = "68px";
         hideUntilSettled(menu);
-        expect(menu.style.visibility).toBe("hidden");
+        expect(hidden()).toBe(true);
         await new Promise(r => requestAnimationFrame(() => r(null)));
         menu.style.top = "0px";
         for (let i = 0; i < 6; i++) await new Promise(r => requestAnimationFrame(() => r(null)));
-        expect(menu.style.visibility).toBe("");
+        expect(hidden()).toBe(false);
     });
 });
