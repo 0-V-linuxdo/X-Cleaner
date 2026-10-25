@@ -45,6 +45,8 @@ describe("Declutter", () => {
         expect(css).toContain(AD_ATTR);
         expect(css).toContain('a[href$="/analytics"]');
         expect(css).not.toContain("premium");
+        expect(css).not.toContain("scrollbar");
+        expect(declutterCss({ hideScrollbarTrack: true })).toContain("scrollbar-color: rgba(113, 118, 123, .5) transparent");
     });
 
     test("the Grok-button rule never hides the reply shield", () => {

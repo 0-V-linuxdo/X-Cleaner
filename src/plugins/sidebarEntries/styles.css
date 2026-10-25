@@ -32,8 +32,17 @@ svg[data-xc-chevron] { fill: none !important; transition: transform .2s ease; }
 /* Unfolded rows read as a sub-level and fit 「设置和隐私」-length labels in X's narrow sidebar. */
 [data-xc-inline-more] [dir] { font-size: 17px !important; margin-right: 4px !important; }
 /* Only the links part of X's sidebar column scrolls; the account bar under it stays put. */
-[data-xc-sidebar-scroll] { overflow-y: hidden !important; }
+[data-xc-sidebar-scroll] { overflow: visible clip !important; }
 [data-xc-sidebar-scroll] > :first-child { flex: 1 1 auto !important; min-height: 0 !important; overflow-y: auto !important; overscroll-behavior: contain; }
-/* No track: a thin thumb that only shows while the pointer is over the sidebar. */
-[data-xc-sidebar-scroll] > :first-child { scrollbar-width: thin; scrollbar-color: transparent transparent; }
+/*
+ * No track: a thin thumb on the left that only shows while the pointer is over the sidebar. `rtl` puts the
+ * scrollbar on the left, its rows stay `ltr`, and the column is pulled left by the gutter's width so the
+ * rows still line up with the account bar.
+ */
+[data-xc-sidebar-scroll] > :first-child {
+    direction: rtl; scrollbar-gutter: stable; scrollbar-width: thin; scrollbar-color: transparent transparent;
+    margin-left: calc(-1 * var(--xc-sidebar-scrollbar, 0px)) !important;
+}
+[data-xc-sidebar-scroll] > :first-child > * { direction: ltr; }
+[data-xc-sidebar-scroll="wide"] > :first-child { align-items: self-start !important; }
 [data-xc-sidebar-scroll] > :first-child:hover { scrollbar-color: rgba(113, 118, 123, .5) transparent; }

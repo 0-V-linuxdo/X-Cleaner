@@ -38,16 +38,31 @@ const more = (nav: Element) => nav.querySelector<HTMLElement>(`:scope > ${MORE_B
 
 export const SCROLL_ATTR = "data-xc-sidebar-scroll";
 
+const SCROLLBAR_VAR = "--xc-sidebar-scrollbar";
+
 /**
  * X's sidebar column scrolls as a whole, account bar included, once the unfolded rows make it too tall.
  * Marks that column so the plugin's style lets only its upper part (logo, links, Post) scroll instead.
+ * The mark says whether the sidebar is wide, since the style moves the scrollbar to the left with `rtl`,
+ * which would flip a wide sidebar's left-aligned rows to the right; the icon-only one is centred anyway.
  */
 function markScroller(nav: Element, on: boolean) {
     // Once marked, the column's upper part scrolls itself: look for the mark before for `overflow: auto`.
-    let el = nav.closest(`[${SCROLL_ATTR}]`) ?? nav.parentElement;
+    let el = nav.closest<HTMLElement>(`[${SCROLL_ATTR}]`) ?? nav.parentElement;
     while (el && el.tagName !== "HEADER" && !el.hasAttribute(SCROLL_ATTR) && getComputedStyle(el).overflowY !== "auto") el = el.parentElement;
     if (!el || el.tagName === "HEADER") return;
-    if (on !== el.hasAttribute(SCROLL_ATTR)) el.toggleAttribute(SCROLL_ATTR, on);
+    if (!on) {
+        el.removeAttribute(SCROLL_ATTR);
+        el.style.removeProperty(SCROLLBAR_VAR);
+        return;
+    }
+    const template = templateLink(nav);
+    const mark = !template || showsLabels(template) ? "wide" : "narrow";
+    if (el.getAttribute(SCROLL_ATTR) !== mark) el.setAttribute(SCROLL_ATTR, mark);
+    // The left gutter would push the rows right of the account bar: the style pulls them back by its width.
+    const scroller = el.firstElementChild as HTMLElement | null;
+    const width = scroller ? `${scroller.offsetWidth - scroller.clientWidth}px` : "";
+    if (width && el.style.getPropertyValue(SCROLLBAR_VAR) !== width) el.style.setProperty(SCROLLBAR_VAR, width);
 }
 
 export const CHEVRON_ATTR = "data-xc-chevron";
@@ -155,5 +170,8 @@ export function stopInline() {
     for (const box of document.querySelectorAll(`[${INLINE_ATTR}]`)) box.remove();
     for (const b of document.querySelectorAll("[data-xc-inline-open]")) b.removeAttribute("data-xc-inline-open");
     for (const b of document.querySelectorAll<HTMLElement>(`${MORE_BUTTON}[${CHEVRON_ATTR}]`)) decorate(b, false);
-    for (const el of document.querySelectorAll(`[${SCROLL_ATTR}]`)) el.removeAttribute(SCROLL_ATTR);
+    for (const el of document.querySelectorAll<HTMLElement>(`[${SCROLL_ATTR}]`)) {
+        el.removeAttribute(SCROLL_ATTR);
+        el.style.removeProperty(SCROLLBAR_VAR);
+    }
 }

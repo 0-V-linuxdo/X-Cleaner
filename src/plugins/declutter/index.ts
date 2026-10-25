@@ -31,11 +31,12 @@ export const settings = definePluginSettings({
     hideMessagesDrawer: opt(N_("私信浮窗"), N_("右下角的私信浮窗。"), false),
     hideViewCounts: opt(N_("浏览量"), N_("帖子操作栏里的浏览量数字。"), false),
     hideTitleCount: opt(N_("标题未读数"), N_("去掉浏览器标签页标题前面的「(3)」未读数。"), false),
+    hideScrollbarTrack: opt(N_("页面滚动条轨道"), N_("去掉网页滚动条的灰色轨道，只留一条细的滑块。"), true),
 });
 
 type Key = keyof typeof settings.def;
 
-export const RULES: Record<Exclude<Key, "hideTitleCount">, string> = {
+export const RULES: Record<Exclude<Key, "hideTitleCount" | "hideScrollbarTrack">, string> = {
     hidePremiumUpsell: [
         `${SIDE} div:has(> aside a[href*="/i/premium"])`,
         `${SIDE} div:has(> div > aside a[href*="/i/premium"])`,
@@ -49,11 +50,14 @@ export const RULES: Record<Exclude<Key, "hideTitleCount">, string> = {
     hideViewCounts: `${SEL.tweet} [role="group"] > div:has(> a[href$="/analytics"])`,
 };
 
+export const SCROLLBAR_CSS = "html { scrollbar-width: thin; scrollbar-color: rgba(113, 118, 123, .5) transparent; }";
+
 export function buildCss(values: Partial<Record<Key, boolean>>): string {
-    return (Object.keys(RULES) as (keyof typeof RULES)[])
+    const rules = (Object.keys(RULES) as (keyof typeof RULES)[])
         .filter(k => values[k])
-        .map(k => `${RULES[k]} { display: none !important; }`)
-        .join("\n");
+        .map(k => `${RULES[k]} { display: none !important; }`);
+    if (values.hideScrollbarTrack) rules.push(SCROLLBAR_CSS);
+    return rules.join("\n");
 }
 
 const AD_LABEL_RE = /^(?:ad|ads|promoted|sponsored|广告|推广|廣告|贊助|赞助|プロモーション|anuncio|promocionado|gesponsert|sponsorisé)$/iu;

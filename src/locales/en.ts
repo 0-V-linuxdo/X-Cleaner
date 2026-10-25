@@ -654,6 +654,8 @@ const en: Record<string, string> = {
     "帖子操作栏里的浏览量数字。": "The view count in each post's action bar.",
     "标题未读数": "Unread count in the title",
     "去掉浏览器标签页标题前面的「(3)」未读数。": "Removes the “(3)” unread count at the start of the browser tab title.",
+    "页面滚动条轨道": "Page scrollbar track",
+    "去掉网页滚动条的灰色轨道，只留一条细的滑块。": "Drops the gray track of the page scrollbar, leaving only a thin thumb.",
     "精简 X 的页面：分别隐藏 Premium 推销、推广帖、Grok 按钮和浮窗、浏览量等干扰元素。右侧栏的趋势、推荐关注和页脚见 RightSidebarCleaner。": "Declutters X: hides Premium upsells, promoted posts, Grok buttons and drawer, view counts and other distractions, each on its own switch. For the right sidebar's trends, Who to follow and footer, see RightSidebarCleaner.",
 
     "侧栏入口": "Sidebar entries",
