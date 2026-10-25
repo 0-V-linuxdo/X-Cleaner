@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         X Cleaner
 // @namespace    https://github.com/0-V-linuxdo/x-cleaner
-// @version      0.1.0.202610250032
+// @version      0.1.0.202610250328
 // @description  A plugin-based cleaner for x.com: hide adult promotion, crypto funnels and promotional reply accounts. Includes review, lists, safe regex rules and optional AI-assisted rule drafts.
 // @author       X Cleaner Contributors
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z'/%3E%3Cpath d='m4.5 4.5 15 15'/%3E%3C/svg%3E
@@ -3109,7 +3109,7 @@ ${TOOLTIP_CSS}`,
     const hint = h("span", { class: "xc-pm-hint", tabindex: "0" }, svgIcon(Icons.info, 14));
     const hintTip = attachTooltip(hint, () => t(TABS.find((tab) => tab.id === activeId)?.description ?? ""), "bottom");
     const body = h("div", { class: "xc-pm-body" });
-    const version = h("div", { class: "xc-pm-version" }, h("div", null, "X Cleaner · ", "0.1.0.202610250032"), h("div", null, t("正式版"), " · ", t("用户脚本")), h("div", null, h("a", { href: "https://cdn.jsdelivr.net/gh/0-V-linuxdo/X-Cleaner@heads/main/dist/X%20Cleaner.user.js", target: "_blank", rel: "noopener" }, t("检查更新")), " · ", h("a", { href: `${"https://github.com/0-V-linuxdo/X-Cleaner"}/commits/main`, target: "_blank", rel: "noopener" }, t("更新记录"))));
+    const version = h("div", { class: "xc-pm-version" }, h("div", null, "X Cleaner · ", "0.1.0.202610250328"), h("div", null, t("正式版"), " · ", t("用户脚本")), h("div", null, h("a", { href: "https://cdn.jsdelivr.net/gh/0-V-linuxdo/X-Cleaner@heads/main/dist/X%20Cleaner.user.js", target: "_blank", rel: "noopener" }, t("检查更新")), " · ", h("a", { href: `${"https://github.com/0-V-linuxdo/X-Cleaner"}/commits/main`, target: "_blank", rel: "noopener" }, t("更新记录"))));
     const content = h("div", { class: "xc-pm-shell" }, h("aside", { class: "xc-pm-sidebar" }, nav, version), h("section", { class: "xc-pm-main" }, h("header", { class: "xc-pm-header" }, heading, hint, closeButton(() => close())), body));
     const show = (id, plugin) => {
       activeId = id;
@@ -11324,6 +11324,8 @@ body[style*="255, 255, 255"] [data-xc-pin]:hover > div, body[style*="255, 255, 2
 [data-testid="AppTabBar_More_Menu"][data-xc-chevron] svg:not([data-xc-chevron]) { display: none !important; }
 svg[data-xc-chevron] { fill: none !important; transition: transform .2s ease; }
 [data-xc-inline-open] svg[data-xc-chevron] { transform: rotate(180deg); }
+/* Unfolded rows read as a sub-level and fit 「设置和隐私」-length labels in X's narrow sidebar. */
+[data-xc-inline-more] [dir] { font-size: 17px !important; margin-right: 4px !important; }
 `;
 
   // src/plugins/sidebarEntries/index.ts
@@ -11682,7 +11684,7 @@ svg[data-xc-chevron] { fill: none !important; transition: transform .2s ease; }
     if (booted)
       return;
     booted = true;
-    document.documentElement.dataset.xcVersion = "0.1.0.202610250032";
+    document.documentElement.dataset.xcVersion = "0.1.0.202610250328";
     loadSettings();
     for (const plugin of Object.values(plugins_default))
       registerPlugin(plugin);
@@ -11695,7 +11697,7 @@ svg[data-xc-chevron] { fill: none !important; transition: transform .2s ease; }
     else
       onReady();
     addEventListener("pagehide", () => settingsStore.flush());
-    logger17.info(`${"0.1.0.202610250032"} started with ${Object.keys(plugins_default).length} plugins`);
+    logger17.info(`${"0.1.0.202610250328"} started with ${Object.keys(plugins_default).length} plugins`);
   }
 
   // src/index.ts
